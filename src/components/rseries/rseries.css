@@ -1,0 +1,183 @@
+/* ===========================================================================
+   ZOLL R Series — master SVG recreation styling.
+   The SVG (RSeriesDevice.jsx) holds all geometry; this file only colors text,
+   arcs and the few animated/interactive states.
+   =========================================================================== */
+
+.rs-panel-wrap {
+  width: min(1320px, 98vw);
+  margin: 0 auto;
+}
+.rs-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 22px 40px rgba(0, 0, 0, 0.55));
+  font-family: 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+}
+.rs-hit {
+  cursor: pointer;
+}
+.rs-hit:active {
+  filter: brightness(0.92);
+}
+
+/* ---- printed labels on the housing ---- */
+.rs-red {
+  fill: #c4231a;
+}
+.rs-dark {
+  fill: #2a2f36;
+}
+.rs-white {
+  fill: #f1f4f7;
+}
+.rs-mono-label {
+  fill: #8b9097;
+}
+.rs-mini-label {
+  fill: #6a7077;
+}
+.rs-grn-label {
+  fill: #1f9d57;
+}
+.rs-teal-label {
+  fill: #0f9c97;
+}
+.rs-emboss {
+  fill: #d7dadf;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  stroke: #ffffff;
+  stroke-width: 0.6;
+  paint-order: stroke;
+  opacity: 0.9;
+}
+
+/* ---- mode-selector colored arcs ---- */
+.rs-arc {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+.rs-arc--red {
+  stroke: #cf2a20;
+}
+.rs-arc--green {
+  stroke: #1f9d57;
+}
+.rs-arc--teal {
+  stroke: #0f9c97;
+}
+
+/* ---- SHOCK armed glow ---- */
+.rs-shock-glow {
+  fill: #ff9a3c;
+  opacity: 0.55;
+  animation: rs-arm 0.8s ease-in-out infinite;
+}
+@keyframes rs-arm {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+/* ---- shock flash overlay on the LCD ---- */
+.rs-flash-rect {
+  fill: #fff7e0;
+  animation: rs-flash 0.25s ease;
+}
+@keyframes rs-flash {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ===================== LCD text + traces ===================== */
+.lcd-cyan {
+  fill: #00ffff;
+}
+.lcd-mag {
+  fill: #ff00ff;
+}
+.lcd-grn {
+  fill: #00ff66;
+}
+.lcd-amber {
+  fill: #ffd100;
+}
+.lcd-white {
+  fill: #ffffff;
+}
+.lcd-hr {
+  font-weight: 800;
+}
+.lcd__rule {
+  stroke: #2a323b;
+  stroke-width: 1.5;
+}
+.lcd-mag-stroke {
+  fill: none;
+  stroke: #ff00ff;
+  stroke-width: 2.5;
+}
+.lcd-trace {
+  fill: none;
+  stroke: #00ff66;
+  stroke-width: 2.2;
+  filter: drop-shadow(0 0 2px #00ff66);
+  vector-effect: non-scaling-stroke;
+}
+.lcd-trace--amber {
+  stroke: #ffd100;
+  filter: drop-shadow(0 0 2px #ffd100);
+}
+.lcd-sync-marker {
+  fill: #ffd100;
+}
+.lcd-pacer-spike {
+  stroke: #8fe6ff;
+  stroke-width: 1.6;
+  filter: none;
+}
+.lcd-cpr-artifact {
+  stroke: #37ff7a;
+  stroke-width: 2;
+  opacity: 0.92;
+}
+.lcd-charge-fill {
+  fill: #ef7d22;
+}
+.lcd-msg-alert {
+  fill: #ff3830;
+}
+.lcd-msg-ok {
+  fill: #00ff66;
+}
+.lcd-alarm-flash {
+  animation: lcd-flash 0.8s steps(1, end) infinite;
+}
+@keyframes lcd-flash {
+  50% {
+    opacity: 0.25;
+  }
+}
+.lcd-trace--sweep {
+  stroke-dasharray: 1600;
+  animation: rs-sweep 4s linear infinite;
+}
+@keyframes rs-sweep {
+  from {
+    stroke-dashoffset: 1600;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}

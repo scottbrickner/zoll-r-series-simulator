@@ -1,0 +1,25 @@
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
+import { SimulatorProvider, DEFAULT_SESSION } from './sync/SimulatorContext'
+import Home from './views/Home'
+import Learner from './views/Learner'
+import Facilitator from './views/Facilitator'
+import Report from './views/Report'
+
+export default function App() {
+  const [params] = useSearchParams()
+  // Sync scope comes from the URL (?session=…). The launcher (/) assigns one.
+  const sessionId = params.get('session') || DEFAULT_SESSION
+
+  return (
+    // key on sessionId so switching sessions remounts a fresh, scoped provider
+    <SimulatorProvider key={sessionId} sessionId={sessionId}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/learner" element={<Learner />} />
+        <Route path="/facilitator" element={<Facilitator />} />
+        <Route path="/report" element={<Report />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </SimulatorProvider>
+  )
+}
