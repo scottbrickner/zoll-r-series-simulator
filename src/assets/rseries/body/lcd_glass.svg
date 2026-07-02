@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series body part: LCD cover glass (anti-glare). Master space 0 0 1440 1120.
+     Sits IN FRONT of the LCD opening; nearly clear with a faint satin reflection. -->
+<svg viewBox="0 0 1440 1120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="glassGloss" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="0.35" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.12"/>
+    </linearGradient>
+  </defs>
+  <g id="LcdGlass">
+    <!-- glass sheet over the opening -->
+    <rect x="202" y="198" width="701" height="530" rx="5" fill="#04070b"/>
+    <!-- anti-glare satin reflection -->
+    <rect x="202" y="198" width="701" height="530" rx="5" fill="url(#glassGloss)"/>
+    <!-- soft diagonal glare streak -->
+    <path d="M240,206 L470,206 L300,720 L206,720 Z" fill="#ffffff" opacity="0.035"/>
+    <!-- glass edge -->
+    <rect x="202" y="198" width="701" height="530" rx="5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
+  </g>
+</svg>

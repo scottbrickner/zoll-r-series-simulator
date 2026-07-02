@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Mode Selector: printed LABELS / sections.
+     Industrial Design Pass 2 (Controls Library) — label alignment pass v1.4.
+     Master space (0 0 1440 1120); viewBox cropped for standalone review.
+     Reproduces locked master layer 12 EXACTLY (labels only; the separate
+     colored arcs were removed this pass so colour lives in the printed
+     sections, matching the manufacturer photo — flat, printed labelling):
+       MONITOR = subtle light-gray legend (#9a9d99), above-left, low contrast
+       OFF     = black rounded rectangle (#101316), directly left
+       PACER   = flat teal section (#0f9c97) with an angled leading edge, lower-left
+       DEFIB   = flat red section (#cf2a20) with a short inward tab, right
+     Colour is segregated: teal = PACER only, red = DEFIB only, gray = MONITOR,
+     black = OFF; no colour crosses OFF or MONITOR. PRINTED — never rotate. -->
+<svg viewBox="980 438 420 224" xmlns="http://www.w3.org/2000/svg">
+  <g id="mode_selector_labels" font-family="'Segoe UI','Helvetica Neue',system-ui,sans-serif">
+    <!-- MONITOR — subtle light gray -->
+    <text x="1050" y="489" fill="#9a9d99" font-size="18" font-weight="600">MONITOR</text>
+    <!-- OFF — black rounded rectangle -->
+    <rect x="1008" y="541" width="104" height="30" rx="15" fill="#101316"/>
+    <text x="1060" y="562" text-anchor="middle" fill="#f1f4f7" font-size="18" font-weight="800">OFF</text>
+    <!-- PACER — flat teal section, angled leading edge -->
+    <path d="M984,603 H1072 L1058,627 H984 Q979,627 979,622 V608 Q979,603 984,603 Z" fill="#0f9c97"/>
+    <text x="1024" y="620" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700">PACER</text>
+    <!-- DEFIB — flat red section, short inward tab toward the knob -->
+    <path d="M1298,490 H1370 Q1375,490 1375,495 V511 Q1375,516 1370,516 H1298 L1286,503 Z" fill="#cf2a20"/>
+    <text x="1334" y="509" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="800">DEFIB</text>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series body part: molded screw cover (reusable). Local space 0 0 80 80, centred.
+     Assembly places one at each lower-cradle foot (e.g. master ~150,1090 and ~1290,1090). -->
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="screwCap" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#d7d9d6"/>
+      <stop offset="1" stop-color="#b7b9b5"/>
+    </radialGradient>
+  </defs>
+  <g id="ScrewCover">
+    <!-- recessed seat -->
+    <ellipse cx="40" cy="42" rx="34" ry="20" fill="#c7c9c5" stroke="#a6a8a4" stroke-width="1.5"/>
+    <!-- molded cap -->
+    <circle cx="40" cy="40" r="16" fill="url(#screwCap)" stroke="#9a9c98" stroke-width="1.5"/>
+    <!-- top highlight + slot -->
+    <ellipse cx="35" cy="35" rx="7" ry="4" fill="#ffffff" opacity="0.5"/>
+    <line x1="30" y1="40" x2="50" y2="40" stroke="#8d8f8b" stroke-width="2"/>
+  </g>
+</svg>

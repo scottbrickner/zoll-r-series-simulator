@@ -1,8 +1,9 @@
 # Visual Alignment Report — ZOLL R Series learner panel
 
-Status: **LOCKED** (geometry frozen as of this report). The device artwork is a
-proportion-matched vector reconstruction of the ZOLL R Series front panel, built
-as a master SVG ([`src/components/rseries/RSeriesDevice.jsx`](src/components/rseries/RSeriesDevice.jsx))
+Status: **LOCKED**, except where a dated, documented alignment pass reopens a
+named region (see §8). The device artwork is a proportion-matched vector
+reconstruction of the ZOLL R Series front panel, built as a master SVG
+([`src/components/rseries/RSeriesDevice.jsx`](src/components/rseries/RSeriesDevice.jsx))
 whose geometry is the single source of truth. React only drives interactive
 attributes; it never regenerates the artwork.
 
@@ -107,7 +108,110 @@ in a deliberate future alignment pass (see README lock rule).
 
 ---
 
-## 7. Dev-only screenshot capture checklist
+## 8. Alignment pass — 2026-07-02 — Mode Selector (Industrial Design Pass 2)
+
+Reopened region: **Mode Selector** (master layers `12_ModeSelector_Arcs` and
+`13_ModeSelector_Knob`). Triggered by a manufacturer close-up photo of the mode
+dial supplied by the user, which is a clearer reference for this control than the
+whole-panel raster in §1. Change made in the master **and** in the Pass 2 modular
+parts (`src/assets/rseries/controls/mode_selector_*.svg`,
+`src/components/rseries/controls/ModeSelector.jsx`) so they stay identical, and in
+the frozen export `public/RSeries_Master.svg`. **Knob centre (1210, 556) and
+radius (82) were NOT changed** — those anchor the rest of the panel and stay
+locked; only the knob's internal grip/pointer/sheen and the arc extents moved.
+
+| Element | Before | After | Reason |
+|---------|--------|-------|--------|
+| Knob finger grip | thin near-black bar `#0d0d0d`, 16×74 | lighter satin-gray molded grip `#8f8f8f→#565656`, 18×80, hairline edge | Photo shows a prominent lighter-gray molded grip, not a near-invisible dark bar. |
+| Knob white pointer | insert 10×56 (`#f2f4f6`) | bolder pointer 10×62 (`#f4f6f8`) | Photo's white indicator reads bolder and reaches nearer the edge. |
+| Knob sheen | ellipse rx40 ry26 @ 0.10 | rx44 ry28 @ 0.16 | Stronger upper satin highlight, matching the domed sheen in the photo. |
+| Red arc | `arc(104, 6→74)` | `arc(104, 40→74)` | Concentrate red at DEFIB (upper-right); stop sweeping toward the top. |
+| Teal arc | `arc(104, -152→-40)` | `arc(104, -152→-108)` | Concentrate teal at PACER (lower-left); remove teal from the neutral OFF / MONITOR positions, per the photo. |
+
+**Reviewed and retained (no confident change from this crop):** the OFF / MONITOR
+/ PACER / DEFIB label positions, sizes, and colors (OFF black rect `#101316`;
+MONITOR gray `#8b9097`; PACER teal `#0f9c97`; DEFIB red `#cf2a20`) read as matching
+the photo. Label geometry was **not** moved — the supplied image is a low-resolution
+crop, and moving printed-legend geometry on that basis would violate "measure, do
+not guess." A higher-resolution reference is needed to revisit label placement.
+
+Supersedes accepted item §6.6 for the knob grip specifically; the OFF/MONITOR/
+PACER/DEFIB **tab outline** shapes remain simplified polygons (still accepted).
+
+### 8.1 Final fidelity pass — 2026-07-02 — Mode Selector **PERMANENTLY FROZEN**
+
+A second, tightly-scoped pass on the same region. **Scope was limited to five
+properties; everything else in the Mode Selector was left untouched.** Applied to
+the master, the frozen export, and the Pass 2 parts identically.
+
+| Property (only these) | Before | After |
+|-----------------------|--------|-------|
+| Knob grip geometry | 18×80, rx9 | 20×84, rx10 (fuller molded bar) |
+| White pointer size | 10×62 | 12×66 (bolder, reaches nearer the edge) |
+| Knob depth | dome `#4a4a4a→#2b2b2b→#161616`, no inner shade | deeper dome `#545454→#2c2c2c→#101010` + recessed inner shadow ring (r75, `#000`@0.30) |
+| Printed arc saturation | red `#cf2a20`, teal `#0f9c97` | red `#d4271b`, teal `#0ba199` (arcs only; DEFIB/PACER tab fills unchanged) |
+| MONITOR gray strip contrast | `#8b9097` | `#6f757c` (darker, higher contrast) |
+
+**Not touched (locked):** knob centre (1210,556) and radius (82); arc angles
+(red 40→74, teal −152→−108) and positions; all label geometry/positions/tab
+shapes; background plate; indicator dot; centre cap; base ring.
+
+> **FREEZE.** As of this pass the Mode Selector (master layers 11–14 and the
+> `controls/mode_selector_*` parts) is **permanently frozen**. No future geometry
+> edits to this control unless it is explicitly reopened by the project owner in a
+> new, dated pass here. A side-by-side/overlay comparison harness lives at the
+> dev route `/mode-selector-compare` (loads `public/mode_selector_reference.png`).
+
+### 8.2 Fine-tune render pass — 2026-07-02 — indicator/dot alignment (reopened → re-frozen)
+
+Explicitly reopened by the project owner to fix the mode indicator: the knob's
+white line pointed **opposite** the selected mode (the old single dot pointed at
+the mode while the line pointed away). Scope was limited to the indicator system;
+knob body, arcs, labels, and all other geometry were left as-is.
+
+| Change | Before | After |
+|--------|--------|-------|
+| Knob rotation angles (`MODE_ANGLE`) | Off −90, Monitor −45, Defib 55, Pacer −135 (line pointed away from the mode) | Off 90, Monitor 150, Defib −150, Pacer 30 — the white line now points **at** the mode |
+| Position dots (layer 14) | one white dot that **rotated** with the knob | **four fixed** white dots (r5, white + `#9a9d99` hairline), one per section, on the collar (radius 89), **do not rotate** |
+| White pointer length | 66 (`KR−16`) | 70 (`KR−12`) — reaches nearer the edge / the dot, for an unambiguous indication |
+
+Dot / clock positions (knob line aligns to each when its mode is selected):
+OFF → 9 o’clock `(1121,556)`, PACER → 7 o’clock `(1166,633)`, DEFIB → 1 o’clock
+`(1254,479)`, MONITOR → 11 o’clock `(1166,479)`. Only the knob rotates; printed
+background, arcs, labels, and the dots are fixed. Colour assignment unchanged and
+still segregated: teal = PACER, red = DEFIB, gray = MONITOR, black = OFF; no arc
+covers OFF or MONITOR. Applied identically to master, export, and Pass 2 parts.
+Demonstrated in all four states on `/controls-review`.
+
+> **RE-FROZEN.** The Mode Selector is frozen again as of this pass, under the same
+> rule as §8.1 — no geometry edits unless explicitly reopened in a new dated pass.
+
+### 8.3 Label alignment pass — 2026-07-02 — printed labels/sections (reopened → re-frozen)
+
+Explicitly reopened by the project owner to align the **labels and printed colored
+sections** to the manufacturer photos. The **knob is approved and was not touched**
+(centre, radius, grip, pointer, depth, angles, and the four fixed dots are all
+unchanged). Scope limited to layer 12 (labels/sections) + the `mode_selector_labels`
+part; applied to master, export, and Pass 2 parts.
+
+| Element | Before | After |
+|---------|--------|-------|
+| Colored arcs (wrapping) | red + teal arcs (stroke 16) wrapping the knob | **removed** — colour now lives only in the printed sections |
+| MONITOR | `#6f757c`, 22 px, weight 700 (too dark/large/prominent) | `#9a9d99`, 18 px, weight 600 — subtle light gray, low contrast |
+| PACER | chunky rounded tag (~42 tall) | flat teal section, ~24 tall, angled leading edge |
+| DEFIB | large rounded tag (~28 tall, full-height left edge) | flat red section, ~26 tall, **short inward tab** toward the knob |
+| OFF | rounded rect `x1008 w86` (right end 1094) | widened to `w104` (right end 1112) so the 9 o’clock dot sits at its right end, close to the knob |
+
+Colour segregation (satisfies the acceptance list): teal = PACER only, red =
+DEFIB only, gray = MONITOR, black = OFF; **no colour crosses OFF or MONITOR.**
+Dots, angles, and knob-pointer alignment are unchanged from §8.2 (OFF→9, PACER→7,
+DEFIB→1, MONITOR→11 o’clock). The now-unused `arc()`/`pt()` SVG helpers and the
+`mode_selector_arcs.svg` part were removed. Demonstrated on `/controls-review`
+(reference → current → updated, and all four states).
+
+> **RE-FROZEN.** Mode Selector frozen again as of this pass — same rule as §8.1/§8.2.
+
+## 9. Dev-only screenshot capture checklist
 
 Capture each state at a fixed viewport (suggest **980 × 760**, learner route)
 for regression comparison against this report. These are **dev-only** QA shots,

@@ -1,8 +1,33 @@
 # ZOLL R Series Simulator
 
+> **⚠️ Training simulation only. Not for clinical use.** This is a teaching tool.
+> It is not a medical device and must never be used for patient care. Not
+> affiliated with or endorsed by ZOLL Medical Corporation.
+
 A browser-based training simulator for the ZOLL R Series monitor/defibrillator,
 built with React + Vite (JavaScript). It runs entirely locally and is designed
 to be used as **two windows on the same device**:
+
+## 📚 Project documentation — read `/docs` first
+
+**`/docs` is the permanent project bible.** Future Claude Code sessions and new
+contributors must read it **before making any change**. It is the authoritative
+source of intent; when code and docs disagree, reconcile — don't improvise.
+
+| Document | What it covers |
+|----------|----------------|
+| [README.md](docs/README.md) | Documentation index and the "read `/docs` first" mandate. |
+| [PROJECT_VISION.md](docs/PROJECT_VISION.md) | Purpose, audience, objectives, scope, philosophy, training-only disclaimer, long-term goals. |
+| [ROADMAP.md](docs/ROADMAP.md) | Every milestone — implemented, partial, and planned — including the Industrial Design passes. |
+| [SIMULATOR_REQUIREMENTS.md](docs/SIMULATOR_REQUIREMENTS.md) | Complete functional specification (defib, sync, pacer, CPR, monitoring, scenarios, modes, reports, logging). |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | React architecture: roles, state/scenario/waveform/report engines, component + asset libraries. |
+| [COMPONENT_LIBRARY.md](docs/COMPONENT_LIBRARY.md) | Every SVG asset and component, the SVG structural standards, and the modular part taxonomy — with filenames. |
+| [ART_DIRECTION.md](docs/ART_DIRECTION.md) | Binding art-direction rules **and** the approved visual language + palette. |
+| [DECISIONS.md](docs/DECISIONS.md) | The decision log: key architectural/design decisions, why, and their consequences. |
+| [CHANGELOG.md](docs/CHANGELOG.md) | Dated history of what has actually shipped. |
+
+**Golden rule:** the device **geometry is LOCKED**. React animates state; it
+never redraws the artwork. See ART_DIRECTION.md and COMPONENT_LIBRARY.md.
 
 - **`/facilitator`** — the instructor console. Set the rhythm, vitals, device
   mode, defib energy, charge/shock, and pacer settings.
@@ -191,27 +216,25 @@ exports, the printable report, and error handling.
 Every view shows a fixed label: **“Training simulation only. Not for clinical
 use.”** This is a teaching tool and must never be used for patient care.
 
-## Next: simulator behavior (not geometry)
+## Next
 
-With the device artwork locked, remaining work is **simulator behavior**, built
-on the shared state in [`SimulatorContext.jsx`](src/sync/SimulatorContext.jsx)
-and surfaced through the facilitator/learner views. Backlog:
+The full, honest status of every area is in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+In short:
 
-- [ ] **Waveform library** — expand `waveforms.js` with more rhythms/artifacts
-      (paced, AV blocks, VT/VF variants, noise) and per-trace rate coupling.
-- [ ] **Defib / cardioversion flow** — charge → ready → shock sequencing,
-      sync (R-wave) cardioversion, energy escalation, disarm/timeout, shock log.
-- [ ] **Pacer capture / non-capture** — model capture threshold vs. output mA;
-      show captured (paced QRS) vs. failure-to-capture on the ECG trace.
-- [ ] **CPR feedback** — rate/depth/release indicators and the PPI/Release-bar
-      already stubbed on the LCD; drive them from a CPR input model.
-- [ ] **Facilitator scenario controls** — scripted scenarios, timed events,
-      branching, start/pause/reset of a scenario timeline.
-- [ ] **Event log export** — timestamped action log (mode changes, charges,
-      shocks, pacer changes) with CSV/JSON export for debrief.
-- [ ] **Education mode / Validation mode** — overlay teaching callouts; and a
-      validation/scoring mode that checks learner actions (see screenshot
-      checklist in `visual-alignment-report.md`).
+- **Already implemented and shipping:** Monitor / Defib / synchronized
+  cardioversion / Pacer behavior, CPR feedback, alarms, eight facilitator
+  scenarios, education/validation modes, event logging, and JSON/CSV/print
+  exports.
+- **Industrial Design Pass 1 — Body:** complete. **Body assets are locked and
+  approved.**
+- **Next milestone — Industrial Design Pass 2: Controls Library:** reconstruct
+  the interactive controls (buttons, knobs, energy select, mode selector, pacer
+  knobs, LEDs, self-test, NIBP) as approved modular parts. Not started.
+- **Still partial:** waveform-library expansion (more rhythms + rate coupling),
+  typography tokens, and automated testing/CI.
+
+No remaining work may alter the locked device geometry — behavior and modular
+reconstruction only.
 
 ## Notes
 

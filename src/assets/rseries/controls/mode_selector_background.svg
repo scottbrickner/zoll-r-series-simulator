@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Mode Selector: BACKGROUND base plate.
+     Industrial Design Pass 2 (Controls Library).
+     Coordinates are in the locked master space (0 0 1440 1120); the file's
+     viewBox is cropped to the mode-selector region for standalone review.
+     Reproduces locked master layer 11_ModeSelector_Back EXACTLY:
+       circle cx=1210 cy=556 r=96 (KR+14).
+     STATIC — never rotates. Satin molded plastic, neutral CAD lighting. -->
+<svg viewBox="980 438 420 224" xmlns="http://www.w3.org/2000/svg">
+  <g id="mode_selector_background">
+    <circle cx="1210" cy="556" r="96" fill="#dcded9" stroke="#c1c3bf"/>
+  </g>
+</svg>

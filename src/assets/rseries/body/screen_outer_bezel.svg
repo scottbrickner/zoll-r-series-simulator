@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series body part: screen recess — OUTER bezel (raised molded frame).
+     Master space 0 0 1440 1120. Sits on the faceplate; recess descends inside it. -->
+<svg viewBox="0 0 1440 1120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="outerBezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef0ed"/>
+      <stop offset="1" stop-color="#cfd1cd"/>
+    </linearGradient>
+  </defs>
+  <g id="ScreenOuterBezel">
+    <rect x="180" y="178" width="745" height="572" rx="18" fill="url(#outerBezel)" stroke="#b6b8b4" stroke-width="1.5"/>
+    <!-- raised top highlight -->
+    <rect x="182" y="180" width="741" height="568" rx="17" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7"/>
+    <!-- bottom-inner contact shadow (frame reads as raised) -->
+    <rect x="184" y="184" width="737" height="562" rx="16" fill="none" stroke="#b1b3af" stroke-width="1.5" stroke-opacity="0.7"/>
+  </g>
+</svg>

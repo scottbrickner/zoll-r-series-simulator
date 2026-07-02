@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Mode Selector: POSITION DOTS.
+     Industrial Design Pass 2 (Controls Library) — alignment pass v1.3.
+     Master space (0 0 1440 1120); viewBox cropped for standalone review.
+     Reproduces locked master layer 14_ModeSelector_Dots EXACTLY.
+     ONE white dot per mode section, printed on the collar (radius 89 from the
+     knob centre 1210,556) at that mode's clock position. These are FIXED —
+     they do NOT rotate. The knob's white line rotates to point at the selected
+     mode's dot:
+       OFF     — 9 o'clock  (1121, 556)
+       PACER   — 7 o'clock  (1166, 633)
+       DEFIB   — 1 o'clock  (1254, 479)
+       MONITOR — 11 o'clock (1166, 479)
+     Exactly one dot per section — no duplicates. -->
+<svg viewBox="980 438 420 224" xmlns="http://www.w3.org/2000/svg">
+  <g id="mode_selector_indicator_dot">
+    <circle cx="1121" cy="556" r="5" fill="#ffffff" stroke="#9a9d99" stroke-width="1.2"/>
+    <circle cx="1166" cy="633" r="5" fill="#ffffff" stroke="#9a9d99" stroke-width="1.2"/>
+    <circle cx="1254" cy="479" r="5" fill="#ffffff" stroke="#9a9d99" stroke-width="1.2"/>
+    <circle cx="1166" cy="479" r="5" fill="#ffffff" stroke="#9a9d99" stroke-width="1.2"/>
+  </g>
+</svg>

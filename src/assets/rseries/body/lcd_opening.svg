@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series body part: LCD opening (empty black display area). Master space 0 0 1440 1120.
+     Sits BEHIND the glass layer. React inserts the digital display into this region. -->
+<svg viewBox="0 0 1440 1120" xmlns="http://www.w3.org/2000/svg">
+  <g id="LcdOpening">
+    <rect x="204" y="200" width="697" height="526" rx="4" fill="#000000"/>
+    <!-- faint inner recess shadow at the top edge -->
+    <path d="M206,202 H899" stroke="#0d0f12" stroke-width="3" fill="none"/>
+  </g>
+</svg>

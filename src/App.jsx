@@ -4,6 +4,9 @@ import Home from './views/Home'
 import Learner from './views/Learner'
 import Facilitator from './views/Facilitator'
 import Report from './views/Report'
+import ArtPreview from './views/ArtPreview'
+import ControlsReview from './views/ControlsReview'
+import ModeSelectorCompare from './views/ModeSelectorCompare'
 
 export default function App() {
   const [params] = useSearchParams()
@@ -18,6 +21,9 @@ export default function App() {
         <Route path="/learner" element={<Learner />} />
         <Route path="/facilitator" element={<Facilitator />} />
         <Route path="/report" element={<Report />} />
+        <Route path="/art-preview" element={<ArtPreview />} />
+        <Route path="/controls-review" element={<ControlsReview />} />
+        <Route path="/mode-selector-compare" element={<ModeSelectorCompare />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </SimulatorProvider>

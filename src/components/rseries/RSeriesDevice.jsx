@@ -16,20 +16,18 @@ import LcdScreen from './LcdScreen'
  * Layers 01–22 are named per the Industrial Design Fidelity Guide v1.0.
  */
 
-const MODE_ANGLE = { Off: -90, Monitor: -45, Defib: 55, Pacer: -135 }
+// White indicator line (canonical points DOWN) rotates to the fixed position
+// dot for each mode: OFF 9 o'clock, PACER 7 o'clock, DEFIB 1 o'clock, MONITOR
+// 11 o'clock. Fixed dots are printed in layer 14 (they do not rotate).
+const MODE_ANGLE = { Off: 90, Monitor: 150, Defib: -150, Pacer: 30 }
+const MODE_DOTS = [
+  { m: 'Off', cx: 1121, cy: 556 },
+  { m: 'Pacer', cx: 1166, cy: 633 },
+  { m: 'Defib', cx: 1254, cy: 479 },
+  { m: 'Monitor', cx: 1166, cy: 479 },
+]
 function knobAngle(v, max) {
   return -135 + (Math.min(Math.max(v, 0), max) / max) * 270
-}
-function pt(cx, cy, r, deg) {
-  const a = (deg * Math.PI) / 180
-  return [cx + r * Math.sin(a), cy - r * Math.cos(a)]
-}
-function arc(cx, cy, r, from, to) {
-  const [x1, y1] = pt(cx, cy, r, from)
-  const [x2, y2] = pt(cx, cy, r, to)
-  const large = Math.abs(to - from) > 180 ? 1 : 0
-  const sweep = to > from ? 1 : 0
-  return `M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${large} ${sweep} ${x2.toFixed(1)},${y2.toFixed(1)}`
 }
 
 // LCD physical placement (logical content is 673 x 515, scaled to fit)
@@ -45,7 +43,7 @@ const RATE = { x: 1276, y: 780, r: 78 }
 export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   const armed = state.shockReady
   const selfTest = state.selfTest || 'x' // 'blank' | 'x' | 'check'
-  const modeRot = `rotate(${MODE_ANGLE[state.mode] ?? -90} ${KX} ${KY})`
+  const modeRot = `rotate(${MODE_ANGLE[state.mode] ?? 90} ${KX} ${KY})`
   const a = actions
   return (
     <svg
@@ -105,10 +103,15 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         </radialGradient>
         {/* Knob dark #2B2B2B / medium #424242 */}
         <radialGradient id="g-knob" cx="0.4" cy="0.32" r="0.85">
-          <stop offset="0" stopColor="#4a4a4a" />
-          <stop offset="0.5" stopColor="#2b2b2b" />
-          <stop offset="1" stopColor="#161616" />
+          <stop offset="0" stopColor="#545454" />
+          <stop offset="0.5" stopColor="#2c2c2c" />
+          <stop offset="1" stopColor="#101010" />
         </radialGradient>
+        {/* mode-knob molded finger grip (lighter satin gray, per reference photo) */}
+        <linearGradient id="g-knobgrip" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8f8f8f" />
+          <stop offset="1" stopColor="#565656" />
+        </linearGradient>
         <radialGradient id="g-pacerknob" cx="0.4" cy="0.32" r="0.9">
           <stop offset="0" stopColor="#424242" />
           <stop offset="0.6" stopColor="#232323" />
@@ -276,36 +279,42 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <circle cx={KX} cy={KY} r={KR + 14} fill="#dcded9" stroke="#c1c3bf" />
       </g>
 
-      {/* ===== 12_ModeSelector_Arcs (printed, STATIC — never rotate) ===== */}
+      {/* ===== 12_ModeSelector_Arcs (printed labels/sections, STATIC — never rotate) =====
+           Colour lives in the printed sections (no wrapping arcs), per the
+           manufacturer photo: OFF black rect, PACER flat teal (angled leading
+           edge), DEFIB flat red (short inward tab), MONITOR subtle light gray. */}
       <g id="12_ModeSelector_Arcs">
-        <path d={arc(KX, KY, 104, 6, 74)} className="rs-arc rs-arc--red" />
-        <path d={arc(KX, KY, 104, -152, -40)} className="rs-arc rs-arc--teal" />
-        <text x="1050" y="490" className="rs-mono-label" fontSize="22" fontWeight="700">MONITOR</text>
-        <rect x="1008" y="540" width="86" height="32" rx="16" fill="#101316" />
-        <text x="1030" y="563" className="rs-white" fontSize="20" fontWeight="800">OFF</text>
-        <path d="M994,594 h76 q12,0 12,12 v18 q0,12 -12,12 h-42 Z" fill="#0f9c97" />
-        <text x="1008" y="618" className="rs-white" fontSize="20" fontWeight="800">PACER</text>
-        <path d="M1288,486 h78 q14,0 14,14 v14 q0,14 -14,14 h-78 Z" fill="#cf2a20" />
-        <text x="1302" y="516" className="rs-white" fontSize="20" fontWeight="800">DEFIB</text>
+        <text x="1050" y="489" className="rs-mono-label" fontSize="18" fontWeight="600">MONITOR</text>
+        <rect x="1008" y="541" width="104" height="30" rx="15" fill="#101316" />
+        <text x="1060" y="562" textAnchor="middle" className="rs-white" fontSize="18" fontWeight="800">OFF</text>
+        <path d="M984,603 H1072 L1058,627 H984 Q979,627 979,622 V608 Q979,603 984,603 Z" fill="#0f9c97" />
+        <text x="1024" y="620" textAnchor="middle" className="rs-white" fontSize="18" fontWeight="700">PACER</text>
+        <path d="M1298,490 H1370 Q1375,490 1375,495 V511 Q1375,516 1370,516 H1298 L1286,503 Z" fill="#cf2a20" />
+        <text x="1334" y="509" textAnchor="middle" className="rs-white" fontSize="18" fontWeight="800">DEFIB</text>
       </g>
 
       {/* ===== 13_ModeSelector_Knob (rotates: large black body, diagonal grip, white pointer insert) ===== */}
       <g id="13_ModeSelector_Knob">
         <circle cx={KX} cy={KY} r={KR} fill="#161616" />
         <circle cx={KX} cy={KY} r={KR - 5} fill="url(#g-knob)" stroke="#0b0b0b" strokeWidth="2" />
-        <ellipse cx={KX - 18} cy={KY - 26} rx="40" ry="26" fill="#ffffff" opacity="0.1" />
+        {/* recessed inner shadow ring — deepens the seated/recessed knob depth */}
+        <circle cx={KX} cy={KY} r={KR - 7} fill="none" stroke="#000000" strokeOpacity="0.30" strokeWidth="3" />
+        <ellipse cx={KX - 16} cy={KY - 28} rx="44" ry="28" fill="#ffffff" opacity="0.16" />
+        {/* rotating molded grip (lighter satin gray) + bold white pointer */}
         <g transform={modeRot}>
-          <rect x={KX - 8} y={KY - 4} width="16" height={KR - 8} rx="6" fill="#0d0d0d" />
-          <rect x={KX - 5} y={KY + 12} width="10" height={KR - 26} rx="5" fill="#f2f4f6" />
+          <rect x={KX - 10} y={KY - 8} width="20" height={KR + 2} rx="10" fill="url(#g-knobgrip)" stroke="#3a3a3a" strokeWidth="0.75" />
+          <rect x={KX - 6} y={KY + 8} width="12" height={KR - 12} rx="6" fill="#f4f6f8" />
         </g>
         <circle cx={KX} cy={KY} r="10" fill="#232323" stroke="#3a3a3a" />
         {/* click target to cycle Monitor → Defib → Pacer */}
         <circle cx={KX} cy={KY} r={KR} fill="transparent" className="rs-hit" onClick={a.onModeCycle} />
       </g>
 
-      {/* ===== 14_ModeSelector_Dots (single white indicator dot, rotates with knob) ===== */}
-      <g id="14_ModeSelector_Dots" transform={modeRot} pointerEvents="none">
-        <circle cx={KX} cy={KY - (KR - 16)} r="6" fill="#ffffff" />
+      {/* ===== 14_ModeSelector_Dots (one fixed white dot per mode section — does NOT rotate) ===== */}
+      <g id="14_ModeSelector_Dots" pointerEvents="none">
+        {MODE_DOTS.map((d) => (
+          <circle key={d.m} cx={d.cx} cy={d.cy} r="5" fill="#ffffff" stroke="#9a9d99" strokeWidth="1.2" />
+        ))}
       </g>
 
       {/* ===== 15_PacerKnobs (OUTPUT mA · 4:1 · RATE ppm) ===== */}

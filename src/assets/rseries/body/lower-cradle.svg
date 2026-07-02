@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series body part: lower white cradle/handle (refined). Master space 0 0 1440 1120.
+     Increased side wrap up the flanks, deepened ZOLL emboss. Screw covers are SEPARATE assets. -->
+<svg viewBox="0 0 1440 1120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cradleGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfbfb"/>
+      <stop offset="0.4" stop-color="#eceeec"/>
+      <stop offset="1" stop-color="#cfd1ce"/>
+    </linearGradient>
+    <linearGradient id="cradleWrap" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e7e9e6"/>
+      <stop offset="0.5" stop-color="#f4f5f3"/>
+      <stop offset="1" stop-color="#e7e9e6"/>
+    </linearGradient>
+  </defs>
+
+  <g id="LowerCradle">
+    <!-- minimal CAD contact shadow -->
+    <ellipse cx="720" cy="1098" rx="660" ry="26" fill="#000000" opacity="0.14"/>
+
+    <!-- increased side wrap: flanks sweep further up the left/right edges -->
+    <path d="M14,1004 Q14,864 60,850 Q96,842 120,882 L120,1064 Q120,1112 74,1112 H70 Q14,1112 14,1064 Z" fill="url(#cradleWrap)" stroke="#b7b9b6" stroke-width="1.5"/>
+    <path d="M1426,1004 Q1426,864 1380,850 Q1344,842 1320,882 L1320,1064 Q1320,1112 1366,1112 H1370 Q1426,1112 1426,1064 Z" fill="url(#cradleWrap)" stroke="#b7b9b6" stroke-width="1.5"/>
+
+    <!-- main curved cradle body -->
+    <path d="M20,1004 Q20,910 96,900 Q150,894 196,916 Q440,940 720,942 Q1000,940 1244,916 Q1290,894 1344,900 Q1420,910 1420,1004 V1064 Q1420,1112 1360,1112 H80 Q20,1112 20,1064 Z"
+      fill="url(#cradleGrad)" stroke="#b7b9b6" stroke-width="1.5"/>
+
+    <!-- soft top highlight along the lip -->
+    <path d="M150,928 Q720,964 1290,928" fill="none" stroke="#ffffff" stroke-width="3" stroke-opacity="0.6"/>
+
+    <!-- deepened ZOLL emboss: dark inset + light rim + face -->
+    <g font-family="'Segoe UI','Helvetica Neue',system-ui,sans-serif" font-size="118" font-weight="800" letter-spacing="14" text-anchor="middle">
+      <text x="723" y="1053" fill="#a9aca8">ZOLL</text>
+      <text x="718" y="1047" fill="#ffffff" opacity="0.75">ZOLL</text>
+      <text x="720" y="1050" fill="#dcdedb">ZOLL</text>
+    </g>
+  </g>
+</svg>

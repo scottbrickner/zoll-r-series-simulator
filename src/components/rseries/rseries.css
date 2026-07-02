@@ -33,7 +33,7 @@
   fill: #f1f4f7;
 }
 .rs-mono-label {
-  fill: #8b9097;
+  fill: #9a9d99; /* MONITOR — subtle light gray, low contrast per reference */
 }
 .rs-mini-label {
   fill: #6a7077;
@@ -61,13 +61,13 @@
   stroke-linecap: round;
 }
 .rs-arc--red {
-  stroke: #cf2a20;
+  stroke: #d4271b; /* slightly more saturated printed red (final pass) */
 }
 .rs-arc--green {
   stroke: #1f9d57;
 }
 .rs-arc--teal {
-  stroke: #0f9c97;
+  stroke: #0ba199; /* slightly more saturated printed teal (final pass) */
 }
 
 /* ---- SHOCK armed glow ---- */

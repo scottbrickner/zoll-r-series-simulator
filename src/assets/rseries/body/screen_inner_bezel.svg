@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series body part: screen recess — INNER bezel (chamfer slope down to glass).
+     Master space 0 0 1440 1120. Dark at top / light at bottom = molded sunken depth. -->
+<svg viewBox="0 0 1440 1120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="innerChamfer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8f938f"/>
+      <stop offset="0.45" stop-color="#bcbeba"/>
+      <stop offset="1" stop-color="#e6e7e3"/>
+    </linearGradient>
+  </defs>
+  <g id="ScreenInnerBezel">
+    <!-- chamfer ramp from the outer bezel down to the glass -->
+    <rect x="196" y="192" width="713" height="544" rx="12" fill="url(#innerChamfer)"/>
+    <!-- top-inner shadow line (deepest part of the recess) -->
+    <path d="M204,200 H901" stroke="#6f736f" stroke-width="2.5" stroke-opacity="0.6" fill="none"/>
+    <!-- bottom-inner catch light -->
+    <path d="M204,728 H901" stroke="#ffffff" stroke-width="2" stroke-opacity="0.5" fill="none"/>
+  </g>
+</svg>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series body part: warm light-gray molded faceplate (refined).
+     Master space 0 0 1440 1120. Subtle molded chamfers, control-panel molding,
+     and a chamfered vertical transition between the display and control areas. -->
+<svg viewBox="0 0 1440 1120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="faceGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0f1ee"/>
+      <stop offset="0.5" stop-color="#e5e6e2"/>
+      <stop offset="1" stop-color="#d6d8d3"/>
+    </linearGradient>
+    <radialGradient id="faceHi" cx="0.5" cy="0.26" r="0.85">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- satin plastic micro-sheen -->
+    <linearGradient id="controlPanelMold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dcded9"/>
+      <stop offset="0.06" stop-color="#eef0ec"/>
+      <stop offset="1" stop-color="#e2e3df"/>
+    </linearGradient>
+  </defs>
+
+  <g id="Faceplate">
+    <!-- main satin panel -->
+    <path d="M104,70 H1330 Q1372,70 1372,112 V846 Q1372,882 1336,882 H104 Q72,882 72,846 V108 Q72,70 104,70 Z"
+      fill="url(#faceGrad)" stroke="#c6c8c4" stroke-width="1.5"/>
+
+    <!-- subtle molded chamfer just inside the outer edge -->
+    <path d="M118,86 H1322 Q1356,86 1356,120 V838 Q1356,866 1328,866 H112 Q88,866 88,838 V116 Q88,86 118,86 Z"
+      fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.55"/>
+    <path d="M120,90 H1320 Q1352,90 1352,122 V836 Q1352,862 1326,862 H114 Q92,862 92,836 V118 Q92,90 120,90 Z"
+      fill="none" stroke="#c3c5c1" stroke-width="1.5" stroke-opacity="0.6"/>
+
+    <!-- molded recessed region around the right control panel -->
+    <rect x="936" y="108" width="424" height="712" rx="22" fill="url(#controlPanelMold)"/>
+    <rect x="936" y="108" width="424" height="712" rx="22" fill="none" stroke="#c6c8c3" stroke-width="1.5"/>
+    <rect x="938" y="110" width="420" height="708" rx="20" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.55"/>
+
+    <!-- chamfered vertical transition between display and controls -->
+    <line x1="914" y1="116" x2="914" y2="822" stroke="#c3c5c1" stroke-width="2.5"/>
+    <line x1="917" y1="116" x2="917" y2="822" stroke="#ffffff" stroke-width="2" stroke-opacity="0.6"/>
+
+    <!-- overall satin sheen -->
+    <rect x="72" y="70" width="1300" height="812" rx="34" fill="url(#faceHi)" pointer-events="none"/>
+  </g>
+</svg>
