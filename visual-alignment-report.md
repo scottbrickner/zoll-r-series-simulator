@@ -211,6 +211,105 @@ DEFIB→1, MONITOR→11 o’clock). The now-unused `arc()`/`pt()` SVG helpers an
 
 > **RE-FROZEN.** Mode Selector frozen again as of this pass — same rule as §8.1/§8.2.
 
+## 8.4 Function Buttons — 2026-07-02 — Industrial Design Pass 2B (built)
+
+Built the reusable **Function Button** part (`function_button.svg` +
+`FunctionButton.jsx`) — one warm-gray molded push-button, different labels. The
+footprint matches the **locked master layer 08_FunctionButtons** exactly and was
+**not moved**: LEAD `(980,200,110,60)`, SIZE `(980,270,110,60)`, ALARM SUSPEND
+`(980,340,110,70)` (two lines), RECORDER `(980,420,110,60)`; corner radius 9.
+
+Approved styling (matches the manufacturer photo — a physical molded button, not
+web UI): warm-gray satin face (`#fafaf8 → #ececea → #d1d2ce`), a darker molded
+side edge (`#b3b4b0`, 3 px of depth), a subtle top bevel highlight, and a compact
+black uppercase label (`#2a2f36`, 16 px, weight 700, letter-spacing 0.3). States:
+unpressed (raised), pressed (face seats onto the side edge + darker + inner top
+shadow), and latched/amber (for ALARM SUSPEND engaged). Demonstrated on
+`/controls-review` (individual asset + all four labels × pressed/unpressed).
+
+**Not wired into the master yet** — like the body parts, this is the approved
+library reference; wiring layer 08 to use it is a later step. No body, LCD,
+cradle, Mode Selector, or simulator-logic change.
+
+### 8.5 Function Button — 2026-07-02 — material fine-tune (`function_button.svg` FROZEN)
+
+Styling-only fine-tune. **No geometry, corner radius, dimensions, or type size
+changed** (footprint still matches locked master layer 08; radius 9; label 16 px).
+
+| Property | Before | After |
+|----------|--------|-------|
+| Gloss (top bevel highlight) | white @ 0.70 | white @ **0.35** (~50% reduction) |
+| Face plastic (unpressed) | `#fafaf8 → #ececea → #d1d2ce` (cool neutral) | `#faf9f3 → #edeae1 → #d4d1c8` (slightly warmer) |
+| Molded side edge | `#b3b4b0` | `#b6b3aa` (warmer) |
+| Label letter-spacing | 0.30 | **0.29** (~3% reduction) |
+| Pressed state | darker gradient + inner **top** shadow | **darker warm plastic** (`#dcdbd4 → #bdbbb2`) + **deeper lower shadow** (bottom-pooled, 0.22) + no top gloss (highlight suppressed when pressed) |
+
+> **FROZEN.** `function_button.svg` (the blank reusable asset) is **permanently
+> frozen** as of this pass — no future geometry edits unless explicitly reopened
+> in a new dated pass. The `FunctionButton.jsx` state styling (pressed/active)
+> may still evolve, but the part's geometry, radius, and dimensions are locked.
+
+## 8.6 Energy Select — 2026-07-02 — Industrial Design Pass 2C (built)
+
+Built the reusable **Energy Select** control (`energy_select_button.svg` +
+`EnergySelect.jsx`) from the manufacturer photo. A vertical warm-beige molded
+rocker (▲ / ENERGY / SELECT / value / ▼) — deliberately **not** a generic push
+button.
+
+- **Geometry (new, reusable):** 96 × 150 (narrower + taller than the Function
+  Button's 110 × 60/70), corner radius 16 (larger), side-edge depth 4 (deeper),
+  vertically oriented.
+- **Plastic:** warm beige satin (`#f3ecda → #e8dcc0 → #d8c9a6`) over a deeper warm
+  side edge (`#c9bd9c`); very slight satin sheen (white @ 0.15) — not glossy, no
+  hard reflections; minimal shadow (the side edge carries the depth).
+- **Triangles:** two flat printed red (`#cf2a20`) triangles, equal size (26 × 18),
+  equal spacing, centered — one above and one below the text.
+- **Typography:** ENERGY / SELECT — red (`#c4231a`), uppercase, compact
+  (14 px / 800 / letter-spacing 0.2), centered; the selected value is dark.
+- **React props:** `energyValue`, `energyUnits`, `pressed`, `enabled`,
+  `highlighted`. Geometry never changes; React changes only the displayed energy,
+  pressed, enabled, and highlighted state. Pressed = darker beige + deeper lower
+  shadow; disabled = desaturated + dimmed; highlighted = subtle amber ring.
+- Reviewed at the dev route `/energy-select-review` (blank shell, default,
+  pressed, disabled, and examples 30/50/70/100/120/150/200/360 J).
+
+**Not wired into the master** — approved library reference only, like the other
+Pass 2 parts. No body, LCD, cradle, Mode Selector, Function Button, or
+simulator-logic change.
+
+### 8.7 Energy Select — 2026-07-02 — content-centering refinement (2C.1)
+
+Refinement pass to match the manufacturer screenshot more closely. **Only the
+content (arrows + text) changed** — outer dimensions (96×150), corner radius (16),
+plastic colour system, bevel, and side-edge depth are UNCHANGED.
+
+| Property | Before | After |
+|----------|--------|-------|
+| Content vertical position | top-heavy (arrows near the edges, empty value gap lower-centre) | **vertically centered** on the button centre, balanced top/bottom space |
+| Triangles | 26 × 18 | **30 × 22** (larger, still solid red triangles — not chevrons, equal size) |
+| ENERGY / SELECT size | 14 px | 15 px (slightly larger, same red / weight / compact spacing) |
+| On-face energy value | printed `150 J` on the face | **removed** — the real device shows the selected energy on the LCD, not the button. `energyValue`/`energyUnits` props retained for API/labelling. |
+
+Spacing is now balanced: ~26 px above the top triangle and below the bottom
+triangle, with even gaps between each triangle and the text. Colours preserved
+(triangles/text `#cf2a20` / `#c4231a`; beige face `#f3ecda→#e8dcc0→#d8c9a6`; side
+edge `#c9bd9c`); no glossy highlight added (satin sheen 0.15 unchanged). Reviewed
+at `/energy-select-review` (manufacturer reference slot, blank shell, default,
+pressed, disabled, and examples 30/50/70/100/120/150/200/360 J). Not wired into
+the master. No other control changed.
+
+> **APPROVED & FROZEN.** The manufacturer-accurate Energy Select — a warm-beige
+> molded ▲ / ENERGY / SELECT / ▼ rocker with **no numeric value on the button
+> face** — is approved as of this pass. The **selected energy (joules) is
+> displayed on the LCD, not on the physical ENERGY SELECT button** (the button
+> only increments/decrements the value; the number appears in the defib area of
+> the LCD). `energy_select_button.svg` and the `EnergySelect.jsx` geometry
+> (footprint 96×150, radius 16), plastic colour, bevel, triangles, and typography
+> are frozen — no future geometry edits unless explicitly reopened in a new dated
+> pass. `EnergySelect.jsx` may still gain wiring/state props later. The
+> `energyValue`/`energyUnits` props are retained for API compatibility but are
+> **not** rendered on the face.
+
 ## 9. Dev-only screenshot capture checklist
 
 Capture each state at a fixed viewport (suggest **980 × 760**, learner route)

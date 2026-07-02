@@ -30,6 +30,89 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.10] — 2026-07-02 — Energy Select APPROVED & FROZEN
+
+Approved the manufacturer-accurate Energy Select. Docs-only pass (no code change).
+
+- The Energy Select control (warm-beige molded ▲ / ENERGY / SELECT / ▼ rocker,
+  **no numeric value on the button face**) is **approved and frozen**:
+  `energy_select_button.svg` + `EnergySelect.jsx` geometry (96×150, radius 16),
+  plastic colour, bevel, triangles, and typography are locked.
+- Recorded that the **selected energy (joules) is displayed on the LCD, not on the
+  physical ENERGY SELECT button** — the button only adjusts the value.
+- `energyValue`/`energyUnits` props retained for API compatibility (not rendered
+  on the face). Recorded in `visual-alignment-report.md` §8.7 and
+  `COMPONENT_LIBRARY.md` §5.
+
+## [0.1.9] — 2026-07-02 — Energy Select content-centering refinement (2C.1)
+
+Refinement to match the manufacturer screenshot. Only the content (arrows + text)
+changed; outer dimensions, corner radius, plastic colour, and bevel unchanged.
+
+### Changed
+- **Vertically centered** the ▲ / ENERGY / SELECT / ▼ content block with balanced
+  spacing (reduced excess space above/below the arrows).
+- **Enlarged the red triangles** (26×18 → 30×22, still solid triangles, equal
+  size) and bumped ENERGY/SELECT 14→15 px.
+- **Removed the on-face energy value** — the real device shows the selected energy
+  on the LCD, not the button face (matching the manufacturer photo).
+  `energyValue`/`energyUnits` props retained for API/labelling.
+- `/energy-select-review` gains a manufacturer-reference slot
+  (`public/energy_select_reference.png`); examples labelled by caption.
+- Recorded in `visual-alignment-report.md` §8.7. No other control or geometry
+  changed.
+
+## [0.1.8] — 2026-07-02 — Industrial Design Pass 2C: Energy Select
+
+Built the reusable Energy Select control. Not wired into the shipping master; no
+body, LCD, cradle, Mode Selector, Function Button, or simulator-logic change.
+
+### Added
+- `src/components/rseries/controls/EnergySelect.jsx` — reusable warm-beige molded
+  vertical rocker (▲ / ENERGY / SELECT / value / ▼). Props: `x/y/w/h`,
+  `energyValue`, `energyUnits`, `pressed`, `enabled`, `highlighted`, `onClick`,
+  `idPrefix`. Geometry fixed (96×150, radius 16); React changes only the
+  displayed energy + pressed/enabled/highlighted state.
+- `src/assets/rseries/controls/energy_select_button.svg` — blank reusable shell.
+- `src/views/EnergySelectReview.jsx` + route `/energy-select-review` — blank
+  shell, default/pressed/disabled states, and examples 30/50/70/100/120/150/200/
+  360 J.
+- Warm beige satin plastic, deeper molded side edge, flat red triangles, compact
+  red ENERGY/SELECT. Recorded in `visual-alignment-report.md` §8.6.
+
+## [0.1.7] — 2026-07-02 — Function Button material fine-tune (asset FROZEN)
+
+Styling-only pass; no geometry, corner radius, dimensions, or type size changed.
+
+### Changed
+- Reduced the glossy top highlight ~50% (white 0.70 → 0.35).
+- Warmed the plastic slightly (face `#faf9f3 → #edeae1 → #d4d1c8`; side edge
+  `#b6b3aa`).
+- Reduced label letter-spacing ~3% (0.30 → 0.29).
+- Improved the pressed state: darker warm plastic (`#dcdbd4 → #bdbbb2`) + a
+  deeper lower shadow (bottom-pooled) instead of added gloss.
+- **`function_button.svg` (blank reusable asset) is permanently FROZEN.** Recorded
+  in `visual-alignment-report.md` §8.5.
+
+## [0.1.6] — 2026-07-02 — Industrial Design Pass 2B: Function Buttons
+
+Built the reusable Function Button library part. No body, LCD, cradle, Mode
+Selector, or simulator-logic change; the shipping master was not modified.
+
+### Added
+- `src/components/rseries/controls/FunctionButton.jsx` — one reusable warm-gray
+  molded push-button (props: `x/y/w/h`, `lines`, `pressed`, `active`, `onClick`,
+  `idPrefix`); supports 1- or 2-line labels (ALARM SUSPEND stacks on two lines).
+- `src/assets/rseries/controls/function_button.svg` — the blank reusable button
+  asset.
+- Styling: warm-gray satin face, darker molded side edge (depth), top bevel
+  highlight, compact black uppercase label; pressed/unpressed/latched states.
+  Footprint matches the locked master layer 08 (positions unchanged).
+- `/controls-review` now shows the Function Buttons: individual asset + LEAD /
+  SIZE / ALARM SUSPEND / RECORDER in pressed and unpressed states.
+- Recorded in `visual-alignment-report.md` §8.4; `COMPONENT_LIBRARY.md` §5 updated
+  (Pass 2A done/frozen, 2B built-not-yet-wired).
+
 ## [0.1.5] — 2026-07-02 — Mode Selector label alignment (reopened → re-frozen)
 
 Owner-approved pass aligning the labels/printed sections to the manufacturer

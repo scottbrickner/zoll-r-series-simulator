@@ -263,8 +263,13 @@ code {
   grid-template-columns: repeat(3, 1fr);
   max-width: 900px;
 }
+.msc__grid--4 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 900px;
+}
 .msc__griditem {
   margin: 0;
+  min-width: 0; /* let 1fr grid columns stay equal (prevent content blowout) */
 }
 .msc__griditem figcaption {
   display: flex;

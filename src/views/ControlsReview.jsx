@@ -4,15 +4,15 @@ import background from '../assets/rseries/controls/mode_selector_background.svg'
 import labels from '../assets/rseries/controls/mode_selector_labels.svg'
 import knob from '../assets/rseries/controls/mode_selector_knob.svg'
 import indicatorDot from '../assets/rseries/controls/mode_selector_indicator_dot.svg'
+import functionButton from '../assets/rseries/controls/function_button.svg'
 import ModeSelector, { MODE_ANGLE } from '../components/rseries/controls/ModeSelector'
+import FunctionButton from '../components/rseries/controls/FunctionButton'
 
 /**
  * TEMPORARY Controls Review page for Industrial Design Pass 2 (Controls Library).
- * Shows ONLY the Mode Selector — reference vs. current vs. updated, the four
- * selected states, every approved part exploded, and a live props demo. No other
- * controls, no monitor assembly, no LCD, no body parts. Not part of the shipping
- * simulator. Parts share one crop window into the locked master space
- * (viewBox 980 438 420 224) so they line up when stacked.
+ * Covers the Mode Selector (Pass 2A) and the Function Buttons (Pass 2B). Controls
+ * only — no monitor assembly, no LCD, no body parts. Not part of the shipping
+ * simulator.
  */
 const PARTS = [
   { name: 'Background base plate', file: 'controls/mode_selector_background.svg', src: background },
@@ -20,6 +20,32 @@ const PARTS = [
   { name: 'Knob (approved — black, recessed, diagonal grip, white insert)', file: 'controls/mode_selector_knob.svg', src: knob },
   { name: 'Position dots (one per mode section — fixed, never rotate)', file: 'controls/mode_selector_indicator_dot.svg', src: indicatorDot },
 ]
+
+// function buttons — footprint matches locked master layer 08_FunctionButtons
+const FBUTTONS = [
+  { label: 'LEAD', lines: ['LEAD'], x: 980, y: 200, w: 110, h: 60 },
+  { label: 'SIZE', lines: ['SIZE'], x: 980, y: 270, w: 110, h: 60 },
+  { label: 'ALARM SUSPEND', lines: ['ALARM', 'SUSPEND'], x: 980, y: 340, w: 110, h: 70 },
+  { label: 'RECORDER', lines: ['RECORDER'], x: 980, y: 420, w: 110, h: 60 },
+]
+
+/** One function button, cropped to its footprint, in a given state. */
+function FnBtn({ b, pressed }) {
+  const pad = 16
+  const vb = `${b.x - pad} ${b.y - pad} ${b.w + pad * 2} ${b.h + pad * 2}`
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: `${b.w + pad * 2} / ${b.h + pad * 2}` }}>
+        <svg className="artpreview__layer" viewBox={vb} xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`${b.label} ${pressed ? 'pressed' : 'unpressed'}`}>
+          <FunctionButton x={b.x} y={b.y} w={b.w} h={b.h} lines={b.lines} pressed={pressed}
+            idPrefix={`fb-${b.label.replace(' ', '')}-${pressed ? 'p' : 'u'}`} />
+        </svg>
+      </div>
+      <figcaption><strong>{b.label}</strong><span className="artpreview__file">{pressed ? 'pressed' : 'unpressed'}</span></figcaption>
+    </figure>
+  )
+}
 
 const MODES = ['Off', 'Monitor', 'Defib', 'Pacer']
 
@@ -127,16 +153,43 @@ export default function ControlsReview() {
   return (
     <div className="artpreview">
       <header className="artpreview__bar">
-        <h1>Controls Review — Mode Selector (Pass 2)</h1>
+        <h1>Controls Review — Pass 2 (Mode Selector · Function Buttons)</h1>
         <Link className="btn btn--ghost" to="/">Home</Link>
       </header>
 
+      {/* ============ Function Buttons (Pass 2B) ============ */}
+      <section className="ctrlreview__assembled">
+        <h2>Function Buttons (Pass 2B)</h2>
+        <p className="artpreview__note">
+          One reusable warm-gray molded push-button, different labels. Factory-new
+          satin plastic, subtle bevel/radius, a darker molded side edge, and a
+          compact black uppercase label (ALARM SUSPEND stacked on two lines) — a
+          physical molded button, not a web-UI button. Footprint matches the locked
+          master layer 08. The knob and Mode Selector are unchanged.
+        </p>
+
+        <figure className="artpreview__tile ctrlreview__assembled-tile">
+          <div className="artpreview__frame" style={{ aspectRatio: '134 / 84' }}>
+            <img className="artpreview__layer" src={functionButton} alt="Function button — blank reusable asset" />
+          </div>
+          <figcaption>
+            <strong>Individual button asset</strong>
+            <span className="artpreview__file">controls/function_button.svg</span>
+          </figcaption>
+        </figure>
+
+        <div className="msc__grid">
+          {FBUTTONS.flatMap((b) => [
+            <FnBtn key={`${b.label}-u`} b={b} pressed={false} />,
+            <FnBtn key={`${b.label}-p`} b={b} pressed={true} />,
+          ])}
+        </div>
+      </section>
+
       <p className="artpreview__note">
-        Industrial Design Pass 2 — label alignment pass. Only the printed labels /
-        colored sections changed this pass (the knob is approved and unchanged).
-        Colour now lives in the printed sections (no wrapping arcs); MONITOR is a
-        subtle light gray; PACER/DEFIB are flatter, printed-style. Dots stay fixed
-        and <strong>only the knob rotates</strong>.
+        Below: the Mode Selector (Pass 2A), approved and frozen — shown here for
+        reference only. Its printed sections carry the colour (no wrapping arcs),
+        MONITOR is a subtle light gray, and only the knob rotates.
       </p>
 
       {/* ---------- reference → current → updated ---------- */}

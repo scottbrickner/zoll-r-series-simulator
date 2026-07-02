@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Energy Select (reusable, blank shell). Refined 2C.1
+     to match the manufacturer screenshot: content vertically CENTERED, larger
+     solid red triangles, balanced spacing above/below.
+     Industrial Design Pass 2C (Controls Library — Energy Select).
+     A vertical warm-beige molded rocker control (NOT a generic push button):
+     ▲ / ENERGY / SELECT / ▼. The selected energy is shown on the LCD in the real
+     device, so NO numeric value is printed on the button face.
+       - warm beige satin face (#f3ecda -> #e8dcc0 -> #d8c9a6)  [unchanged]
+       - deeper warm molded side edge (#c9bd9c)                 [unchanged]
+       - larger flat printed red triangles (30 x 22), equal size, centered
+       - red ENERGY / SELECT, uppercase, compact, centered
+     Outer dimensions, corner radius (16), plastic colour, and bevel/side depth
+     are UNCHANGED from the approved asset. Local box for standalone review. -->
+<svg viewBox="0 0 120 174" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="esb-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3ecda"/>
+      <stop offset="0.5" stop-color="#e8dcc0"/>
+      <stop offset="1" stop-color="#d8c9a6"/>
+    </linearGradient>
+    <linearGradient id="esb-hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g id="energy_select_button" font-family="'Segoe UI','Helvetica Neue',system-ui,sans-serif">
+    <!-- deeper warm molded side edge -->
+    <rect x="12" y="16" width="96" height="150" rx="16" fill="#c9bd9c"/>
+    <!-- warm beige satin face -->
+    <rect x="12" y="12" width="96" height="150" rx="16" fill="url(#esb-face)" stroke="#bdb49d" stroke-width="1"/>
+    <!-- very slight satin sheen -->
+    <rect x="16" y="15" width="88" height="45" rx="12" fill="url(#esb-hi)"/>
+    <!-- up triangle (flat printed red, enlarged), centered -->
+    <path d="M60,39 L75,61 L45,61 Z" fill="#cf2a20"/>
+    <!-- ENERGY / SELECT (centered) -->
+    <text x="60" y="80" text-anchor="middle" fill="#c4231a" font-size="15" font-weight="800" letter-spacing="0.2">ENERGY</text>
+    <text x="60" y="99" text-anchor="middle" fill="#c4231a" font-size="15" font-weight="800" letter-spacing="0.2">SELECT</text>
+    <!-- down triangle (flat printed red, enlarged), centered -->
+    <path d="M60,135 L75,113 L45,113 Z" fill="#cf2a20"/>
+  </g>
+</svg>

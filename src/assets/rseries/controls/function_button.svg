@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Function Button (reusable, blank). FROZEN.
+     Industrial Design Pass 2B (Controls Library — Function Buttons).
+     One reusable warm-gray molded push-button; instances differ only by
+     position, size, and printed label (LEAD / SIZE / ALARM SUSPEND / RECORDER),
+     which React adds at assembly time. Footprint matches the locked master
+     layer 08_FunctionButtons (110 x 60 / 70). Drawn here in a local box for
+     standalone review; place at any master position via translate.
+       - darker warm molded side edge (depth) beneath the face
+       - warm-gray satin face (#faf9f3 -> #edeae1 -> #d4d1c8)
+       - restrained top bevel highlight + small corner radius
+     Factory-new satin molded plastic — a physical button, not web UI.
+     Geometry / corner radius / dimensions are LOCKED as of this pass. -->
+<svg viewBox="0 0 134 84" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fbs-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#faf9f3"/>
+      <stop offset="0.5" stop-color="#edeae1"/>
+      <stop offset="1" stop-color="#d4d1c8"/>
+    </linearGradient>
+    <linearGradient id="fbs-hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g id="function_button">
+    <!-- darker warm molded side edge -->
+    <rect x="12" y="15" width="110" height="60" rx="9" fill="#b6b3aa"/>
+    <!-- satin molded face -->
+    <rect x="12" y="12" width="110" height="60" rx="9" fill="url(#fbs-face)" stroke="#c2bfb6" stroke-width="1"/>
+    <!-- restrained top bevel highlight -->
+    <rect x="15" y="14" width="104" height="25" rx="6" fill="url(#fbs-hi)"/>
+  </g>
+</svg>

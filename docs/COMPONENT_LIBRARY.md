@@ -110,31 +110,43 @@ for the body.
 
 ---
 
-## 5. Controls (interactive hardware) — Pass 2, NEXT / NOT STARTED
+## 5. Controls (interactive hardware) — Pass 2, IN PROGRESS
 
-Master layers `07–18`. Target folder `src/assets/rseries/controls/` (scaffolded —
-`.gitkeep`). This is **Industrial Design Pass 2: Controls Library**, the next
-milestone. Parts are extracted one at a time, each reassembling to the identical
-master geometry.
+Master layers `07–18`, folder `src/assets/rseries/controls/`. This is **Industrial
+Design Pass 2: Controls Library**. Parts are built one sub-pass at a time, each
+reassembling to the identical master geometry (footprint/position locked).
 
-| Control | Master layer | Reusable? |
-|---------|--------------|-----------|
-| Softkeys | `07_Softkeys` | Button part × 6 |
-| Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | Button part × N |
-| Therapy buttons (SHOCK / ANALYZE / CHARGE) | `09_TherapyButtons` | Button part × N |
-| Energy select rocker | `10_EnergySelect` | — |
-| Mode selector back | `11_ModeSelector_Back` | — |
-| Mode selector arcs (**never rotate**) | `12_ModeSelector_Arcs` | Printed scale (static) |
-| Mode selector knob | `13_ModeSelector_Knob` | Knob part (rotates) |
-| Mode selector dot | `14_ModeSelector_Dots` | Single white dot (rotates) |
-| Pacer knobs (OUTPUT / RATE) + 4:1 | `15_PacerKnobs` | Knob part × 2 |
-| LED indicators (AC / BATT) | `16_LEDIndicators` | State-driven fill |
-| Self-test window (Code Readiness) | `17_SelfTestWindow` | blank / X / check |
-| NIBP button (arm + cuff) | `18_BP_Button` | — |
+| Control | Master layer | Reusable part | Status |
+|---------|--------------|---------------|--------|
+| Mode selector (back/arcs→sections/knob/dots) | `11`–`14` | `mode_selector_*` + `ModeSelector.jsx` | ✅ **Pass 2A — DONE / FROZEN** |
+| Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | `function_button.svg` (frozen) + `FunctionButton.jsx` (one part, N labels) | 🟡 **Pass 2B — built (not yet wired into master)** |
+| Energy select rocker | `10_EnergySelect` | `energy_select_button.svg` (frozen) + `EnergySelect.jsx` | ✅ **Pass 2C — APPROVED / FROZEN (not yet wired into master)** |
+| Softkeys | `07_Softkeys` | reusable button × 6 | ⬜ pending |
+| Therapy buttons (SHOCK / ANALYZE / CHARGE) | `09_TherapyButtons` | button × N | ⬜ pending |
+| Pacer knobs (OUTPUT / RATE) + 4:1 | `15_PacerKnobs` | knob part × 2 | ⬜ pending |
+| LED indicators (AC / BATT) | `16_LEDIndicators` | state-driven fill | ⬜ pending |
+| Self-test window (Code Readiness) | `17_SelfTestWindow` | blank / X / check | ⬜ pending |
+| NIBP button (arm + cuff) | `18_BP_Button` | — | ⬜ pending |
 
-**Reuse rules:** buttons and knobs are single reusable static parts; instances
-differ only by position, printed label, and React-bound fill/glow/rotation.
-Printed arcs are a separate static part and never rotate.
+**Reuse rules:** buttons and knobs are single reusable parts; instances differ
+only by position, printed label, and React-bound fill/glow/rotation/state. The
+Mode Selector's printed sections carry the colour (no wrapping arcs) and never
+rotate — only the knob rotates.
+
+> **Wiring note.** Built parts are the approved reference. As with the body parts,
+> they are reviewed on `/controls-review` but are **not yet assembled into the
+> shipping master** (`RSeriesDevice.jsx`) — except the Mode Selector, which has
+> been wired in. The Function Button (Pass 2B) and Energy Select (Pass 2C) parts
+> are built/approved; wiring layers 08 and 10 to use them is a later step.
+
+> **Energy Select display note.** The approved Energy Select is a manufacturer-
+> accurate ▲ / ENERGY / SELECT / ▼ rocker with **no numeric value on the button
+> face**. The **selected energy (joules) is shown on the LCD, not on the physical
+> ENERGY SELECT button** — the button only increments/decrements the value. When
+> this part is wired in, the value belongs in the LCD overlay
+> ([`LcdScreen.jsx`](../src/components/rseries/LcdScreen.jsx)), not on the button.
+> `EnergySelect.jsx` keeps `energyValue`/`energyUnits` props for API compatibility
+> but does not render them on the face.
 
 ---
 
@@ -267,6 +279,11 @@ public/RSeries_Master.svg                    # frozen master export
 src/assets/rseries/body/*.svg                # Pass 1 — LOCKED/APPROVED: bumper,
                                              #   faceplate, bezels, glass, cradle,
                                              #   connector-bump, screw-cover
-src/assets/rseries/controls/                 # Pass 2 — NEXT (scaffold .gitkeep)
+src/components/rseries/controls/ModeSelector.jsx    # Pass 2A — mode selector (frozen)
+src/components/rseries/controls/FunctionButton.jsx  # Pass 2B — reusable molded button
+src/components/rseries/controls/EnergySelect.jsx    # Pass 2C — reusable energy select
+src/assets/rseries/controls/mode_selector_*.svg     # Pass 2A parts (background/labels/knob/dots)
+src/assets/rseries/controls/function_button.svg     # Pass 2B — reusable blank button (frozen)
+src/assets/rseries/controls/energy_select_button.svg # Pass 2C — reusable blank shell
 src/assets/rseries/{lcd,icons,labels,reference}/   # scaffold (.gitkeep)
 ```
