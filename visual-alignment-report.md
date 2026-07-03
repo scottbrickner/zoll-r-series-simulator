@@ -310,6 +310,98 @@ the master. No other control changed.
 > `energyValue`/`energyUnits` props are retained for API compatibility but are
 > **not** rendered on the face.
 
+## 8.8 Therapy Buttons — 2026-07-02 — Industrial Design Pass 2D (built)
+
+Built the reusable **Therapy Button family** (`TherapyButton.jsx` +
+`therapy_button.svg` + `shock_button.svg`) from the manufacturer photos. Footprints
+match the locked master layer 09 exactly and were **not moved**:
+
+- **ANALYZE / CHARGE** — small beige/**peach** molded rectangular buttons
+  (94 × 58, radius 6) with red uppercase text (`#c4231a`, 17 px, weight 700).
+  Peach satin face (`#fdf0e0 → #f6e6d0 → #f2dcc0`) over a darker peach side edge
+  (`#e3c9a6`); subtle top bevel; one reusable `variant='action'` part, N labels.
+- **SHOCK** — a **flat orange circular** button (radius 46), `variant='shock'`.
+  Satin orange face (`#f0893a → #e06f16`) over a darker orange side edge
+  (`#c2600d`), darker rim, very subtle satin bevel. **NOT an arcade/glowing
+  button** — no glow ring and no glossy hotspot (unlike the master's armed-glow
+  circle). The printed "SHOCK" legend sits beside it on the device, so it is not
+  drawn on the button face.
+
+States: unpressed (raised), pressed (face seats down + darker + lower shadow / a
+subtle inner top shadow on the shock circle), and disabled (desaturated + dimmed).
+Factory-new satin molded plastic, minimal shadows. Reviewed on `/controls-review`
+(individual assets + ANALYZE / CHARGE / SHOCK × pressed / unpressed / disabled).
+
+**Not wired into the master** — approved library reference only, like the other
+Pass 2 parts. No body, LCD, cradle, Mode Selector, Function Button, Energy Select,
+or simulator-logic change.
+
+## 8.9 Therapy Buttons — 2026-07-02 — finalization (Pass 2D.1)
+
+Refinement pass finalizing the Therapy Button family to the manufacturer photos,
+and formalizing the **physical vs behaviour** split. Only `TherapyButton.jsx`,
+`therapy_button.svg`, `shock_button.svg`, and the Controls Review page changed.
+
+- **ANALYZE / CHARGE** — warm-peach molded rectangles, compact red uppercase
+  text, **shallower molded bevel / minimal highlight** (satin sheen 0.32 → 0.22),
+  factory-new. Pressed: seats down + darker plastic + **deeper lower shadow**
+  (0.20 → 0.26). Disabled: reduced opacity (0.72) + muted text, no glow. Same
+  geometry for both — only the label differs.
+- **SHOCK (physical)** — molded orange plastic with a **satin finish, shallow
+  recessed centre, subtle molded outer lip, and reduced gloss** — no longer an
+  arcade/glowing button, no exaggerated reflections, no baked illumination.
+  Pressed: depress + darker orange + deeper lower shadow. Disabled: muted /
+  desaturated orange, no glow.
+- **SHOCK glow = separate React overlay (behaviour, not baked into the SVG).**
+  `shockReady` renders a soft, subtly-pulsing (SMIL `<animate>`) warm-orange bloom
+  halo as a distinct `#shock_glow` layer behind the physical button; it shows
+  only while charged-ready and extinguishes immediately on press/disable. A
+  `glowOnly` flag renders the overlay alone for review. States supported for the
+  future wire-in: idle / charging (no glow), charged-ready (glow), pressed (glow
+  off), post-shock (no glow), disabled.
+
+Reviewed on `/controls-review` (individual physical assets; ANALYZE/CHARGE ×
+default/pressed/disabled; SHOCK × idle / glow-overlay-only / charged-ready /
+pressed / disabled). Footprints match the locked master layer 09; not wired into
+the master. No body, LCD, Mode Selector, Function Button, Energy Select, or
+simulator-logic change.
+
+> **APPROVED & FROZEN (Pass 2D.1).** The Therapy Button family is approved:
+> - **ANALYZE** and **CHARGE** physical molded assets — approved.
+> - **SHOCK** physical molded asset — approved.
+> - **SHOCK glow** — approved as a **separate React-controlled overlay layer**;
+>   it appears **only** when `shockReady` / charged-ready is true and is **not
+>   baked into `shock_button.svg`**.
+> - **Pressed** and **disabled** remain physical interaction states (no glow).
+>
+> `therapy_button.svg`, `shock_button.svg`, and the `TherapyButton.jsx` geometry/
+> material are frozen — no geometry/material edits unless explicitly reopened in a
+> new dated pass. The glow-overlay behaviour and state wiring (shockReady /
+> charging / pressed / disabled) may still be connected when the family is wired
+> into the master.
+
+## 8.10 End-of-day finalization — 2026-07-02 — Pass 2 controls frozen
+
+Finalization of today's Industrial Design work. The following control families are
+**APPROVED / FROZEN** (see the dated sub-sections above for scope):
+
+| # | Family | Pass | Frozen record |
+|---|--------|------|---------------|
+| 1 | Body | Pass 1 | §1–§6 (geometry LOCKED) |
+| 2 | Mode Selector | Pass 2A | §8.1 / §8.2 / §8.3 |
+| 3 | Function Button | Pass 2B | §8.4 / §8.5 |
+| 4 | Energy Select | Pass 2C | §8.6 / §8.7 |
+| 5 | Therapy Button family | Pass 2D.1 | §8.8 / §8.9 |
+
+Freeze rule (all of the above): no geometry/material edits unless explicitly
+reopened in a new dated pass here. The approved parts remain the reference; except
+the Mode Selector they are **not yet wired into the shipping master**. React state
+wiring (e.g. the SHOCK glow overlay, knob rotation) may still be connected at
+master wire-in without reopening the frozen geometry.
+
+**Next milestone: Industrial Design Pass 2E — Pacer Knobs** (`15_PacerKnobs`,
+OUTPUT / RATE knobs + 4:1). Not started.
+
 ## 9. Dev-only screenshot capture checklist
 
 Capture each state at a fixed viewport (suggest **980 × 760**, learner route)

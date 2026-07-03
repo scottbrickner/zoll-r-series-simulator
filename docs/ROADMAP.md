@@ -16,7 +16,9 @@ for behavior detail see [`SIMULATOR_REQUIREMENTS.md`](SIMULATOR_REQUIREMENTS.md)
 for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 
 > **Current focus:** feature development is paused for a documentation freeze.
-> The **next milestone is Industrial Design Pass 2: Controls Library** (see below).
+> Controls Library sub-passes 2A–2D (Mode Selector, Function Button, Energy
+> Select, Therapy Buttons) are **APPROVED / FROZEN**. The **next milestone is
+> Industrial Design Pass 2E — Pacer Knobs** (see below).
 
 ---
 
@@ -39,7 +41,7 @@ for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 | 13 | LCD framework | ✅ Done |
 | 14 | Device master artwork (geometry LOCKED) | ✅ Done |
 | 15 | **Industrial Design Pass 1 — Body** | ✅ **Done (assets LOCKED / APPROVED)** |
-| 16 | **Industrial Design Pass 2 — Controls Library** | ⬜ **Planned — NEXT MILESTONE** |
+| 16 | **Industrial Design Pass 2 — Controls Library** (2A–2D frozen) | 🟡 **In progress — NEXT: Pass 2E Pacer Knobs** |
 | 17 | Waveform library | 🟡 Partial |
 | 18 | Typography tokens | 🟡 Partial |
 | 19 | Automated testing / CI | 🟡 Partial |
@@ -184,23 +186,23 @@ outside a deliberate, documented alignment pass.
 
 ## Planned and partial
 
-### 16. Industrial Design Pass 2 — Controls Library — ⬜ Planned — **NEXT MILESTONE**
+### 16. Industrial Design Pass 2 — Controls Library — 🟡 In progress (2A–2D APPROVED / FROZEN)
 
 Reconstruct the interactive controls as approved, reusable modular parts in
-`src/assets/rseries/controls/` (today a `.gitkeep` scaffold), matching the locked
-master geometry exactly. Scope:
+`src/assets/rseries/controls/`, matching the locked master geometry exactly.
+Built and approved **one sub-pass at a time**. Sub-pass status:
 
-| Control | Master layer(s) | Notes |
-|---------|-----------------|-------|
-| Softkeys | `07_Softkeys` | One reusable button part × 6 |
-| Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | Reusable button part × N |
-| Therapy buttons (SHOCK / ANALYZE / CHARGE) | `09_TherapyButtons` | Reusable button part × N |
-| Energy select rocker | `10_EnergySelect` | — |
-| Mode selector | `11`–`14` | Back plate + **printed arcs (never rotate)** + rotating knob + dot |
-| Pacer knobs (OUTPUT / RATE) + 4:1 | `15_PacerKnobs` | Reusable knob part × 2 |
-| LED indicators (AC / BATT) | `16_LEDIndicators` | State-driven fill |
-| Self-test window (Code Readiness) | `17_SelfTestWindow` | blank / X / check |
-| NIBP button (arm + cuff) | `18_BP_Button` | — |
+| Sub-pass | Control | Master layer(s) | Status |
+|----------|---------|-----------------|--------|
+| 2A | Mode selector (back / sections / knob / dots) | `11`–`14` | ✅ **APPROVED / FROZEN** |
+| 2B | Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | ✅ **APPROVED / FROZEN** |
+| 2C | Energy select rocker | `10_EnergySelect` | ✅ **APPROVED / FROZEN** |
+| 2D | Therapy buttons (ANALYZE / CHARGE / SHOCK) | `09_TherapyButtons` | ✅ **APPROVED / FROZEN** |
+| **2E** | **Pacer knobs (OUTPUT / RATE) + 4:1** | `15_PacerKnobs` | ⬜ **Planned — NEXT MILESTONE** |
+| 2F+ | Softkeys, LED indicators, self-test window, NIBP button | `07` / `16` / `17` / `18` | ⬜ pending |
+
+> **Next milestone: Industrial Design Pass 2E — Pacer Knobs** (the OUTPUT and RATE
+> knobs + the 4:1 button), master layer `15_PacerKnobs`.
 
 Rules for the pass (see [`COMPONENT_LIBRARY.md`](COMPONENT_LIBRARY.md) and
 [`ART_DIRECTION.md`](ART_DIRECTION.md)):
@@ -211,6 +213,8 @@ Rules for the pass (see [`COMPONENT_LIBRARY.md`](COMPONENT_LIBRARY.md) and
 - Each part reassembles to the **identical** master geometry — this pass adds
   modular parts, it does **not** change the locked look.
 - Deliver and approve **one part at a time**, matching the body-pass workflow.
+- Approved sub-passes are **frozen** — no geometry/material edits unless explicitly
+  reopened in a new dated pass (see `visual-alignment-report.md`).
 
 ### 17. Waveform library — 🟡 Partial
 
@@ -246,10 +250,11 @@ Rules for the pass (see [`COMPONENT_LIBRARY.md`](COMPONENT_LIBRARY.md) and
 
 ## Remaining work, at a glance
 
-1. **Industrial Design Pass 2: Controls Library** (Milestone 16) — the next
-   milestone.
-2. Complete the rest of the modular asset library (LCD, icons, labels) and wire
-   approved parts into the shipping assembly.
+1. **Industrial Design Pass 2E: Pacer Knobs** (Milestone 16, next sub-pass) — the
+   next milestone. Sub-passes 2A–2D are frozen.
+2. Finish the Controls Library (softkeys, LEDs, self-test, NIBP), then complete the
+   rest of the modular asset library (LCD, icons, labels) and wire approved parts
+   into the shipping assembly.
 3. Expand the waveform library and add rate coupling (Milestone 17).
 4. Grow automated testing toward CI and visual regression (Milestone 19).
 5. Harden and tag the Release Candidate (Milestone 20).

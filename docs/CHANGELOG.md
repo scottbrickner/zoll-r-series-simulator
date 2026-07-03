@@ -30,6 +30,82 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.14] — 2026-07-02 — End-of-day finalization: Pass 2 controls frozen
+
+Docs-only finalization of today's Industrial Design work (no artwork or code
+change). The following control families are now **APPROVED / FROZEN**:
+
+- ✅ **Body** (Pass 1)
+- ✅ **Mode Selector** (Pass 2A)
+- ✅ **Function Button** (Pass 2B)
+- ✅ **Energy Select** (Pass 2C)
+- ✅ **Therapy Button family** (Pass 2D.1)
+
+Freeze rule: no geometry/material edits to these unless explicitly reopened in a
+new dated pass. Approved parts remain the reference; except the Mode Selector they
+are not yet wired into the shipping master.
+
+**Next milestone: Industrial Design Pass 2E — Pacer Knobs** (`15_PacerKnobs`).
+Recorded in `ROADMAP.md` (milestone 16), `COMPONENT_LIBRARY.md` §5, and
+`visual-alignment-report.md` §8.10.
+
+## [0.1.13] — 2026-07-02 — Therapy Button family APPROVED & FROZEN
+
+Approved and froze the Therapy Button family. Docs-only pass (no artwork or code
+change).
+
+- **ANALYZE** and **CHARGE** physical molded assets — approved.
+- **SHOCK** physical molded asset — approved.
+- **SHOCK glow** — approved as a **separate React-controlled overlay layer**;
+  appears **only** when `shockReady` / charged-ready is true; **not baked into
+  `shock_button.svg`**.
+- **Pressed** and **disabled** remain physical interaction states (no glow).
+- `therapy_button.svg`, `shock_button.svg`, and the `TherapyButton.jsx` geometry/
+  material are frozen; the glow behaviour + state wiring may still be connected at
+  master wire-in. Recorded in `visual-alignment-report.md` §8.9 and
+  `COMPONENT_LIBRARY.md` §5.
+
+## [0.1.12] — 2026-07-02 — Therapy Button finalization (Pass 2D.1)
+
+Refined the Therapy Button family to the manufacturer photos and split the
+physical control from its behaviour. Only TherapyButton.jsx + the two therapy
+SVGs + the Controls Review page changed.
+
+### Changed
+- **ANALYZE / CHARGE** — shallower molded bevel / minimal highlight, deeper
+  pressed lower shadow; warm-peach satin plastic, compact red uppercase text.
+- **SHOCK (physical)** — molded orange with a satin finish, shallow recessed
+  centre, subtle molded outer lip, reduced gloss. **No longer an arcade button**;
+  no baked illumination or exaggerated reflections.
+- **SHOCK glow is now a separate React overlay layer** (`shockReady`), a soft
+  pulsing warm-orange bloom rendered via inline SMIL — **never baked into the
+  SVG**. Extinguishes on press/disable. Added a `glowOnly` flag to render the
+  overlay on its own for review.
+- `/controls-review` therapy section rebuilt: ANALYZE/CHARGE default/pressed/
+  disabled, and SHOCK idle / glow-overlay-only / charged-ready / pressed /
+  disabled (demonstrating the glow separate from the molded button).
+- Documented the two-layer SHOCK model (physical SVG + React glow overlay) in
+  `COMPONENT_LIBRARY.md` §5 and `visual-alignment-report.md` §8.9.
+
+## [0.1.11] — 2026-07-02 — Industrial Design Pass 2D: Therapy Buttons
+
+Built the reusable Therapy Button family. Not wired into the shipping master; no
+body, LCD, Mode Selector, Function Button, Energy Select, or simulator-logic
+change.
+
+### Added
+- `src/components/rseries/controls/TherapyButton.jsx` — one component, two
+  variants: `action` (peach rectangular button, red uppercase label — ANALYZE /
+  CHARGE) and `shock` (flat orange circular button). Props: `variant`, `label`,
+  footprint, `pressed`, `enabled`, `onClick`, `idPrefix`.
+- `src/assets/rseries/controls/therapy_button.svg` — blank peach action button.
+- `src/assets/rseries/controls/shock_button.svg` — flat orange shock button.
+- SHOCK is deliberately **flat** — no glow ring, no glossy hotspot (not an
+  arcade button). Footprints match the locked master layer 09.
+- `/controls-review` gains a Therapy Buttons section: individual assets +
+  ANALYZE / CHARGE / SHOCK in pressed / unpressed / disabled states.
+- Recorded in `visual-alignment-report.md` §8.8; `COMPONENT_LIBRARY.md` §5 updated.
+
 ## [0.1.10] — 2026-07-02 — Energy Select APPROVED & FROZEN
 
 Approved the manufacturer-accurate Energy Select. Docs-only pass (no code change).

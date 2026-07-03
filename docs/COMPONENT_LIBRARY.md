@@ -10,13 +10,18 @@ how they are structured in SVG. The look and the art-direction rules are in
 [`ART_DIRECTION.md`](ART_DIRECTION.md); milestone/pass status in
 [`ROADMAP.md`](ROADMAP.md).
 
-> **Status at a glance.**
+> **Status at a glance (end of 2026-07-02).**
 > - The **shipping** device is the single **locked master** (`RSeriesDevice.jsx`).
-> - **Body** parts (`src/assets/rseries/body/`) are **built, approved, and
->   LOCKED** — Industrial Design Pass 1.
-> - **Controls** parts (`src/assets/rseries/controls/`) are the **next** pass —
->   scaffolded (`.gitkeep`), not started.
-> - `lcd/`, `icons/`, `labels/`, `reference/` are scaffold for later passes.
+> - **APPROVED / FROZEN** control families (reusable parts, not yet wired into the
+>   master except the Mode Selector):
+>   1. ✅ **Body** (Pass 1)
+>   2. ✅ **Mode Selector** (Pass 2A)
+>   3. ✅ **Function Button** (Pass 2B)
+>   4. ✅ **Energy Select** (Pass 2C)
+>   5. ✅ **Therapy Button family** (Pass 2D.1)
+> - **Next milestone: Industrial Design Pass 2E — Pacer Knobs** (`15_PacerKnobs`).
+> - Remaining controls (softkeys, LEDs, self-test, NIBP) and `lcd/`, `icons/`,
+>   `labels/` groups are pending later passes.
 
 ---
 
@@ -119,10 +124,10 @@ reassembling to the identical master geometry (footprint/position locked).
 | Control | Master layer | Reusable part | Status |
 |---------|--------------|---------------|--------|
 | Mode selector (back/arcs→sections/knob/dots) | `11`–`14` | `mode_selector_*` + `ModeSelector.jsx` | ✅ **Pass 2A — DONE / FROZEN** |
-| Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | `function_button.svg` (frozen) + `FunctionButton.jsx` (one part, N labels) | 🟡 **Pass 2B — built (not yet wired into master)** |
+| Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | `function_button.svg` (frozen) + `FunctionButton.jsx` (one part, N labels) | ✅ **Pass 2B — APPROVED / FROZEN (not yet wired into master)** |
 | Energy select rocker | `10_EnergySelect` | `energy_select_button.svg` (frozen) + `EnergySelect.jsx` | ✅ **Pass 2C — APPROVED / FROZEN (not yet wired into master)** |
+| Therapy buttons (ANALYZE / CHARGE / SHOCK) | `09_TherapyButtons` | `therapy_button.svg` + `shock_button.svg` (physical only) + `TherapyButton.jsx` (action + shock variants; React glow overlay) | ✅ **Pass 2D.1 — APPROVED / FROZEN (not yet wired into master)** |
 | Softkeys | `07_Softkeys` | reusable button × 6 | ⬜ pending |
-| Therapy buttons (SHOCK / ANALYZE / CHARGE) | `09_TherapyButtons` | button × N | ⬜ pending |
 | Pacer knobs (OUTPUT / RATE) + 4:1 | `15_PacerKnobs` | knob part × 2 | ⬜ pending |
 | LED indicators (AC / BATT) | `16_LEDIndicators` | state-driven fill | ⬜ pending |
 | Self-test window (Code Readiness) | `17_SelfTestWindow` | blank / X / check | ⬜ pending |
@@ -138,6 +143,26 @@ rotate — only the knob rotates.
 > shipping master** (`RSeriesDevice.jsx`) — except the Mode Selector, which has
 > been wired in. The Function Button (Pass 2B) and Energy Select (Pass 2C) parts
 > are built/approved; wiring layers 08 and 10 to use them is a later step.
+
+> **SHOCK button — two layers (APPROVED / FROZEN, Pass 2D.1).** The SHOCK button
+> consists of **two layers:**
+> 1. **Physical molded button (SVG)** — `shock_button.svg` / the `TherapyButton`
+>    `variant='shock'` geometry: molded orange plastic, satin finish, shallow
+>    recessed centre, subtle molded outer lip, reduced gloss. **No glow is baked
+>    in.** Approved.
+> 2. **React-controlled glow overlay** — a separate layer that renders a soft,
+>    subtly-pulsing warm-orange bloom **only** while `shockReady` / charged-ready
+>    is true. It extinguishes immediately on press/disable. Approved.
+>
+> Approved facts (frozen): the **ANALYZE** and **CHARGE** physical molded assets
+> are approved; the **SHOCK** physical molded asset is approved; the **SHOCK glow
+> is approved as a separate React-controlled overlay layer** that appears only
+> when `shockReady`/charged-ready is true and is **never baked into
+> `shock_button.svg`**; **pressed** and **disabled** remain physical interaction
+> states (no glow). Frozen — no geometry/material edits unless explicitly reopened
+> in a new dated pass; the `TherapyButton.jsx` state wiring (shockReady/charging/
+> pressed/disabled) may still be connected when the family is wired into the
+> master.
 
 > **Energy Select display note.** The approved Energy Select is a manufacturer-
 > accurate ▲ / ENERGY / SELECT / ▼ rocker with **no numeric value on the button
@@ -285,5 +310,8 @@ src/components/rseries/controls/EnergySelect.jsx    # Pass 2C — reusable energ
 src/assets/rseries/controls/mode_selector_*.svg     # Pass 2A parts (background/labels/knob/dots)
 src/assets/rseries/controls/function_button.svg     # Pass 2B — reusable blank button (frozen)
 src/assets/rseries/controls/energy_select_button.svg # Pass 2C — reusable blank shell
+src/components/rseries/controls/TherapyButton.jsx   # Pass 2D — therapy button family
+src/assets/rseries/controls/therapy_button.svg      # Pass 2D — peach action button
+src/assets/rseries/controls/shock_button.svg        # Pass 2D — flat orange shock button
 src/assets/rseries/{lcd,icons,labels,reference}/   # scaffold (.gitkeep)
 ```

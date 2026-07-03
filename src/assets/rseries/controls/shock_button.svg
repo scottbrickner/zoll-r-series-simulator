@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — SHOCK button (reusable, PHYSICAL only). Finalized 2D.1.
+     Industrial Design Pass 2D (Controls Library — Therapy Button family).
+     A molded orange circular button — satin finish, shallow recessed centre,
+     subtle molded outer lip, reduced gloss. NOT an arcade/glowing button.
+     Footprint matches the locked master layer 09 (radius 46).
+
+     IMPORTANT: this SVG is the PHYSICAL button ONLY. The charged-ready glow is
+     BEHAVIOUR and is rendered by React as a SEPARATE overlay layer — it is NOT
+     baked into this asset.
+
+       - darker orange molded side edge (depth)
+       - satin orange face (#ef8636 -> #dd6f16)   [subtle vertical molding]
+       - subtle molded outer lip (lighter ring near the rim)
+       - shallow recessed centre (soft central darkening)
+       - very reduced satin sheen (no glossy hotspot, no illumination)
+     Factory-new satin molded plastic, minimal shadows. Local box for review. -->
+<svg viewBox="0 0 116 116" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sbt-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ef8636"/>
+      <stop offset="1" stop-color="#dd6f16"/>
+    </linearGradient>
+    <radialGradient id="sbt-recess" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.1"/>
+      <stop offset="0.65" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g id="shock_button">
+    <!-- darker orange molded side edge -->
+    <circle cx="58" cy="61" r="46" fill="#c2600d"/>
+    <!-- satin orange face -->
+    <circle cx="58" cy="58" r="46" fill="url(#sbt-face)" stroke="#a8540b" stroke-width="2.5"/>
+    <!-- subtle molded outer lip -->
+    <circle cx="58" cy="58" r="42" fill="none" stroke="#f5a45c" stroke-opacity="0.35" stroke-width="2"/>
+    <!-- shallow recessed centre -->
+    <circle cx="58" cy="58" r="30" fill="url(#sbt-recess)"/>
+    <!-- very reduced satin sheen -->
+    <ellipse cx="58" cy="42" rx="23" ry="9" fill="#ffffff" opacity="0.07"/>
+  </g>
+</svg>

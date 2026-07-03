@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Therapy action button (reusable, blank).
+     Industrial Design Pass 2D (Controls Library — Therapy Button family).
+     The small beige/peach rectangular therapy button shared by ANALYZE and
+     CHARGE; instances differ only by the red uppercase label React adds at
+     assembly. Footprint matches the locked master layer 09 (94 x 58, radius 6).
+       - darker peach molded side edge (depth)
+       - warm peach satin face (#fdf0e0 -> #f6e6d0 -> #f2dcc0)
+       - subtle top bevel highlight + small corner radius
+     Factory-new satin molded plastic, minimal shadows — a physical button, not
+     web UI. Drawn here in a local box for standalone review. -->
+<svg viewBox="0 0 118 82" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tba-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdf0e0"/>
+      <stop offset="0.5" stop-color="#f6e6d0"/>
+      <stop offset="1" stop-color="#f2dcc0"/>
+    </linearGradient>
+    <linearGradient id="tba-hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g id="therapy_button">
+    <!-- darker peach molded side edge -->
+    <rect x="12" y="15" width="94" height="58" rx="6" fill="#e3c9a6"/>
+    <!-- peach satin face -->
+    <rect x="12" y="12" width="94" height="58" rx="6" fill="url(#tba-face)" stroke="#d8bfa0" stroke-width="1"/>
+    <!-- subtle top bevel highlight -->
+    <rect x="15" y="14" width="88" height="23" rx="4" fill="url(#tba-hi)"/>
+  </g>
+</svg>

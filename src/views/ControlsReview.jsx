@@ -5,15 +5,62 @@ import labels from '../assets/rseries/controls/mode_selector_labels.svg'
 import knob from '../assets/rseries/controls/mode_selector_knob.svg'
 import indicatorDot from '../assets/rseries/controls/mode_selector_indicator_dot.svg'
 import functionButton from '../assets/rseries/controls/function_button.svg'
+import therapyButtonAsset from '../assets/rseries/controls/therapy_button.svg'
+import shockButtonAsset from '../assets/rseries/controls/shock_button.svg'
 import ModeSelector, { MODE_ANGLE } from '../components/rseries/controls/ModeSelector'
 import FunctionButton from '../components/rseries/controls/FunctionButton'
+import TherapyButton from '../components/rseries/controls/TherapyButton'
 
 /**
  * TEMPORARY Controls Review page for Industrial Design Pass 2 (Controls Library).
- * Covers the Mode Selector (Pass 2A) and the Function Buttons (Pass 2B). Controls
- * only — no monitor assembly, no LCD, no body parts. Not part of the shipping
- * simulator.
+ * Covers the Mode Selector (2A), Function Buttons (2B), and Therapy Buttons (2D).
+ * Controls only — no monitor assembly, no LCD, no body parts. Not part of the
+ * shipping simulator.
  */
+// ANALYZE / CHARGE states
+const ACTION_STATES = [
+  { key: 'default', props: {} },
+  { key: 'pressed', props: { pressed: true } },
+  { key: 'disabled', props: { enabled: false } },
+]
+// SHOCK states — physical button + separate React glow overlay (behaviour)
+const SHOCK_STATES = [
+  { key: 'idle (physical)', props: {} },
+  { key: 'glow overlay only', props: { glowOnly: true } },
+  { key: 'charged-ready (button + glow)', props: { shockReady: true } },
+  { key: 'pressed', props: { pressed: true } },
+  { key: 'disabled', props: { enabled: false } },
+]
+
+/** One ANALYZE/CHARGE tile in a given state. */
+function ActionTile({ label, state }) {
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: '122 / 86' }}>
+        <svg className="artpreview__layer" viewBox="-14 -14 122 86" xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`${label} ${state.key}`}>
+          <TherapyButton variant="action" label={label} idPrefix={`tb-${label}-${state.key.replace(/\W/g, '')}`} {...state.props} />
+        </svg>
+      </div>
+      <figcaption><strong>{label}</strong><span className="artpreview__file">{state.key}</span></figcaption>
+    </figure>
+  )
+}
+
+/** One SHOCK tile (wider box to fit the glow halo) in a given state. */
+function ShockTile({ state }) {
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: '140 / 144' }}>
+        <svg className="artpreview__layer" viewBox="-12 -12 140 144" xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`SHOCK ${state.key}`}>
+          <TherapyButton variant="shock" idPrefix={`tb-shock-${state.key.replace(/\W/g, '')}`} {...state.props} />
+        </svg>
+      </div>
+      <figcaption><strong>SHOCK</strong><span className="artpreview__file">{state.key}</span></figcaption>
+    </figure>
+  )
+}
 const PARTS = [
   { name: 'Background base plate', file: 'controls/mode_selector_background.svg', src: background },
   { name: 'Printed labels / colored sections (OFF / MONITOR / PACER / DEFIB)', file: 'controls/mode_selector_labels.svg', src: labels },
@@ -184,6 +231,51 @@ export default function ControlsReview() {
             <FnBtn key={`${b.label}-p`} b={b} pressed={true} />,
           ])}
         </div>
+      </section>
+
+      {/* ============ Therapy Buttons (Pass 2D / finalized 2D.1) ============ */}
+      <section className="ctrlreview__assembled">
+        <h2>Therapy Buttons (Pass 2D.1)</h2>
+        <p className="artpreview__note">
+          ANALYZE and CHARGE are small warm-peach molded rectangular buttons with
+          red uppercase text. SHOCK is a molded orange button — satin finish,
+          shallow recessed centre, subtle molded outer lip, reduced gloss;
+          <strong> not an arcade button</strong>. The physical button is separate
+          from its behaviour: the SHOCK charged-ready <strong>glow is a separate
+          React overlay layer</strong>, never baked into the SVG. Footprints match
+          the locked master layer 09.
+        </p>
+
+        <div className="msc__grid">
+          <figure className="msc__griditem">
+            <div className="artpreview__frame" style={{ aspectRatio: '118 / 82' }}>
+              <img className="artpreview__layer" src={therapyButtonAsset} alt="Therapy action button — blank asset" />
+            </div>
+            <figcaption><strong>Action button asset</strong><span className="artpreview__file">controls/therapy_button.svg</span></figcaption>
+          </figure>
+          <figure className="msc__griditem">
+            <div className="artpreview__frame" style={{ aspectRatio: '116 / 116' }}>
+              <img className="artpreview__layer" src={shockButtonAsset} alt="Shock button — physical asset (no glow)" />
+            </div>
+            <figcaption><strong>Shock button asset (physical only)</strong><span className="artpreview__file">controls/shock_button.svg</span></figcaption>
+          </figure>
+        </div>
+
+        <h3 style={{ fontSize: '0.98rem', margin: '1.1rem 0 0' }}>ANALYZE &amp; CHARGE — default / pressed / disabled</h3>
+        <div className="msc__grid msc__grid--3">
+          {ACTION_STATES.map((s) => <ActionTile key={`an-${s.key}`} label="ANALYZE" state={s} />)}
+          {ACTION_STATES.map((s) => <ActionTile key={`ch-${s.key}`} label="CHARGE" state={s} />)}
+        </div>
+
+        <h3 style={{ fontSize: '0.98rem', margin: '1.1rem 0 0' }}>SHOCK — physical button + separate glow overlay</h3>
+        <div className="msc__grid msc__grid--3">
+          {SHOCK_STATES.map((s) => <ShockTile key={`sh-${s.key}`} state={s} />)}
+        </div>
+        <p className="artpreview__note">
+          The <strong>glow overlay only</strong> tile shows the React glow layer on
+          its own (no button); <strong>charged-ready</strong> shows the same glow
+          composited behind the physical button. Pressed and disabled show no glow.
+        </p>
       </section>
 
       <p className="artpreview__note">
