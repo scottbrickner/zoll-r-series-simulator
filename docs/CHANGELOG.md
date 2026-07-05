@@ -35,6 +35,121 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.30] — 2026-07-05 — Package 4: firmware reconstruction refined to reference screens
+
+Refined the firmware framework and the Manufacturer reference panel against the
+manufacturer LCD reference screens supplied by the user (MONITOR / PACE / CPR modes).
+Layout only — no patient data pipeline, no simulator logic; locked assets unchanged.
+
+### Changed
+- `DisplayRegions.js` — the **Value / Readout Row is now full-width** (x 0…673) so it
+  includes the firmware **clock at the far left** (e.g. 13:38 / 17:16), matching the
+  reference; the Left Parameter Column ends at y=442 above it. Note updated: SpO₂ at
+  the top of the column, then NIBP, then CO₂/RR.
+- `FirmwareReference.jsx` — retraced to match the reference arrangement: SpO₂ (cyan)
+  at the top-left of the status row; a tight status band (IDLE + magenta timer · CPR
+  Release bar + PPI diamond · ECG lead + ♥ + large green HR on the far right); NIBP
+  and CO₂/RR down the narrow left column; one continuous ECG + CO₂ plotting area; the
+  centered mode word (MONITOR); a full-width readout row with the clock at far left;
+  and the firmware softkey strip (Options · Param · Code Marker · Report Data · Alarms
+  · Sync On/Off). Readings are a static illustration.
+- Recorded in `visual-alignment-report.md §11.3`. (No manufacturer screenshot is
+  embedded in the repo; drop a capture at `public/lcd_reference.png` to trace it in
+  the Manufacturer panel.)
+
+## [0.1.29] — 2026-07-05 — Package 4 REBUILT: firmware LCD framework
+
+Rebuilt the Display Operating Framework as a **traced reconstruction of the firmware
+LCD layout** — discarding the earlier dashboard-style assumptions (boxed waveform
+lanes, button-like softkeys, a full-width top status bar). Rectangles are lifted from
+the firmware-accurate `LcdScreen.jsx` coordinates (which match the PACE-mode
+reference in `visual-alignment-report.md §1`). **Layout only** — no patient data, no
+waveforms, no values, no simulator logic; the locked 673×515 space and `LcdScreen.jsx`
+are unchanged.
+
+### Changed (firmware layout)
+- `DisplayRegions.js` — retraced to the firmware regions: a **narrow Left Parameter
+  Column** (SpO₂ / NIBP / CO₂·RR), a **tightly packed Top Status Strip** (Timer/Mode ·
+  CPR Release/PPI · ECG/Lead/HR), **ONE continuous Waveform Plotting Area** (no boxed
+  lanes), a Value/Readout Row, and a firmware **Softkey Label Strip** (thin column
+  rules + centered labels, no buttons). Transient overlays (Alarm Banner, Therapy/Mode
+  Message) draw **over the waveform area**.
+- `DisplayLayoutTokens.js` — firmware anchors (top rule y=118, softkey pitch 112),
+  phosphor palette, and per-region `debugColors` retargeted to the firmware regions.
+- `DisplayFramework.jsx` — firmware skeleton: hairline rules, continuous waveform
+  region, firmware softkey strip (no button chrome). Added `showBackground` (so the
+  framework can overlay the firmware reference) alongside `mode` (`clean`/`debug`).
+
+### Added
+- `display/FirmwareReference.jsx` — a firmware-layout **reconstruction** (the
+  "Manufacturer" panel) from the documented reference (no manufacturer screenshot
+  ships in the repo). Continuous representative ECG/CO₂ strokes, idle-dash values,
+  firmware softkey labels. Honors a real capture at `public/lcd_reference.png` if
+  present.
+- `DisplayFrameworkReview.jsx` — rebuilt as the requested **Manufacturer → Overlay →
+  Framework** stacked comparison (region boundaries traced onto the firmware render),
+  plus the region legend and layer hierarchy.
+- Recorded in `COMPONENT_LIBRARY.md §7.1`; `visual-alignment-report.md §11.2`.
+
+## [0.1.28] — 2026-07-05 — Package 4: Display Framework — reviewable preview
+
+Made the LCD operating framework clearly reviewable. **Review/debug visualization
+only** — no production display geometry changed (the region rectangles are
+unchanged), no patient data, no waveforms, no values, no simulator logic.
+
+### Changed
+- `src/views/DisplayFrameworkReview.jsx` — rebuilt so `/display-framework-review`
+  **immediately shows a large, centered LCD preview at the top** (above the fold),
+  with a **mode switcher**: (1) Clean framework, (2) Debug overlay, (3) Manufacturer
+  approximation. Added a **colour-coded region legend** (name · rectangle · inject
+  targets) and kept the layer hierarchy. Default mode is the debug overlay.
+- `src/components/rseries/display/DisplayFramework.jsx` — added a `mode` prop
+  (`clean` | `debug` | `manufacturer`) and `showCoords`:
+  - **debug** — a distinct high-contrast colour per region, semi-transparent fills,
+    bold outlines, region names + coordinates (`x,y·w×h`), and a bright LCD boundary.
+  - **manufacturer** — an abstract sketch of the real LCD arrangement (tinted
+    parameter zones, flat dashed lane baselines, softkey cells). No data, no
+    waveforms, no values.
+  Existing props (`showBoundaries`/`showNames`/`showHints`/`showStructure`/`slots`/
+  `idPrefix`) and the clean-mode look are unchanged (backward compatible).
+- `src/components/rseries/display/DisplayLayoutTokens.js` — added `debugColors` (a
+  distinct hue per region, review-only) and `lcdBoundaryColor`.
+- Recorded in `visual-alignment-report.md` §11.1.
+
+## [0.1.27] — 2026-07-05 — Package 4: Display Operating Framework
+
+Built the reusable **LCD operating framework** — the permanent layout skeleton (13
+fixed regions) into which all future display widgets render. **Layout only:** no
+patient data, no waveforms, no values, and no simulator logic. No locked asset
+changed; the existing `LcdScreen.jsx` overlay is untouched. Authored in the same
+locked 673×515 LCD logical space, matched to the manufacturer LCD proportions.
+
+### Added
+- `src/components/rseries/display/DisplayLayoutTokens.js` — LCD canvas, structural
+  anchors (parameter divider x=186, softkey rule y=468, six columns), band heights,
+  z-`LAYERS`, and placeholder styling.
+- `src/components/rseries/display/DisplayRegions.js` — the **13 fixed regions** as
+  `{ id, name, layer, parent, rect, injects }` in 673×515 space (single source of
+  truth), plus lookup helpers.
+- `src/components/rseries/display/DisplayFramework.jsx` — renders the empty labeled
+  skeleton (background + dividers + region placeholders) and exposes each region as
+  an injection **slot** (`slots={{ [id]: node }}`, clipped to bounds). Props:
+  `showBoundaries` / `showNames` / `showHints` / `showStructure` / `slots` /
+  `idPrefix`.
+- `src/views/DisplayFrameworkReview.jsx` + route `/display-framework-review` — the
+  empty framework with toggles for boundaries / names / inject hints / structure,
+  the layer hierarchy, and a region → injection-target table.
+
+### Regions
+- Persistent (`region` layer): Status Bar (→ Clock, Patient Mode), Top Information
+  Banner, Left Parameter Stack, Waveform Region 1/2/3, Therapy Banner, Bottom Status
+  Area, Bottom Softkey Label Strip.
+- Transient (`overlay` layer, drawn on top): Alarm Banner, Center Message Area.
+- Injection targets exposed for later phases: Waveforms, Vitals, Therapy Messages,
+  Charging Status, Pacing, CPR Feedback, Softkey Labels, Alarm Messages, Status
+  Icons.
+- Recorded in `COMPONENT_LIBRARY.md` §7.1; `visual-alignment-report.md` §11.
+
 ## [0.1.26] — 2026-07-05 — Package 3: Typography Library
 
 Built the reusable **typography system** for the device — shared tokens plus two SVG

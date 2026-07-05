@@ -238,6 +238,38 @@ for the *trace*, never for the device.
 Phosphor palette: green `#00FF66`, amber `#FFD100`, cyan `#00FFFF`,
 magenta `#FF00FF`, red `#FF3830`.
 
+### 7.1 Display Operating Framework — Package 4 ✅ built (firmware reconstruction)
+
+The reusable **LCD operating framework**: the permanent layout skeleton into which
+all future display widgets render, **rebuilt as a traced reconstruction of the
+firmware LCD layout — not a modern dashboard.** Rectangles are lifted from the
+firmware-accurate `LcdScreen.jsx` coordinates (which match the PACE-mode reference in
+`../visual-alignment-report.md §1`), in the **same locked 673×515 logical space**
+(anchors: parameter divider x=186, top rule y=118, softkey rule y=468, six softkey
+columns at pitch 112). It is **layout only** — no patient data, no waveforms, no
+values, no simulator logic — and modifies no locked asset (`LcdScreen.jsx` untouched).
+
+| Item | File | Notes |
+|------|------|-------|
+| Layout tokens | `display/DisplayLayoutTokens.js` | LCD canvas, firmware anchors, phosphor palette, z-`LAYERS`, placeholder styling, `debugColors`. |
+| Region map | `display/DisplayRegions.js` | The firmware regions as `{ id, name, layer, parent, rect, injects }` in 673×515 space, plus lookups. Single source of truth. |
+| Framework component | `display/DisplayFramework.jsx` | Renders the firmware skeleton (glass + hairline rules + region placeholders) and exposes each region as an injection **slot** (`slots={{ [id]: node }}`, clipped). Props: `mode` (`clean`/`debug`), `showBoundaries`/`showNames`/`showHints`/`showStructure`/`showBackground`/`showCoords`/`slots`/`idPrefix`. |
+| Firmware reference | `display/FirmwareReference.jsx` | A firmware-layout **reconstruction** (the "Manufacturer" panel) from the documented reference — not a screenshot copy. Continuous ECG/CO₂ strokes, idle-dash values, firmware softkeys. |
+| Review page | `views/DisplayFrameworkReview.jsx` (`/display-framework-review`) | The **Manufacturer → Overlay → Framework** comparison, plus the region legend and layer hierarchy. |
+
+**Firmware regions** (layer · nesting): Left Parameter Column (→ SpO₂, NIBP, CO₂/RR),
+Top Status Strip (→ Timer/Mode, CPR Release/PPI, ECG/Lead/HR), **one continuous
+Waveform Plotting Area** (no boxed lanes), Value/Readout Row, and the firmware Softkey
+Label Strip (thin column rules + centered labels, **no button chrome**) — all
+persistent `region` layer; plus Alarm Banner and Therapy/Mode Message (transient
+`overlay` layer, drawn **over the waveform area**).
+
+**Injection targets** each region exposes for later phases: Waveforms, Vitals,
+Therapy Messages, Charging Status, Pacing, CPR Feedback, Softkey Labels, Alarm
+Messages, Status Icons. Binding real widgets is a later phase (Display Widgets →
+Master Assembly / React Wiring). A real screenshot dropped at `public/lcd_reference.png`
+is shown in the Manufacturer panel for exact tracing.
+
 ---
 
 ## 8. Typography — Package 3 (Typography Library) ✅ built
@@ -353,6 +385,11 @@ src/components/rseries/typography/typographyTokens.js # Package 3 — type token
 src/components/rseries/typography/RSeriesLabel.jsx   # Package 3 — printed hardware legend primitive (SVG text)
 src/components/rseries/typography/RSeriesLCDText.jsx # Package 3 — LCD-style screen text primitive (SVG text)
 src/views/TypographyReview.jsx                       # Package 3 — /typography-review (temporary)
+src/components/rseries/display/DisplayLayoutTokens.js # Package 4 — firmware LCD tokens + anchors + phosphor + debugColors
+src/components/rseries/display/DisplayRegions.js     # Package 4 — firmware LCD regions (single source of truth)
+src/components/rseries/display/DisplayFramework.jsx  # Package 4 — firmware LCD skeleton + injection slots (clean/debug)
+src/components/rseries/display/FirmwareReference.jsx # Package 4 — firmware LCD reconstruction (Manufacturer panel)
+src/views/DisplayFrameworkReview.jsx                 # Package 4 — /display-framework-review (Manufacturer→Overlay→Framework)
 src/assets/rseries/controls/softkey_blank.svg       # Pass 2G — single molded softkey
 src/assets/rseries/controls/softkey_row.svg         # Pass 2G — six-key molded row
 src/components/rseries/controls/SoftKey.ts          # Package 4 — softkey model (TS)
