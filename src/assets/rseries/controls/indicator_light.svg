@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Indicator Light (reusable physical lens, UNLIT).
+     Industrial Design Pass 2J (Controls Library — AC Power / Battery indicators).
+     The small round lens indicators that sit just left of the Code Readiness
+     window (master layer 16_LEDIndicators — AC · BATT), reconstructed from the
+     manufacturer photos. One reusable lens serves both the AC and Battery
+     indicators; only the illumination differs.
+     Layers (physical lens only — NO illumination is baked in):
+       1. Molded side depth (subtle darker gray beneath the rim)
+       2. Thin gray molded rim / bezel
+       3. Recessed lens seat (dark ring)
+       4. Translucent unlit lens (neutral gray — reads as a clear lens, dark)
+       5. Restrained satin reflection (single small highlight, not glossy)
+     Satin molded plastic — factory-new, neutral CAD lighting, minimal shadows,
+     NOT a web-style LED. This is the OFF/unlit lens; React composites the
+     illumination (green / yellow / alternating) on top — never baked here.
+     Local box for review; footprint locked to master layer 16 (cx 952 / 996,
+     cy 100, r 13). -->
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- thin gray molded rim / bezel -->
+    <linearGradient id="il-rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d0d2cd"/>
+      <stop offset="1" stop-color="#a7a9a4"/>
+    </linearGradient>
+    <!-- translucent unlit lens — neutral, slightly domed -->
+    <radialGradient id="il-lens" cx="0.42" cy="0.38" r="0.78">
+      <stop offset="0" stop-color="#dfe1dc"/>
+      <stop offset="0.55" stop-color="#c3c5c0"/>
+      <stop offset="1" stop-color="#9a9c97"/>
+    </radialGradient>
+  </defs>
+  <g id="indicator_light">
+    <!-- molded side depth (subtle) -->
+    <circle cx="50" cy="51.4" r="28" fill="#b6b8b3"/>
+    <!-- thin gray molded rim / bezel -->
+    <circle cx="50" cy="50" r="28" fill="url(#il-rim)" stroke="#9a9c97" stroke-width="1"/>
+    <!-- recessed lens seat (dark ring the lens sits in) -->
+    <circle cx="50" cy="50" r="23" fill="#8b8d88"/>
+    <!-- translucent unlit lens -->
+    <circle cx="50" cy="50" r="21" fill="url(#il-lens)"/>
+    <!-- inner rim shadow (recess) -->
+    <circle cx="50" cy="50" r="21" fill="none" stroke="#000000" stroke-opacity="0.12" stroke-width="1.5"/>
+    <!-- restrained satin reflection (single small highlight — not glossy) -->
+    <ellipse cx="43" cy="42.5" rx="7.5" ry="4.5" fill="#ffffff" opacity="0.35"/>
+  </g>
+</svg>

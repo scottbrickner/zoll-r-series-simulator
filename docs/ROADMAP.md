@@ -1,7 +1,7 @@
 # ROADMAP
 
 **Project:** ZOLL R Series Simulator
-**Last reviewed:** 2026-07-02
+**Last reviewed:** 2026-07-05
 
 This roadmap is the single place to see where the project stands. It separates
 **what is implemented and shipping** from **what is partial** and **what is
@@ -15,10 +15,12 @@ For the reasoning behind each area see [`PROJECT_VISION.md`](PROJECT_VISION.md);
 for behavior detail see [`SIMULATOR_REQUIREMENTS.md`](SIMULATOR_REQUIREMENTS.md);
 for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 
-> **Current focus:** feature development is paused for a documentation freeze.
-> Controls Library sub-passes 2A–2D (Mode Selector, Function Button, Energy
-> Select, Therapy Buttons) are **APPROVED / FROZEN**. The **next milestone is
-> Industrial Design Pass 2E — Pacer Knobs** (see below).
+> **Current focus:** the **physical ZOLL R Series front-panel industrial asset
+> library is COMPLETE** — all thirteen front-panel families (Body + Controls Library
+> Passes 2A–2J) are **APPROVED / FROZEN**. No further physical-appearance passes are
+> planned; artwork is frozen. Work now shifts off physical artwork to: **Typography
+> Library → Display Operating Framework → Display Widgets → Master Assembly → React
+> Wiring → Clinical behavior refinement** (see Milestone 16 and "Remaining work").
 
 ---
 
@@ -41,11 +43,18 @@ for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 | 13 | LCD framework | ✅ Done |
 | 14 | Device master artwork (geometry LOCKED) | ✅ Done |
 | 15 | **Industrial Design Pass 1 — Body** | ✅ **Done (assets LOCKED / APPROVED)** |
-| 16 | **Industrial Design Pass 2 — Controls Library** (2A–2D frozen) | 🟡 **In progress — NEXT: Pass 2E Pacer Knobs** |
+| 16 | **Industrial Design Pass 2 — Controls Library** (2A–2J) | ✅ **Done — physical front panel COMPLETE / FROZEN** |
 | 17 | Waveform library | 🟡 Partial |
 | 18 | Typography tokens | 🟡 Partial |
 | 19 | Automated testing / CI | 🟡 Partial |
 | 20 | Release Candidate (1.0) | ⬜ Planned |
+| — | *Physical front-panel asset library* | ✅ **COMPLETE (all 13 families frozen)** |
+| 21 | **Typography Library** (next phase) | ⬜ Planned |
+| 22 | **Display Operating Framework** | ⬜ Planned |
+| 23 | **Display Widgets** | ⬜ Planned |
+| 24 | **Master Assembly** (wire approved parts into the device) | ⬜ Planned |
+| 25 | **React Wiring** (live state → assembled parts) | ⬜ Planned |
+| 26 | **Clinical behavior refinement** | ⬜ Planned |
 
 ---
 
@@ -186,35 +195,44 @@ outside a deliberate, documented alignment pass.
 
 ## Planned and partial
 
-### 16. Industrial Design Pass 2 — Controls Library — 🟡 In progress (2A–2D APPROVED / FROZEN)
+### 16. Industrial Design Pass 2 — Controls Library — ✅ Done (COMPLETE / FROZEN)
 
 Reconstruct the interactive controls as approved, reusable modular parts in
-`src/assets/rseries/controls/`, matching the locked master geometry exactly.
-Built and approved **one sub-pass at a time**. Sub-pass status:
+`src/assets/rseries/controls/`, matching the locked master geometry exactly. Built
+and approved **one sub-pass at a time**. **All sub-passes are complete and
+APPROVED / FROZEN** — together with the Body (Pass 1) this completes the **physical
+front-panel industrial asset library**:
 
 | Sub-pass | Control | Master layer(s) | Status |
 |----------|---------|-----------------|--------|
 | 2A | Mode selector (back / sections / knob / dots) | `11`–`14` | ✅ **APPROVED / FROZEN** |
 | 2B | Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | ✅ **APPROVED / FROZEN** |
 | 2C | Energy select rocker | `10_EnergySelect` | ✅ **APPROVED / FROZEN** |
-| 2D | Therapy buttons (ANALYZE / CHARGE / SHOCK) | `09_TherapyButtons` | ✅ **APPROVED / FROZEN** |
-| **2E** | **Pacer knobs (OUTPUT / RATE) + 4:1** | `15_PacerKnobs` | ⬜ **Planned — NEXT MILESTONE** |
-| 2F+ | Softkeys, LED indicators, self-test window, NIBP button | `07` / `16` / `17` / `18` | ⬜ pending |
+| 2D.1 | Therapy buttons (ANALYZE / CHARGE / SHOCK) | `09_TherapyButtons` | ✅ **APPROVED / FROZEN** |
+| 2E | Pacer knobs (OUTPUT / RATE) | `15_PacerKnobs` | ✅ **APPROVED / FROZEN** |
+| 2F | Code Readiness / self-test window | `17_SelfTestWindow` | ✅ **APPROVED / FROZEN** |
+| 2G | Physical Softkey Row | `07_Softkeys` | ✅ **APPROVED / FROZEN** |
+| Pkg 4 | Softkey Framework (programmable 6-key row) | `07_Softkeys` | ✅ **APPROVED / FROZEN** |
+| 2H | 4:1 button | `15_PacerKnobs` | ✅ **APPROVED / FROZEN** |
+| 2I | NIBP button (arm + BP cuff) | `18_BP_Button` | ✅ **APPROVED / FROZEN** |
+| 2J | AC Power + Battery indicator lights | `16_LEDIndicators` | ✅ **APPROVED / FROZEN** |
 
-> **Next milestone: Industrial Design Pass 2E — Pacer Knobs** (the OUTPUT and RATE
-> knobs + the 4:1 button), master layer `15_PacerKnobs`.
+> **Physical front panel COMPLETE.** No further physical-appearance passes are
+> planned. Future work shifts to (in order): **Typography Library → Display
+> Operating Framework → Display Widgets → Master Assembly → React Wiring → Clinical
+> behavior refinement** (Milestones 21–26).
 
-Rules for the pass (see [`COMPONENT_LIBRARY.md`](COMPONENT_LIBRARY.md) and
+Rules that governed the pass, and the standing freeze (see
+[`COMPONENT_LIBRARY.md`](COMPONENT_LIBRARY.md) and
 [`ART_DIRECTION.md`](ART_DIRECTION.md)):
 
 - Buttons and knobs are **single reusable static parts**; instances differ only by
   position, printed label, and the fill/glow/rotation React binds.
 - Printed mode-selector arcs are a separate static part and **never rotate**.
-- Each part reassembles to the **identical** master geometry — this pass adds
-  modular parts, it does **not** change the locked look.
-- Deliver and approve **one part at a time**, matching the body-pass workflow.
-- Approved sub-passes are **frozen** — no geometry/material edits unless explicitly
-  reopened in a new dated pass (see `visual-alignment-report.md`).
+- Each part reassembles to the **identical** master geometry — this pass added
+  modular parts, it did **not** change the locked look.
+- Approved parts are **frozen** — no geometry/material/colour edits unless a family
+  is explicitly reopened in a new dated pass (see `visual-alignment-report.md` §8.18).
 
 ### 17. Waveform library — 🟡 Partial
 
@@ -250,14 +268,22 @@ Rules for the pass (see [`COMPONENT_LIBRARY.md`](COMPONENT_LIBRARY.md) and
 
 ## Remaining work, at a glance
 
-1. **Industrial Design Pass 2E: Pacer Knobs** (Milestone 16, next sub-pass) — the
-   next milestone. Sub-passes 2A–2D are frozen.
-2. Finish the Controls Library (softkeys, LEDs, self-test, NIBP), then complete the
-   rest of the modular asset library (LCD, icons, labels) and wire approved parts
-   into the shipping assembly.
-3. Expand the waveform library and add rate coupling (Milestone 17).
-4. Grow automated testing toward CI and visual regression (Milestone 19).
-5. Harden and tag the Release Candidate (Milestone 20).
+The **physical front-panel industrial asset library is COMPLETE and FROZEN** (Body +
+Controls Library Passes 2A–2J). Remaining work is **non-physical-artwork**, in order:
 
-**No remaining work may alter the locked device geometry. Behavior and modular
-reconstruction only.**
+1. **Typography Library** (Milestone 21) — formalize a typographic scale/token set
+   and separate printed wordmarks/legends into a `labels/` asset group.
+2. **Display Operating Framework** (Milestone 22) — the LCD operating model that
+   decides what the screen shows per mode/state.
+3. **Display Widgets** (Milestone 23) — on-screen LCD widgets (values, waveforms,
+   banners, softkey labels) as reusable parts.
+4. **Master Assembly** (Milestone 24) — assemble the approved modular parts into the
+   shipping device, replacing the monolithic master part-by-part (identical geometry).
+5. **React Wiring** (Milestone 25) — bind live state to the assembled parts
+   (button/knob/LED/indicator/self-test state, softkey layouts, waveforms).
+6. **Clinical behavior refinement** (Milestone 26) — expand the waveform library
+   (Milestone 17), deepen scenario/behaviour fidelity, and grow automated testing /
+   CI (Milestone 19) toward the Release Candidate (Milestone 20).
+
+**No remaining work may alter the locked device geometry or the frozen physical
+assets. Behavior, display, assembly, and wiring only.**

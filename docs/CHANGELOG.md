@@ -13,22 +13,115 @@ project uses date-stamped milestone entries pending a tagged 1.0.
 Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 #20). No changes may alter the locked device geometry.
 
-### Next milestone
-- **Industrial Design Pass 2: Controls Library** — reconstruct the interactive
-  controls (buttons, knobs, energy select, mode selector, pacer knobs, LEDs,
-  self-test, NIBP) as approved reusable modular parts under
-  `src/assets/rseries/controls/`, each matching the locked master geometry.
+### Milestone reached
+- **Industrial Design — physical front-panel asset library COMPLETE.** All thirteen
+  front-panel families are built and **APPROVED / FROZEN** (see `[0.1.25]`). No
+  further physical-appearance passes are planned; artwork is frozen.
 
-### Also planned
-- Wire the approved modular parts into the shipping assembly (replacing the
-  monolithic master part-by-part).
-- Expand the waveform library (AV blocks, VT/VF variants, noise) and add per-trace
-  rate coupling.
-- Formalize typography tokens and separate printed wordmarks into `labels/`.
-- Grow automated testing toward component/interaction and visual-regression
-  coverage; wire CI.
+### Next phases (post-physical-asset library)
+1. **Typography Library** — formalize a typographic scale/token set and separate
+   printed wordmarks/legends into a `labels/` asset group.
+2. **Display Operating Framework** — the LCD operating model that drives what the
+   screen shows per mode/state.
+3. **Display Widgets** — the on-screen LCD widgets (values, waveforms, banners,
+   softkey labels) as reusable parts.
+4. **Master Assembly** — assemble the approved modular parts into the shipping
+   device, replacing the monolithic master part-by-part (identical geometry).
+5. **React Wiring** — bind live state to the assembled parts (button/knob/LED/
+   indicator/self-test state, softkey layouts, waveforms).
+6. **Clinical behavior refinement** — expand the waveform library and deepen
+   scenario/behaviour fidelity.
 
 ---
+
+## [0.1.25] — 2026-07-05 — Industrial Design Package COMPLETE — physical front panel frozen
+
+**The physical ZOLL R Series front-panel industrial asset library is COMPLETE.**
+Every physical front-panel family has been reconstructed as an approved, reusable
+modular part matching the locked master geometry, and all are **APPROVED / FROZEN.**
+Documentation only — no artwork, component, or simulator-logic change.
+
+### Approved / frozen — the complete physical front-panel library
+| # | Family | Pass | Master layer(s) |
+|---|--------|------|-----------------|
+| 1 | **Body** (housing/chassis) | Pass 1 | `01`–`06`, `19`, `21`–`22` (geometry LOCKED) |
+| 2 | **Mode Selector** | Pass 2A | `11`–`14` |
+| 3 | **Function Buttons** | Pass 2B | `08` |
+| 4 | **Energy Select** | Pass 2C | `10` |
+| 5 | **Therapy Buttons** (ANALYZE / CHARGE / SHOCK) | Pass 2D.1 | `09` |
+| 6 | **Pacer Knobs** (OUTPUT / RATE) | Pass 2E | `15` |
+| 7 | **Code Readiness Window** | Pass 2F | `17` |
+| 8 | **Physical Softkey Row** | Pass 2G | `07` |
+| 9 | **Softkey Framework** | Package 4 | `07` |
+| 10 | **4:1 Button** | Pass 2H | `15` |
+| 11 | **NIBP Button** | Pass 2I | `18` |
+| 12 | **AC Power Indicator** | Pass 2J | `16` |
+| 13 | **Battery Indicator** | Pass 2J | `16` |
+
+### Status
+- The physical front panel is **complete**. No further physical-appearance passes
+  are planned; the artwork is **frozen** (no geometry/material/colour edits unless a
+  family is explicitly reopened in a new dated pass in `visual-alignment-report.md`).
+- The approved parts remain the reference and — except the Mode Selector — are **not
+  yet wired into the shipping master** (`RSeriesDevice.jsx` still renders); wire-in
+  is a later phase.
+
+### Future work shifts to (non-physical-artwork)
+1. **Typography Library** — typographic tokens + `labels/` wordmark group.
+2. **Display Operating Framework** — LCD operating model per mode/state.
+3. **Display Widgets** — on-screen LCD widgets as reusable parts.
+4. **Master Assembly** — assemble approved parts into the shipping device.
+5. **React Wiring** — bind live state to the assembled parts.
+6. **Clinical behavior refinement** — waveform/scenario fidelity.
+
+### Recorded in
+- `ROADMAP.md` (Milestone 16 marked complete; future phases listed),
+  `COMPONENT_LIBRARY.md` §5 / status-at-a-glance, `visual-alignment-report.md` §8.18.
+
+## [0.1.24] — 2026-07-05 — Industrial Design Pass 2J: Indicator Lights — APPROVED / FROZEN
+
+The **Indicator Light** component is **APPROVED and FROZEN.** Documentation only —
+no artwork, component, or simulator-logic change. The approved part remains the
+reference and is not yet wired into the shipping master.
+
+### Approved / frozen (the reference)
+- **Physical lens asset is approved** (`indicator_light.svg`) — small round
+  front-panel lens: thin gray molded rim, recessed seat, translucent unlit lens.
+- **Illumination is React-controlled** (composited by `IndicatorLight.jsx`).
+- **No glow is baked into `indicator_light.svg`** — the asset is the unlit lens only.
+- **AC indicator** supports **off / on** (on = green).
+- **Battery indicator** supports **off**, **charging (yellow)**, **charged
+  (green)**, **alternating yellow/green fault**, and **disabled / muted**.
+- **Styling matches small physical front-panel lenses, not app LEDs.**
+- Frozen record: `visual-alignment-report.md` §8.17 / §8.17.1;
+  `COMPONENT_LIBRARY.md` §5. Freeze rule: no geometry/material/colour edits unless
+  explicitly reopened in a new dated pass.
+
+## [0.1.23] — 2026-07-05 — Industrial Design Pass 2J: AC Power & Battery Indicator Lights
+
+Built the reusable **indicator lights** — the small round AC-power / Battery lens
+indicators that sit just left of the Code Readiness window. Not wired into the
+shipping master; no body, LCD, Mode Selector, Function Button, Energy Select,
+Therapy Button, Pacer Knob, Code Readiness, softkey, 4:1, NIBP, LCD-asset, or
+simulator-logic change.
+
+### Added
+- `src/components/rseries/controls/IndicatorLight.jsx` — one reusable round lens
+  indicator for both AC and Battery. The **physical lens is fixed geometry** (thin
+  gray molded rim, recessed seat, translucent unlit lens, one restrained satin
+  reflection) and carries **no baked illumination** — React composites a lit-lens
+  overlay on top (the lens lights up, never a bloom/halo). Props: `type`
+  (`ac`/`battery`), `status` (`off`/`green`/`yellow`/`charging`/`fault`),
+  `flashing`, `enabled`, `cx/cy/r`, `idPrefix`. Geometry never changes.
+- `src/assets/rseries/controls/indicator_light.svg` — blank **unlit** physical lens
+  asset. Footprint matches the locked master layer 16 (`16_LEDIndicators`, cy 100,
+  r 13; AC cx 952 / BATT cx 996).
+- Manual-accurate behaviour: AC lights **green** on AC power; Battery shows **steady
+  yellow = charging**, **steady green = charged**, **alternating yellow/green = no
+  battery or charging fault** (opposed discrete SMIL opacity animations).
+- `/controls-review` gains an Indicator Lights section: blank lens; AC off / on;
+  Battery off / charging (yellow) / charged (green) / fault (alternating); disabled.
+- Recorded in `visual-alignment-report.md` §8.17; `COMPONENT_LIBRARY.md` §5.
 
 ## [0.1.22] — 2026-07-05 — Industrial Design Pass 2I: NIBP Button — APPROVED / FROZEN
 

@@ -579,6 +579,100 @@ the shipping master**; React state wiring may be connected at master wire-in wit
 reopening the frozen artwork. Footprint locked to master layer 18 (`18_BP_Button`,
 cx 128, cy 792, r 32).
 
+## 8.17 Indicator Lights — 2026-07-05 — Industrial Design Pass 2J (built)
+
+Built the reusable **AC Power / Battery indicator lights** (`indicator_light.svg` +
+`IndicatorLight.jsx`) from the manufacturer photos — the small round lens
+indicators that sit just left of the Code Readiness window (master layer 16,
+`16_LEDIndicators`, AC cx 952 / BATT cx 996, cy 100, r 13). One reusable physical
+lens serves both; only the illumination differs.
+
+- **Physical asset (fixed geometry, unlit):** a small round lens — a **thin gray
+  molded rim/bezel** (`#d0d2cd → #a7a9a4`, stroke `#9a9c97`), a recessed lens seat
+  (`#8b8d88`), and a **translucent unlit lens** (neutral radial `#dfe1dc → #c3c5c0 →
+  `#9a9c97`) with one restrained satin reflection and a soft inner-rim shadow.
+  Factory-new satin molded plastic, minimal shadows — a physical lens, **not** a
+  web-style LED. **No illumination is baked into the SVG.**
+- **React illumination (state only):** a coloured lit-lens overlay composited on top
+  of the unlit lens — a radial fill (bright centre → saturated core → darker edge)
+  plus a thin lit rim. Deliberately the **lens lighting up**, not a bloom/halo.
+  Colours: green `#35e055` (core, from the status-LED green family) and yellow
+  `#ffd21e`. Props: `type` (`ac`/`battery`), `status`
+  (`off`/`green`/`yellow`/`charging`/`fault`), `flashing`, `enabled`, `cx/cy/r`,
+  `idPrefix`. **The SVG geometry never changes.**
+- **Manual behaviour (R Series):** AC illuminates **green** on AC power. Battery:
+  **steady yellow = charging** (`status='charging'` → steady yellow), **steady green
+  = charged**, **alternating yellow/green = no battery or charging fault**
+  (`status='fault'` → two overlays cross-switched by opposed discrete SMIL opacity
+  animations, 1.2 s / 0.6 s per colour). `flashing` pulses a steady lit lens;
+  `enabled=false` mutes/dims the lens (0.5 opacity, illumination suppressed).
+
+Reviewed on `/controls-review` (blank lens; AC off/on; Battery off / charging /
+charged / fault alternating; disabled). Not wired into the master. No body, LCD,
+Mode Selector, Function Button, Energy Select, Therapy Button, Pacer Knob, Code
+Readiness, softkey, 4:1, NIBP, or simulator-logic change.
+
+### 8.17.1 Indicator Lights — 2026-07-05 — APPROVED / FROZEN
+
+The Indicator Light component (§8.17) is **APPROVED and FROZEN.** Approved facts
+(the frozen reference):
+
+- **Physical lens asset is approved** (`indicator_light.svg`) — a small round
+  front-panel lens: thin gray molded rim/bezel, recessed seat, translucent unlit
+  lens, one restrained satin reflection. Factory-new satin molded plastic.
+- **Illumination is React-controlled** — composited on top by `IndicatorLight.jsx`;
+  the lens lights up, never a bloom/halo.
+- **No glow is baked into `indicator_light.svg`** — the asset is the OFF/unlit lens
+  only.
+- **AC indicator** supports **off / on** (on = green when connected to AC power).
+- **Battery indicator** supports **off**, **charging (steady yellow)**, **charged
+  (steady green)**, **alternating yellow/green fault** (no battery / charging
+  fault), and **disabled / muted**.
+- **Styling matches small physical front-panel lenses, not app LEDs** — low visual
+  weight, molded rim, translucent lens.
+- Props (frozen): `type` (`ac`/`battery`), `status`
+  (`off`/`green`/`yellow`/`charging`/`fault`), `flashing`, `enabled`, `cx/cy/r`,
+  `idPrefix`. The SVG geometry never changes.
+
+Freeze rule: no geometry/material/colour edits unless explicitly reopened in a new
+dated pass here. The approved part remains the reference and is **not yet wired into
+the shipping master**; React state wiring (AC/battery status) may be connected at
+master wire-in without reopening the frozen artwork. Footprint locked to master
+layer 16 (`16_LEDIndicators`, cy 100, r 13; AC cx 952 / BATT cx 996).
+
+## 8.18 Industrial Design Package — 2026-07-05 — PHYSICAL FRONT PANEL COMPLETE / FROZEN
+
+**The physical ZOLL R Series front-panel industrial asset library is COMPLETE.**
+Every physical front-panel family has been reconstructed as an approved, reusable
+modular part that reassembles to the identical locked master geometry, and every one
+is **APPROVED / FROZEN.** This supersedes the interim finalization in §8.10.
+
+| # | Family | Pass | Master layer(s) | Frozen record |
+|---|--------|------|-----------------|---------------|
+| 1 | Body (housing/chassis) | Pass 1 | `01`–`06`, `19`, `21`–`22` | §1–§6 (geometry LOCKED) |
+| 2 | Mode Selector | Pass 2A | `11`–`14` | §8.1 / §8.2 / §8.3 |
+| 3 | Function Buttons | Pass 2B | `08` | §8.4 / §8.5 |
+| 4 | Energy Select | Pass 2C | `10` | §8.6 / §8.7 |
+| 5 | Therapy Buttons | Pass 2D.1 | `09` | §8.8 / §8.9 |
+| 6 | Pacer Knobs | Pass 2E | `15` | §8.11 |
+| 7 | Code Readiness Window | Pass 2F | `17` | §8.12 |
+| 8 | Physical Softkey Row | Pass 2G | `07` | §8.14 |
+| 9 | Softkey Framework | Package 4 | `07` | §8.13 |
+| 10 | 4:1 Button | Pass 2H | `15` | §8.15 |
+| 11 | NIBP Button | Pass 2I | `18` | §8.16 / §8.16.1 / §8.16.2 |
+| 12 | AC Power Indicator | Pass 2J | `16` | §8.17 / §8.17.1 |
+| 13 | Battery Indicator | Pass 2J | `16` | §8.17 / §8.17.1 |
+
+**Status:** the physical front panel is complete. No further physical-appearance
+passes are planned. Global freeze rule: no geometry/material/colour edits to any
+family above unless that family is explicitly reopened in a new dated pass here. The
+approved parts remain the reference and — except the Mode Selector — are **not yet
+wired into the shipping master**; assembly and React state wiring are later phases.
+
+**Future work shifts to (non-physical-artwork):** (1) Typography Library,
+(2) Display Operating Framework, (3) Display Widgets, (4) Master Assembly,
+(5) React Wiring, (6) Clinical behavior refinement. See [`ROADMAP.md`](docs/ROADMAP.md).
+
 ## 8.10 End-of-day finalization — 2026-07-02 — Pass 2 controls frozen
 
 Finalization of today's Industrial Design work. The following control families are
@@ -598,8 +692,9 @@ the Mode Selector they are **not yet wired into the shipping master**. React sta
 wiring (e.g. the SHOCK glow overlay, knob rotation) may still be connected at
 master wire-in without reopening the frozen geometry.
 
-**Next milestone: Industrial Design Pass 2E — Pacer Knobs** (`15_PacerKnobs`,
-OUTPUT / RATE knobs + 4:1). Not started.
+> **Superseded.** This 2026-07-02 snapshot covered only families 1–5. The full
+> physical front-panel library (families 1–13) was completed and frozen on
+> 2026-07-05 — see **§8.18** above for the authoritative, complete freeze record.
 
 ## 9. Dev-only screenshot capture checklist
 

@@ -11,6 +11,7 @@ import pacerKnobAsset from '../assets/rseries/controls/pacer_knob.svg'
 import codeReadinessAsset from '../assets/rseries/controls/code_readiness_window.svg'
 import fourToOneAsset from '../assets/rseries/controls/four_to_one_button.svg'
 import nibpAsset from '../assets/rseries/controls/nibp_button.svg'
+import indicatorLightAsset from '../assets/rseries/controls/indicator_light.svg'
 import ModeSelector, { MODE_ANGLE } from '../components/rseries/controls/ModeSelector'
 import FunctionButton from '../components/rseries/controls/FunctionButton'
 import TherapyButton from '../components/rseries/controls/TherapyButton'
@@ -18,6 +19,7 @@ import PacerKnob from '../components/rseries/controls/PacerKnob'
 import CodeReadiness from '../components/rseries/controls/CodeReadiness'
 import FourToOneButton from '../components/rseries/controls/FourToOneButton'
 import NIBPButton from '../components/rseries/controls/NIBPButton'
+import IndicatorLight from '../components/rseries/controls/IndicatorLight'
 
 /**
  * TEMPORARY Controls Review page for Industrial Design Pass 2 (Controls Library).
@@ -122,6 +124,22 @@ function NIBPTile({ label, sub, props }) {
         <svg className="artpreview__layer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
           role="img" aria-label={`NIBP button — ${label} ${sub || ''}`}>
           <NIBPButton idPrefix={`nibp-${label}${sub || ''}`.replace(/\W/g, '')} {...props} />
+        </svg>
+      </div>
+      <figcaption><strong>{label}</strong>{sub && <span className="artpreview__file">{sub}</span>}</figcaption>
+    </figure>
+  )
+}
+
+/** One indicator-light tile in a given type/status. */
+function ILTile({ label, sub, type, status, flashing, enabled }) {
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+        <svg className="artpreview__layer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`Indicator light — ${label}`}>
+          <IndicatorLight type={type} status={status} flashing={flashing} enabled={enabled}
+            idPrefix={`il-${label}`.replace(/\W/g, '')} />
         </svg>
       </div>
       <figcaption><strong>{label}</strong>{sub && <span className="artpreview__file">{sub}</span>}</figcaption>
@@ -511,6 +529,43 @@ export default function ControlsReview() {
           <CRTile label="Not ready — red X" status="notReady" />
           <CRTile label="Testing" status="testing" />
           <CRTile label="Ready · flashing" status="ready" flashing />
+        </div>
+      </section>
+
+      {/* ============ Indicator Lights (Pass 2J) ============ */}
+      <section className="ctrlreview__assembled">
+        <h2>Indicator Lights (Pass 2J)</h2>
+        <p className="artpreview__note">
+          Reusable small round <strong>lens indicators</strong> (AC power · Battery)
+          that sit just left of the Code Readiness window. One physical lens — a
+          <strong> thin gray molded rim</strong>, a recessed seat, and a
+          <strong> translucent unlit lens</strong> with a single restrained satin
+          reflection — serves both. A molded plastic lens, <strong>not</strong> a
+          web-style LED, and <strong>no illumination is baked into the SVG</strong>.
+          React composites the illumination on top (the lens lights up — never a
+          bloom/halo). Props: <code>type</code> (<code>ac</code>/<code>battery</code>),
+          <code>status</code> (<code>off</code>/<code>green</code>/<code>yellow</code>/
+          <code>charging</code>/<code>fault</code>), <code>flashing</code>,
+          <code>enabled</code>. Per the R Series manual: AC lights green on AC power;
+          Battery shows <strong>steady yellow = charging</strong>, <strong>steady
+          green = charged</strong>, <strong>alternating yellow/green = no battery or
+          charging fault</strong>. Footprint locked to master layer 16.
+        </p>
+
+        <div className="msc__grid msc__grid--3">
+          <figure className="msc__griditem">
+            <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+              <img className="artpreview__layer" src={indicatorLightAsset} alt="Indicator light — blank physical lens (unlit)" />
+            </div>
+            <figcaption><strong>Blank physical lens</strong><span className="artpreview__file">controls/indicator_light.svg</span></figcaption>
+          </figure>
+          <ILTile label="AC — off" type="ac" status="off" />
+          <ILTile label="AC — on (green)" type="ac" status="green" />
+          <ILTile label="Battery — off" type="battery" status="off" />
+          <ILTile label="Battery — charging (yellow)" type="battery" status="charging" />
+          <ILTile label="Battery — charged (green)" type="battery" status="green" />
+          <ILTile label="Battery — fault (alt. yellow/green)" type="battery" status="fault" />
+          <ILTile label="Disabled / muted" type="battery" status="green" enabled={false} />
         </div>
       </section>
 

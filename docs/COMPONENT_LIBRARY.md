@@ -10,8 +10,15 @@ how they are structured in SVG. The look and the art-direction rules are in
 [`ART_DIRECTION.md`](ART_DIRECTION.md); milestone/pass status in
 [`ROADMAP.md`](ROADMAP.md).
 
-> **Status at a glance (end of 2026-07-02).**
-> - The **shipping** device is the single **locked master** (`RSeriesDevice.jsx`).
+> **Status at a glance (2026-07-05) — PHYSICAL FRONT-PANEL LIBRARY COMPLETE.**
+> - The **physical ZOLL R Series front-panel industrial asset library is COMPLETE**:
+>   all thirteen front-panel families below are built and **APPROVED / FROZEN**. No
+>   further physical-appearance passes are planned. Future work is non-artwork:
+>   Typography Library → Display Operating Framework → Display Widgets → Master
+>   Assembly → React Wiring → Clinical behavior refinement (see [`ROADMAP.md`](ROADMAP.md)).
+> - The **shipping** device is still the single **locked master** (`RSeriesDevice.jsx`);
+>   approved parts are the frozen reference and — except the Mode Selector — are not
+>   yet wired into it (Master Assembly is a later phase).
 > - **APPROVED / FROZEN** control families (reusable parts, not yet wired into the
 >   master except the Mode Selector):
 >   1. ✅ **Body** (Pass 1)
@@ -25,8 +32,13 @@ how they are structured in SVG. The look and the art-direction rules are in
 >   7. ✅ **NIBP Button** (Pass 2I, refined) — **APPROVED / FROZEN**: pale/white
 >      molded circular face, thin gray rim/bezel, blue arm + BP-cuff pictogram
 >      (*not* a generic blue app-style button); not yet wired into the master.
-> - Remaining controls (LED indicators) and the `lcd/`, `icons/`, `labels/`
->   groups are pending later passes.
+>   8. ✅ **Indicator Lights** (Pass 2J) — **APPROVED / FROZEN**: one physical
+>      translucent lens (thin gray molded rim) for the **AC Power** and **Battery**
+>      indicators, React-controlled illumination, no glow baked into the SVG; not yet
+>      wired into the master.
+> - **All physical front-panel controls are now built and frozen.** The `lcd/`,
+>   `icons/`, and `labels/` asset groups are **not** physical front-panel hardware —
+>   they belong to the Typography Library / Display phases that follow.
 
 ---
 
@@ -135,7 +147,7 @@ reassembling to the identical master geometry (footprint/position locked).
 | Pacer knobs (OUTPUT / RATE) | `15_PacerKnobs` | `pacer_knob.svg` + `PacerKnob.jsx` (fixed teal socket + rotating knob; React `rotationAngle`/`pressed`/`enabled`) | 🟡 **Pass 2E — built (not yet wired into master)** |
 | Softkeys | `07_Softkeys` | **Physical:** `softkey_blank.svg` + `softkey_row.svg` (Pass 2G, warm-gray molded × 6). **Framework:** `SoftKey.ts` + `softkeyLayouts.ts` + `SoftKeyRow.tsx` (Package 4, React label/enabled/visible/highlighted/pressed, per-mode layouts) | 🟡 **built (not yet wired into master)** |
 | 4:1 button | `15_PacerKnobs` | `four_to_one_button.svg` + `FourToOneButton.jsx` (small round teal molded button between the OUTPUT/RATE knobs; React `pressed`/`active`/`enabled`) | 🟡 **Pass 2H — built (not yet wired into master)** |
-| LED indicators (AC / BATT) | `16_LEDIndicators` | state-driven fill | ⬜ pending |
+| Indicator lights (AC / BATT) | `16_LEDIndicators` | `indicator_light.svg` + `IndicatorLight.jsx` (one **approved** physical translucent lens + thin gray molded rim, styled as a small front-panel lens — *not* an app LED; React composites illumination — `type` `ac`/`battery`, `status` `off`/`green`/`yellow`/`charging`/`fault`, `flashing`, `enabled`. **No glow baked into the SVG**) | ✅ **Pass 2J — APPROVED / FROZEN (not yet wired into master)** |
 | Self-test window (Code Readiness) | `17_SelfTestWindow` | `code_readiness_window.svg` (physical) + `CodeReadiness.jsx` (React `status`: blank / ready / notReady / testing + flashing) | 🟡 **Pass 2F — built (not yet wired into master)** |
 | NIBP button (arm + cuff) | `18_BP_Button` | `nibp_button.svg` + `NIBPButton.jsx` (**pale/white molded circular face + thin gray rim/bezel + blue arm + BP-cuff pictogram** — *not* a generic blue app-style button; React `pressed`/`active`/`measuring`/`enabled`) | ✅ **Pass 2I — APPROVED / FROZEN (refined; not yet wired into master)** |
 
@@ -327,6 +339,8 @@ src/components/rseries/controls/FourToOneButton.jsx # Pass 2H — round teal 4:1
 src/assets/rseries/controls/four_to_one_button.svg  # Pass 2H — physical 4:1 button asset
 src/components/rseries/controls/NIBPButton.jsx      # Pass 2I — blue NIBP button (React pressed/active/measuring/enabled)
 src/assets/rseries/controls/nibp_button.svg         # Pass 2I — physical NIBP button asset (white arm + BP cuff)
+src/components/rseries/controls/IndicatorLight.jsx  # Pass 2J — AC/Battery lens (React type/status/flashing/enabled)
+src/assets/rseries/controls/indicator_light.svg     # Pass 2J — physical indicator lens asset (unlit, no illumination)
 src/assets/rseries/controls/softkey_blank.svg       # Pass 2G — single molded softkey
 src/assets/rseries/controls/softkey_row.svg         # Pass 2G — six-key molded row
 src/components/rseries/controls/SoftKey.ts          # Package 4 — softkey model (TS)
