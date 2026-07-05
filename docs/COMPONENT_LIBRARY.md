@@ -240,18 +240,26 @@ magenta `#FF00FF`, red `#FF3830`.
 
 ---
 
-## 8. Typography
+## 8. Typography — Package 3 (Typography Library) ✅ built
 
-| Item | Where | Notes |
-|------|-------|-------|
-| LCD numerics / values | `LcdScreen.jsx` | HR, SpO₂, NIBP, EtCO₂, RR, elapsed. |
-| Softkey labels | `LcdScreen.jsx` | State-driven text along the softkey rule. |
-| Banners / status text | `LcdScreen.jsx` | "DEFIB READY", "SYNC", "CHECK PADS", etc. |
-| Printed control legends | master `20_Labels` | Faceplate legends. |
-| Wordmarks / arc labels | target `src/assets/rseries/labels/` | To be separated into the `labels/` group (roadmap). |
+A reusable typography system: shared tokens plus two SVG label primitives. This is
+**typography only** — reusable tokens + label components — **not** the LCD framework
+and **not** simulator behaviour. It modifies no locked physical asset and is not yet
+wired into the master (a later Master Assembly / Display phase). Fonts are
+**system-safe stacks only** — no external font files.
 
-Formalizing a typographic scale/token set and separating printed wordmarks into
-`labels/` is a **partial** roadmap item — see [`ROADMAP.md`](ROADMAP.md) §18.
+| Item | File | Notes |
+|------|------|-------|
+| Typography tokens | `typography/typographyTokens.js` | Single source of truth: `fontFamily` (printed sans / lcd monospace), `fontSize`, `fontWeight`, `letterSpacing`, `lineHeight`, `color` (printed + phosphor), plus `printedPresets` / `lcdPresets` and `resolveTextStyle()`. |
+| Printed legend primitive | `typography/RSeriesLabel.jsx` | Reusable **printed hardware legend** as SVG `<text>` — compact/bold/device-like sans. Presets: `control`, `controlSmall`, `therapy`, `shock`, `mode{Monitor,Defib,Pacer,Off}`, `indicator`. |
+| LCD text primitive | `typography/RSeriesLCDText.jsx` | Reusable **LCD-style screen text** as SVG `<text>` — monospaced phosphor, distinct from printed legends. Presets: `softkey`, `status`, `message`, `ready`, `select`, `alert`, `prompt`. |
+| Review page | `views/TypographyReview.jsx` (`/typography-review`) | Printed hardware / therapy / pacer / indicator legends, the softkey label strip, and LCD status/message examples. |
+
+The primitives emit SVG `<text>` (device labels live in SVG space) and are pure
+type — no geometry. **Legacy references** (unchanged, to be migrated to the tokens in
+a later phase): LCD numerics / softkey / banner text in `LcdScreen.jsx`; printed
+control legends on master `20_Labels`; wordmarks/arc labels destined for a
+`labels/` asset group ([`ROADMAP.md`](ROADMAP.md) §18 / Milestone 21).
 
 ---
 
@@ -341,6 +349,10 @@ src/components/rseries/controls/NIBPButton.jsx      # Pass 2I — blue NIBP butt
 src/assets/rseries/controls/nibp_button.svg         # Pass 2I — physical NIBP button asset (white arm + BP cuff)
 src/components/rseries/controls/IndicatorLight.jsx  # Pass 2J — AC/Battery lens (React type/status/flashing/enabled)
 src/assets/rseries/controls/indicator_light.svg     # Pass 2J — physical indicator lens asset (unlit, no illumination)
+src/components/rseries/typography/typographyTokens.js # Package 3 — type tokens + presets (single source of truth)
+src/components/rseries/typography/RSeriesLabel.jsx   # Package 3 — printed hardware legend primitive (SVG text)
+src/components/rseries/typography/RSeriesLCDText.jsx # Package 3 — LCD-style screen text primitive (SVG text)
+src/views/TypographyReview.jsx                       # Package 3 — /typography-review (temporary)
 src/assets/rseries/controls/softkey_blank.svg       # Pass 2G — single molded softkey
 src/assets/rseries/controls/softkey_row.svg         # Pass 2G — six-key molded row
 src/components/rseries/controls/SoftKey.ts          # Package 4 — softkey model (TS)

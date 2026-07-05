@@ -49,7 +49,7 @@ for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 | 19 | Automated testing / CI | 🟡 Partial |
 | 20 | Release Candidate (1.0) | ⬜ Planned |
 | — | *Physical front-panel asset library* | ✅ **COMPLETE (all 13 families frozen)** |
-| 21 | **Typography Library** (next phase) | ⬜ Planned |
+| 21 | **Typography Library** (next phase) | 🟡 **Started — tokens + label primitives built (Package 3)** |
 | 22 | **Display Operating Framework** | ⬜ Planned |
 | 23 | **Display Widgets** | ⬜ Planned |
 | 24 | **Master Assembly** (wire approved parts into the device) | ⬜ Planned |
@@ -243,12 +243,18 @@ Rules that governed the pass, and the standing freeze (see
 - ⬜ **Remaining:** more rhythms/artifacts (AV blocks, VT/VF variants, noise),
   per-trace rate coupling, richer paced morphology.
 
-### 18. Typography tokens — 🟡 Partial
+### 18. Typography tokens — 🟡 Partial (token system built — Package 3)
 
+- ✅ **Typography Library (Package 3) built** — a reusable token set
+  (`typography/typographyTokens.js`: family/size/weight/letter-spacing/colour/
+  line-height + presets) and two SVG label primitives: `RSeriesLabel` (printed
+  hardware legends) and `RSeriesLCDText` (LCD-style screen text). System-safe fonts
+  only. Reviewed on `/typography-review`.
 - ✅ LCD numerics, labels, and softkey text render in the LCD framework; control
   legends are printed on the master `20_Labels` layer.
-- ⬜ **Remaining:** formalize a typographic scale/token set and separate printed
-  wordmarks/legends into a `labels/` asset group.
+- ⬜ **Remaining:** adopt the tokens in `LcdScreen.jsx` and the master (a later
+  Master Assembly / Display phase), and separate printed wordmarks/legends into a
+  `labels/` asset group. See Milestone 21.
 
 ### 19. Automated testing / CI — 🟡 Partial
 
@@ -271,7 +277,9 @@ Rules that governed the pass, and the standing freeze (see
 The **physical front-panel industrial asset library is COMPLETE and FROZEN** (Body +
 Controls Library Passes 2A–2J). Remaining work is **non-physical-artwork**, in order:
 
-1. **Typography Library** (Milestone 21) — formalize a typographic scale/token set
+1. **Typography Library** (Milestone 21) — 🟡 **started (Package 3):** token set +
+   `RSeriesLabel` / `RSeriesLCDText` primitives built and reviewed on
+   `/typography-review`. Remaining: adopt the tokens in the LCD framework / master
    and separate printed wordmarks/legends into a `labels/` asset group.
 2. **Display Operating Framework** (Milestone 22) — the LCD operating model that
    decides what the screen shows per mode/state.

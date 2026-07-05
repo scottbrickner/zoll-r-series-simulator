@@ -19,8 +19,9 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
   further physical-appearance passes are planned; artwork is frozen.
 
 ### Next phases (post-physical-asset library)
-1. **Typography Library** — formalize a typographic scale/token set and separate
-   printed wordmarks/legends into a `labels/` asset group.
+1. **Typography Library** — 🟡 **started** (`[0.1.26]`): tokens + `RSeriesLabel` /
+   `RSeriesLCDText` primitives built. Remaining: separate printed wordmarks/legends
+   into a `labels/` asset group and adopt the tokens in `LcdScreen.jsx` / master.
 2. **Display Operating Framework** — the LCD operating model that drives what the
    screen shows per mode/state.
 3. **Display Widgets** — the on-screen LCD widgets (values, waveforms, banners,
@@ -33,6 +34,35 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
    scenario/behaviour fidelity.
 
 ---
+
+## [0.1.26] — 2026-07-05 — Package 3: Typography Library
+
+Built the reusable **typography system** for the device — shared tokens plus two SVG
+label primitives. First of the post-physical-asset phases. **Typography only:** not
+the LCD framework, not simulator behaviour, and no locked physical asset changed.
+System-safe fonts only — no external font files.
+
+### Added
+- `src/components/rseries/typography/typographyTokens.js` — the single source of
+  truth for type: `fontFamily` (printed sans matching the housing / lcd monospace),
+  `fontSize`, `fontWeight`, `letterSpacing`, `lineHeight`, `color` (printed legend +
+  LCD phosphor), plus semantic `printedPresets` / `lcdPresets` and a
+  `resolveTextStyle()` helper (accepts token keys or raw overrides).
+- `src/components/rseries/typography/RSeriesLabel.jsx` — reusable **printed hardware
+  legend** primitive (SVG `<text>`): compact, bold, device-like sans. Presets:
+  `control`, `controlSmall`, `therapy`, `shock`, `mode{Monitor,Defib,Pacer,Off}`,
+  `indicator`; multi-line via `lines` (e.g. ALARM / SUSPEND).
+- `src/components/rseries/typography/RSeriesLCDText.jsx` — reusable **LCD-style
+  screen text** primitive (SVG `<text>`): monospaced phosphor, distinct from the
+  printed legends. Presets: `softkey`, `status`, `message`, `ready`, `select`,
+  `alert`, `prompt`.
+- `src/views/TypographyReview.jsx` + route `/typography-review` — token legend and
+  live examples: printed control/mode legends, therapy (ANALYZE/CHARGE/SHOCK), pacer
+  (OUTPUT mA / RATE ppm / 4:1), indicator (AC/BATT), the white softkey label strip,
+  and LCD status/message labels (MONITOR/PACE/DEFIB/SYNC, DEFIB READY, XXXJ SEL.,
+  CHECK CPR PUCK, SET PACE MA).
+- Recorded in `COMPONENT_LIBRARY.md` §8; `visual-alignment-report.md` §10;
+  `ROADMAP.md` (Milestones 18 / 21).
 
 ## [0.1.25] — 2026-07-05 — Industrial Design Package COMPLETE — physical front panel frozen
 

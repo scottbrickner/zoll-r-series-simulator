@@ -716,3 +716,39 @@ facilitator view), then screenshot `/learner`:
 
 > Education mode and Validation mode are **planned simulator behaviors** (see
 > backlog below); their screenshots become valid once those features land.
+
+## 10. Typography Library — 2026-07-05 — Package 3 (built)
+
+Built the reusable **typography system** — shared tokens plus two SVG label
+primitives — reconstructing the ZOLL R Series type as closely as the housing/LCD
+references allow. **Typography only:** reusable tokens and label components, **not**
+the LCD framework and **not** simulator behaviour. No locked physical asset changed;
+**no device geometry is touched** — these primitives draw type, not shapes.
+
+- **Tokens** (`typography/typographyTokens.js`): `fontFamily`, `fontSize`,
+  `fontWeight`, `letterSpacing`, `lineHeight`, `color`, plus semantic
+  `printedPresets` / `lcdPresets` and `resolveTextStyle()`. **System-safe font
+  stacks only — no external font files.**
+- **Two type systems, kept distinct:**
+  - **Printed hardware legends** (`RSeriesLabel.jsx`) — the housing sans
+    (`'Segoe UI','Helvetica Neue','Arial Narrow',Arial,system-ui,sans-serif`),
+    compact and bold, colours matched to the existing `rseries.css` legend classes:
+    ink `#2a2f36`, red `#c4231a`, gray `#6a7077`, MONITOR `#9a9d99`, teal `#0f9c97`,
+    white `#f1f4f7`. Device-like, **not** web-app typography.
+  - **LCD screen text** (`RSeriesLCDText.jsx`) — a **monospaced** stack
+    (`'DejaVu Sans Mono','Consolas','SFMono-Regular','Menlo','Liberation Mono','Courier New',monospace`)
+    in the approved phosphor palette (white `#ffffff`, green `#00ff66`, amber
+    `#ffd100`, red `#ff3830`). Reads as an instrument display, **distinct** from the
+    printed legends.
+- **Coverage (label inventory):** control legends (LEAD / SIZE / ALARM SUSPEND /
+  RECORDER / ENERGY SELECT), mode legends (MONITOR / DEFIB / PACER / OFF), therapy
+  (ANALYZE / CHARGE / SHOCK), pacer (OUTPUT mA / RATE ppm / 4:1), indicators
+  (AC / BATT), LCD softkey labels (Options / Param / Code Marker / Report Data /
+  Alarms / Sync On/Off / Async Pacing On/Off), and LCD status/message text
+  (MONITOR / PACE / DEFIB / SYNC, DEFIB READY, SYNC·DEFIB XXXJ SEL., CHECK CPR PUCK,
+  SET PACE MA).
+
+Reviewed on `/typography-review` (token legend + all categories above). Legacy text
+still rendered ad-hoc in `LcdScreen.jsx` and master `20_Labels` is unchanged and is
+migrated to these tokens in a later phase. No body, controls, indicator, LCD
+geometry, master-assembly, or simulator-logic change.
