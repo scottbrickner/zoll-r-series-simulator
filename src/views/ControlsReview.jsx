@@ -10,12 +10,14 @@ import shockButtonAsset from '../assets/rseries/controls/shock_button.svg'
 import pacerKnobAsset from '../assets/rseries/controls/pacer_knob.svg'
 import codeReadinessAsset from '../assets/rseries/controls/code_readiness_window.svg'
 import fourToOneAsset from '../assets/rseries/controls/four_to_one_button.svg'
+import nibpAsset from '../assets/rseries/controls/nibp_button.svg'
 import ModeSelector, { MODE_ANGLE } from '../components/rseries/controls/ModeSelector'
 import FunctionButton from '../components/rseries/controls/FunctionButton'
 import TherapyButton from '../components/rseries/controls/TherapyButton'
 import PacerKnob from '../components/rseries/controls/PacerKnob'
 import CodeReadiness from '../components/rseries/controls/CodeReadiness'
 import FourToOneButton from '../components/rseries/controls/FourToOneButton'
+import NIBPButton from '../components/rseries/controls/NIBPButton'
 
 /**
  * TEMPORARY Controls Review page for Industrial Design Pass 2 (Controls Library).
@@ -105,6 +107,21 @@ function FTOTile({ label, sub, props }) {
         <svg className="artpreview__layer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
           role="img" aria-label={`4:1 button — ${label} ${sub || ''}`}>
           <FourToOneButton idPrefix={`ftob-${label}${sub || ''}`.replace(/\W/g, '')} {...props} />
+        </svg>
+      </div>
+      <figcaption><strong>{label}</strong>{sub && <span className="artpreview__file">{sub}</span>}</figcaption>
+    </figure>
+  )
+}
+
+/** One NIBP button tile in a given state. */
+function NIBPTile({ label, sub, props }) {
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+        <svg className="artpreview__layer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`NIBP button — ${label} ${sub || ''}`}>
+          <NIBPButton idPrefix={`nibp-${label}${sub || ''}`.replace(/\W/g, '')} {...props} />
         </svg>
       </div>
       <figcaption><strong>{label}</strong>{sub && <span className="artpreview__file">{sub}</span>}</figcaption>
@@ -430,6 +447,42 @@ export default function ControlsReview() {
             <span className="artpreview__file">visual placement only — footprint locked to master layer 15</span>
           </figcaption>
         </figure>
+      </section>
+
+      {/* ============ NIBP Button (Pass 2I) ============ */}
+      <section className="ctrlreview__assembled">
+        <h2>NIBP Button (Pass 2I — refined)</h2>
+        <p className="artpreview__note">
+          Reconstructed to match the <strong>manufacturer front-panel icon</strong>:
+          a small, subtle button with a <strong>pale / very-light-gray molded
+          face</strong>, a <strong>thin gray molded rim</strong>, and a
+          <strong> compact blue arm + blood-pressure-cuff pictogram</strong> inside
+          — a forearm/fist wearing a darker-blue inflatable cuff (with a closure
+          seam) and a squeeze bulb, <em>not</em> a generic person / people icon.
+          Deliberately <strong>not</strong> a large saturated-blue web button and
+          <strong> not</strong> a large white icon on blue — low visual weight,
+          factory-new molded plastic (single restrained highlight, not glossy).
+          Geometry never changes; React controls only state, kept subtle:
+          <code>pressed</code> (seats down + face darkens slightly + soft lower
+          shadow), <code>active</code> (a thin subtle blue ring at the rim —
+          <em>not</em> a glow), <code>measuring</code> (the same thin ring, very
+          gently pulsing while a reading is taken), and <code>enabled</code>
+          (muted/desaturated when disabled). Footprint locked to master layer 18.
+        </p>
+
+        <div className="msc__grid msc__grid--3">
+          <figure className="msc__griditem">
+            <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+              <img className="artpreview__layer" src={nibpAsset} alt="NIBP button — blank reusable asset" />
+            </div>
+            <figcaption><strong>Blank reusable asset</strong><span className="artpreview__file">controls/nibp_button.svg</span></figcaption>
+          </figure>
+          <NIBPTile label="Default" props={{}} />
+          <NIBPTile label="Pressed" props={{ pressed: true }} />
+          <NIBPTile label="Active / armed" props={{ active: true }} />
+          <NIBPTile label="Measuring" sub="pulsing ring" props={{ measuring: true }} />
+          <NIBPTile label="Disabled" props={{ enabled: false }} />
+        </div>
       </section>
 
       {/* ============ Code Readiness Window (Pass 2F) ============ */}

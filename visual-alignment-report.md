@@ -495,6 +495,90 @@ disabled; and seated in context between the OUTPUT and RATE pacer knobs). Not wi
 into the master. No body, LCD, Mode Selector, Function Button, Energy Select,
 Therapy Button, Pacer Knob, Code Readiness, softkey, or simulator-logic change.
 
+## 8.16 NIBP Button — 2026-07-05 — Industrial Design Pass 2I (built)
+
+Built the reusable **NIBP Button** (`nibp_button.svg` + `NIBPButton.jsx`) from the
+manufacturer photos — the small blue button in the **lower-left control area**
+(master layer 18, `18_BP_Button`, cx 128, cy 792, r 32) that starts / stops a
+non-invasive blood-pressure (NIBP) measurement.
+
+- **Physical asset:** a **small blue molded button** (satin ZOLL-blue face
+  `#2a86c8 → #0066b3 → #004a82`) seated in a **recessed socket** (`#c9cbc6` rim →
+  `#9aa1a6` seat), over a darker molded **side edge** (`#003c6b`) for depth. A
+  single restrained satin sheen (0.18 highlight — reads satin, **not glossy**).
+  Factory-new, neutral CAD lighting, minimal shadows.
+- **Icon (white on blue):** an **arm + blood-pressure-cuff pictogram** — a forearm
+  ending in a simplified hand/fist (knuckle grooves), an inflatable **cuff band**
+  wrapped around the arm (white fill, darker-blue `#013f74` outline + closure seam),
+  and a **squeeze bulb** on a tube. Deliberately an *arm with a BP cuff*, **not** a
+  generic person / people icon. (The master's `18_BP_Button` legacy glyph is a
+  blue-on-gray arm+cuff; the approved reusable part follows the real device: a white
+  glyph on a blue button.)
+- **React states (colour/opacity only):** `pressed` (seats down 2px + darker blue +
+  deeper lower shadow), `active` (a restrained brighter blue ring — armed, **not** a
+  SHOCK-style glow/bloom), `measuring` (the same ring, gently pulsing 0.25↔0.7 while
+  a reading is taken), `enabled=false` (muted / desaturated blue + 0.7 opacity).
+  **The SVG geometry never changes.** Props: `cx/cy/r`, `pressed`, `active`,
+  `measuring`, `enabled`, `onClick`, `idPrefix`.
+
+Reviewed on `/controls-review` (blank asset; default / pressed / active / measuring
+/ disabled). Not wired into the master. No body, LCD, Mode Selector, Function
+Button, Energy Select, Therapy Button, Pacer Knob, Code Readiness, softkey, 4:1, or
+simulator-logic change.
+
+### 8.16.1 NIBP Button — 2026-07-05 — manufacturer-accuracy refinement
+
+Corrected the NIBP button to match the **manufacturer front-panel icon**. The first
+cut (§8.16) read as a large saturated-blue web button with a large white icon; the
+real control is a small, subtle, **pale-faced** button with a **compact blue**
+pictogram. Footprint unchanged (master layer 18, cx 128, cy 792, r 32); this is a
+material/colour/scale correction only — **no geometry, coordinate, or footprint
+change.**
+
+- **Was → now (colour inversion):** saturated ZOLL-blue face + large white
+  arm/cuff glyph → **pale satin molded face** (`#fbfbfa → #eeeeeb → #deded9`) with a
+  **thin gray molded rim** (`#c6c8c3`, stroke `#a9aba6`) and a subtle molded side
+  edge (`#b6b8b3`). The button now reads as a low-weight front-panel key, not an app
+  button.
+- **Pictogram (compact, two-tone blue on the pale face):** scaled to ~0.82 of the
+  face and confined to the centre for generous margin — an **arm + BP cuff**: a
+  squeeze bulb + tube, a forearm ending in a simplified fist (`#0066b3`), and a
+  **darker-blue inflatable cuff band** (`#004a82`) with a lighter closure seam
+  (`#2a86c8`). Still deliberately an *arm wearing a cuff*, **not** a generic person /
+  people icon. Overall visual weight reduced ~40–50% vs the first cut.
+- **React states (kept subtle, colour/opacity only):** `pressed` (seats down 1.5px +
+  face darkens a touch + soft lower shadow), `active` (a thin subtle blue ring at the
+  rim, `#3a8fd6` @ 0.5 — **not** a glow), `measuring` (the same thin ring, very
+  gently pulsing 0.18↔0.5), `enabled=false` (grayer face + desaturated blue-gray icon
+  + 0.6 opacity). **The SVG geometry never changes.** Props unchanged: `cx/cy/r`,
+  `pressed`, `active`, `measuring`, `enabled`, `onClick`, `idPrefix`.
+
+Re-reviewed on `/controls-review`. Not wired into the master. No body, LCD, Mode
+Selector, Function Button, Energy Select, Therapy Button, Pacer Knob, Code Readiness,
+softkey, 4:1, or simulator-logic change.
+
+### 8.16.2 NIBP Button — 2026-07-05 — APPROVED / FROZEN
+
+The refined NIBP Button (§8.16.1) is **APPROVED and FROZEN.** Approved facts (the
+frozen reference):
+
+- **Pale / white molded circular face** — not a saturated blue fill.
+- **Thin gray molded rim / bezel** around the face.
+- **Blue arm + BP-cuff pictogram** (compact, two-tone) — reads as an arm wearing a
+  blood-pressure cuff, **not** a generic person / people icon.
+- **Not a generic blue app-style button** — low visual weight, factory-new satin
+  molded plastic.
+- **React states supported:** `default`, `pressed`, `active`, `measuring`,
+  `disabled` — all kept subtle (colour/opacity only; the SVG geometry never
+  changes). Props: `cx/cy/r`, `pressed`, `active`, `measuring`, `enabled`,
+  `onClick`, `idPrefix`.
+
+Freeze rule: no geometry/material/colour edits unless explicitly reopened in a new
+dated pass here. The approved part remains the reference and is **not yet wired into
+the shipping master**; React state wiring may be connected at master wire-in without
+reopening the frozen artwork. Footprint locked to master layer 18 (`18_BP_Button`,
+cx 128, cy 792, r 32).
+
 ## 8.10 End-of-day finalization — 2026-07-02 — Pass 2 controls frozen
 
 Finalization of today's Industrial Design work. The following control families are

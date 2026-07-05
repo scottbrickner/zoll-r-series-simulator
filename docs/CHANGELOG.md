@@ -30,6 +30,77 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.22] — 2026-07-05 — Industrial Design Pass 2I: NIBP Button — APPROVED / FROZEN
+
+The refined **NIBP Button** is **APPROVED and FROZEN.** Documentation only — no
+artwork, component, or simulator-logic change. The approved part remains the
+reference and is not yet wired into the shipping master.
+
+### Approved / frozen (the reference)
+- **Pale / white molded circular face** — not a saturated blue fill.
+- **Thin gray rim / bezel** around the face.
+- **Blue arm + BP-cuff pictogram** — reads as an arm wearing a blood-pressure cuff,
+  **not** a generic person / people icon.
+- **Not a generic blue app-style button** — low visual weight, factory-new satin
+  molded plastic.
+- **React states supported:** `default`, `pressed`, `active`, `measuring`,
+  `disabled` (all kept subtle; colour/opacity only, geometry never changes).
+- Frozen record: `visual-alignment-report.md` §8.16 / §8.16.1 / §8.16.2;
+  `COMPONENT_LIBRARY.md` §5. Freeze rule: no geometry/material/colour edits unless
+  explicitly reopened in a new dated pass.
+
+## [0.1.21] — 2026-07-05 — NIBP Button: manufacturer-accuracy refinement
+
+Corrected the **NIBP Button** to match the manufacturer front-panel icon. The first
+cut read as a large saturated-blue web button with a large white icon; the real
+control is a small, subtle, **pale-faced** button with a **thin gray molded rim**
+and a **compact blue** arm/cuff pictogram. Footprint unchanged (master layer 18);
+material/colour/scale only — no geometry change. Not wired into the shipping master;
+no body, LCD, Mode Selector, Function Button, Energy Select, Therapy Button, Pacer
+Knob, Code Readiness, softkey, 4:1, LCD-asset, or simulator-logic change.
+
+### Changed
+- `src/components/rseries/controls/NIBPButton.jsx` + `nibp_button.svg` — flipped
+  from a saturated-blue face + large white glyph to a **pale satin molded face**
+  (`#fbfbfa → #eeeeeb → #deded9`) with a **thin gray molded rim** (`#c6c8c3`) and a
+  subtle molded side edge. The pictogram is now a **compact two-tone blue** arm + BP
+  cuff (~0.82 scale, centered): squeeze bulb + tube, forearm + fist (`#0066b3`), and
+  a darker-blue cuff band (`#004a82`) with a closure seam (`#2a86c8`) — still an arm
+  wearing a cuff, **not** a person icon. Overall visual weight reduced ~40–50%.
+- States kept but made **subtle**: `pressed` (seats down 1.5px + slight face darken +
+  soft lower shadow), `active` (thin subtle blue rim ring, **not** a glow),
+  `measuring` (same thin ring, very gently pulsing), `enabled=false` (grayer face +
+  desaturated icon + 0.6 opacity). Prop API unchanged.
+- `/controls-review` NIBP section retitled "Pass 2I — refined" with updated notes.
+- Recorded in `visual-alignment-report.md` §8.16.1.
+
+## [0.1.20] — 2026-07-05 — Industrial Design Pass 2I: NIBP Button
+
+Built the reusable **NIBP Button** — the small blue button in the lower-left
+control area that starts / stops a non-invasive blood-pressure (NIBP) measurement.
+Not wired into the shipping master; no body, LCD, Mode Selector, Function Button,
+Energy Select, Therapy Button, Pacer Knob, Code Readiness, softkey, 4:1, or
+simulator-logic change.
+
+### Added
+- `src/components/rseries/controls/NIBPButton.jsx` — reusable small blue molded
+  push-button. Satin molded ZOLL-blue plastic (single restrained highlight — not
+  glossy), subtle bevel, darker molded side edge for depth, and a slight recessed
+  seat/socket. The face carries a **white arm + blood-pressure-cuff pictogram** (a
+  forearm/fist wearing an inflatable cuff with a squeeze bulb — **not** a generic
+  person / people icon). Props: `cx/cy/r`, `pressed`, `active`, `measuring`,
+  `enabled`, `onClick`, `idPrefix`. Geometry never changes; React controls only
+  state — `pressed` (seats down + darkens + deeper lower shadow), `active`
+  (restrained brighter blue ring, **not** a SHOCK-style glow), `measuring` (the
+  same ring, gently pulsing while a reading is taken), `enabled=false`
+  (muted/desaturated + reduced opacity).
+- `src/assets/rseries/controls/nibp_button.svg` — blank reusable button asset
+  (default state). Footprint locked to master layer 18 (`18_BP_Button`, cx 128,
+  cy 792, r 32); belongs with the lower-left control area.
+- `/controls-review` gains an NIBP Button section: blank asset; default / pressed /
+  active / measuring / disabled.
+- Recorded in `visual-alignment-report.md` §8.16; `COMPONENT_LIBRARY.md` §5.
+
 ## [0.1.19] — 2026-07-03 — Industrial Design Pass 2H: 4:1 Button
 
 Built the reusable **4:1 Button** — the small round teal button between the PACER

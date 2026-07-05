@@ -19,9 +19,14 @@ how they are structured in SVG. The look and the art-direction rules are in
 >   3. ✅ **Function Button** (Pass 2B)
 >   4. ✅ **Energy Select** (Pass 2C)
 >   5. ✅ **Therapy Button family** (Pass 2D.1)
-> - **Next milestone: Industrial Design Pass 2E — Pacer Knobs** (`15_PacerKnobs`).
-> - Remaining controls (softkeys, LEDs, self-test, NIBP) and `lcd/`, `icons/`,
->   `labels/` groups are pending later passes.
+>   6. ✅ **Pacer Knobs** (Pass 2E), **Code Readiness / self-test** (Pass 2F),
+>      **Physical Softkey Row + Softkey Framework** (Pass 2G / Package 4),
+>      **4:1 Button** (Pass 2H) — all built, not yet wired into the master.
+>   7. ✅ **NIBP Button** (Pass 2I, refined) — **APPROVED / FROZEN**: pale/white
+>      molded circular face, thin gray rim/bezel, blue arm + BP-cuff pictogram
+>      (*not* a generic blue app-style button); not yet wired into the master.
+> - Remaining controls (LED indicators) and the `lcd/`, `icons/`, `labels/`
+>   groups are pending later passes.
 
 ---
 
@@ -132,7 +137,7 @@ reassembling to the identical master geometry (footprint/position locked).
 | 4:1 button | `15_PacerKnobs` | `four_to_one_button.svg` + `FourToOneButton.jsx` (small round teal molded button between the OUTPUT/RATE knobs; React `pressed`/`active`/`enabled`) | 🟡 **Pass 2H — built (not yet wired into master)** |
 | LED indicators (AC / BATT) | `16_LEDIndicators` | state-driven fill | ⬜ pending |
 | Self-test window (Code Readiness) | `17_SelfTestWindow` | `code_readiness_window.svg` (physical) + `CodeReadiness.jsx` (React `status`: blank / ready / notReady / testing + flashing) | 🟡 **Pass 2F — built (not yet wired into master)** |
-| NIBP button (arm + cuff) | `18_BP_Button` | — | ⬜ pending |
+| NIBP button (arm + cuff) | `18_BP_Button` | `nibp_button.svg` + `NIBPButton.jsx` (**pale/white molded circular face + thin gray rim/bezel + blue arm + BP-cuff pictogram** — *not* a generic blue app-style button; React `pressed`/`active`/`measuring`/`enabled`) | ✅ **Pass 2I — APPROVED / FROZEN (refined; not yet wired into master)** |
 
 **Reuse rules:** buttons and knobs are single reusable parts; instances differ
 only by position, printed label, and React-bound fill/glow/rotation/state. The
@@ -243,7 +248,7 @@ Formalizing a typographic scale/token set and separating printed wordmarks into
 | Item | File | Notes |
 |------|------|-------|
 | Device glyphs (planned) | `src/assets/rseries/icons/` | NIBP arm+cuff, heart/CPR, bolt, connector marks (scaffold — `.gitkeep`). |
-| NIBP arm+cuff glyph | master `18_BP_Button` | Currently drawn in the master button layer. |
+| NIBP arm+cuff glyph | master `18_BP_Button` | Currently drawn in the master button layer; the approved reusable part (white arm + BP cuff on a blue molded button) is `controls/nibp_button.svg` + `NIBPButton.jsx` (Pass 2I). |
 | `public/icons.svg` | `public/icons.svg` | **Vite template leftover** (social icons) — not R Series device art. |
 | `public/favicon.svg` | `public/favicon.svg` | Browser tab icon. |
 
@@ -320,6 +325,8 @@ src/components/rseries/controls/CodeReadiness.jsx   # Pass 2F — code readiness
 src/assets/rseries/controls/code_readiness_window.svg # Pass 2F — physical window asset
 src/components/rseries/controls/FourToOneButton.jsx # Pass 2H — round teal 4:1 button (React pressed/active/enabled)
 src/assets/rseries/controls/four_to_one_button.svg  # Pass 2H — physical 4:1 button asset
+src/components/rseries/controls/NIBPButton.jsx      # Pass 2I — blue NIBP button (React pressed/active/measuring/enabled)
+src/assets/rseries/controls/nibp_button.svg         # Pass 2I — physical NIBP button asset (white arm + BP cuff)
 src/assets/rseries/controls/softkey_blank.svg       # Pass 2G — single molded softkey
 src/assets/rseries/controls/softkey_row.svg         # Pass 2G — six-key molded row
 src/components/rseries/controls/SoftKey.ts          # Package 4 — softkey model (TS)

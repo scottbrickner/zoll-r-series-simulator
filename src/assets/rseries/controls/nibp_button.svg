@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — NIBP Button (reusable, blank / default state).
+     Industrial Design Pass 2I + refinement — Controls Library.
+     The small NIBP (non-invasive blood pressure) button in the lower-left control
+     area, reconstructed to match the manufacturer front-panel icon: a SMALL,
+     SUBTLE button with a PALE / very-light-gray molded face, a THIN gray molded
+     rim, and a COMPACT BLUE arm + blood-pressure-cuff pictogram inside. It is NOT a
+     large saturated-blue web button, and NOT a large white icon on blue.
+     Layers:
+       1. Molded side depth (subtle darker gray beneath the face)
+       2. Thin gray molded rim / bezel
+       3. Pale satin molded face (single restrained highlight — not glossy)
+       4. Blue pictogram (two-tone): squeeze bulb + tube, forearm ending in a
+          simplified fist, and a darker-blue inflatable cuff band with a closure
+          seam wrapped around the arm — an arm wearing a BP cuff, NOT a generic
+          person / people icon.
+     Satin molded plastic — factory-new, neutral CAD lighting, minimal shadows,
+     not glossy. Compact and low visual weight. Shown here in the default state.
+     React controls only state (pressed / active / measuring / disabled) — never
+     geometry. Local box for review; footprint locked to master layer 18_BP_Button
+     (cx 128, cy 792, r 32). -->
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- pale satin molded face — restrained top-to-bottom gradient -->
+    <linearGradient id="nibp-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfbfa"/>
+      <stop offset="0.55" stop-color="#eeeeeb"/>
+      <stop offset="1" stop-color="#deded9"/>
+    </linearGradient>
+    <!-- single restrained satin sheen (not a glossy hotspot) -->
+    <linearGradient id="nibp-hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g id="nibp_button">
+    <!-- molded side depth (subtle) -->
+    <circle cx="50" cy="51.5" r="34" fill="#b6b8b3"/>
+    <!-- thin gray molded rim / bezel -->
+    <circle cx="50" cy="50" r="34" fill="#c6c8c3" stroke="#a9aba6" stroke-width="1"/>
+    <!-- pale satin molded face -->
+    <circle cx="50" cy="50" r="31" fill="url(#nibp-face)"/>
+    <!-- subtle bevel highlight (restrained satin, upper face only) -->
+    <ellipse cx="44" cy="40" rx="17" ry="8" fill="url(#nibp-hi)"/>
+
+    <!-- ===== compact blue arm + BP-cuff pictogram ===== -->
+    <g transform="translate(50 50) scale(0.82)">
+      <!-- squeeze bulb + tube (behind the arm) -->
+      <path d="M1,8.5 C-4,16 -8,16 -12,14.5" fill="none" stroke="#0066b3" stroke-width="2"
+        stroke-linecap="round"/>
+      <ellipse cx="-13.5" cy="15.5" rx="4" ry="5" fill="#0066b3"/>
+      <!-- forearm -->
+      <rect x="-15" y="-4" width="27" height="8" rx="4" fill="#0066b3"/>
+      <!-- simplified fist at the right end -->
+      <ellipse cx="12" cy="0" rx="5" ry="5.5" fill="#0066b3"/>
+      <!-- inflatable cuff band (darker blue) wrapped around the arm -->
+      <rect x="-5" y="-8.5" width="12" height="17" rx="2.5" fill="#004a82"/>
+      <!-- cuff closure / velcro seam -->
+      <line x1="2" y1="-6.5" x2="2" y2="6.5" stroke="#2a86c8" stroke-width="1" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
