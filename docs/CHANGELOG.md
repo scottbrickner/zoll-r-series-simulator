@@ -35,6 +35,37 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.31] — 2026-07-05 — Package 4A: firmware skeleton reconstruction
+
+Reconstructed the display framework as the permanent **firmware skeleton** from the
+manufacturer LCD screens — discarding the remaining dashboard traits (oversized left
+column, boxed waveform lanes, equalized spacing, message box). It now reads like a
+firmware screenshot with the dynamic values removed. Layout only — no waveforms, no
+vitals, no patient data, no messages, no simulator logic; locked assets unchanged.
+
+### Changed (measured firmware anchors, 673×515)
+- **Left parameter column narrowed to ≈20.5%** (divider x=186 → **x=138**), stacked
+  SpO₂ / NIBP / CO₂·RR modules split by thin firmware divider lines (no oversized cards).
+- **Top status compressed** (rule y=118 → **y=104**), hugging the top edge: Clock/Mode
+  · CPR Release/PPI · Lead/Gain/♥/HR.
+- **One continuous waveform field** with three thin baseline reference lines
+  (**ECG y=168 · Pleth y=258 · CO₂ y=348**) — the boxed Waveform Regions 1/2/3 are gone.
+- **Messages moved inside the waveform field** (Message Zone overlay, y 300…410) — the
+  large centered message box is removed.
+- **Time / Readout Row** at y 410…456 (clock at far left); **Softkey Label Strip** at
+  y 456…515 rendered as **labels only** — thin column rules + centered text, no button
+  chrome / no green rectangles.
+- `DisplayFramework.jsx` now renders firmware **chrome** (thin rules + static labels +
+  value placeholders) in clean mode instead of boxed region cards; `mode='debug'` (or
+  the review's region-boxes toggle) overlays the coloured region rectangles.
+  Chrome colours brightened so the skeleton is legible on the near-black glass.
+- `FirmwareReference.jsx` retraced to the same anchors (ECG/Pleth/CO₂ on baselines).
+
+### Review
+- `/display-framework-review` rebuilt as three views: **1 Manufacturer**, **2 Framework
+  Overlay** (opacity slider + region-boxes toggle), **3 Framework Only**.
+- Recorded in `COMPONENT_LIBRARY.md §7.1`; `visual-alignment-report.md §11.4`.
+
 ## [0.1.30] — 2026-07-05 — Package 4: firmware reconstruction refined to reference screens
 
 Refined the firmware framework and the Manufacturer reference panel against the

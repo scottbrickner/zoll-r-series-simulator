@@ -1,27 +1,27 @@
 /**
- * ZOLL R Series — Display region map (Package 4, Display Operating Framework).
+ * ZOLL R Series — Display region map (Package 4A, Firmware Skeleton).
  *
- * REBUILT as a traced reconstruction of the FIRMWARE LCD layout. The rectangles are
- * lifted from the firmware-accurate `LcdScreen.jsx` coordinates (which match the
- * PACE-mode manufacturer reference in `visual-alignment-report.md §1`), in the
- * locked 673 × 515 logical space. This is a firmware layout, NOT a dashboard: a
- * narrow left parameter column, a tightly packed top status strip, ONE continuous
- * waveform plotting area (no boxed lanes), therapy messages that occupy the waveform
- * area, a readout row, and a firmware softkey strip.
+ * RECONSTRUCTED from the manufacturer LCD firmware screens. Each region is a
+ * rectangle in the locked 673 × 515 logical space (see `DisplayLayoutTokens.js`), a
+ * z-layer, an optional parent (nesting), and the content React may LATER inject.
  *
- * Layout only. NO patient data, NO waveforms, NO values, NO simulator logic.
+ * This is the permanent firmware skeleton — the operating-system layout. It is dense
+ * and embedded, NOT a dashboard: a narrow left parameter column of thin-divider
+ * parameter modules, a compressed top status band that hugs the top edge, ONE
+ * continuous waveform field (three baselines, no boxed lanes), a message zone INSIDE
+ * the waveform field, a time / readout row, and a label-only softkey strip.
  *
- * Firmware anchors (from LcdScreen.jsx): left divider x=186; top rule y=118; ECG
- * trace y 150…270; CO₂ capno y 292…396; mode message y≈430; value row y≈452;
- * softkey rule y=468 with column rules at x = i·112.
+ * Layout only. NO waveforms, NO vitals, NO patient data, NO messages, NO logic.
  */
-import { lcd, anchors, LAYERS } from './DisplayLayoutTokens'
+import { lcd, anchors, waveform, LAYERS } from './DisplayLayoutTokens'
 
-const MAIN_X = anchors.paramDividerX // 186
-const MAIN_W = lcd.width - MAIN_X // 487
+const DIV = anchors.paramDividerX // 138
+const MAIN_W = lcd.width - DIV // 535
 const W = lcd.width // 673
+const TOP = anchors.topRuleY // 104
+const WB = waveform.bottom // 410
+const SK = anchors.softkeyRuleY // 456
 
-// Inject-target vocabulary (what future widgets render into a region).
 export const INJECTS = {
   WAVEFORMS: 'Waveforms',
   VITALS: 'Vitals',
@@ -34,133 +34,121 @@ export const INJECTS = {
   STATUS_ICONS: 'Status Icons',
 }
 
-/**
- * Firmware regions. `id` is the injection slot key; rectangles are { x, y, w, h } in
- * 673 × 515 space; `layer` sets z-order; `parent` nests a sub-zone; `injects` names
- * what may later render there.
- */
 export const REGIONS = [
-  // ── Narrow left parameter column (SpO₂ / NIBP / CO₂·RR stacked) ──
+  // ── Narrow left parameter column (≈20.5% width) — thin-divider modules ──
   {
     id: 'leftParamColumn',
     name: 'Left Parameter Column',
     layer: LAYERS.REGION,
-    rect: { x: 0, y: 0, w: MAIN_X, h: 442 },
+    rect: { x: 0, y: 0, w: DIV, h: WB },
     injects: [INJECTS.VITALS],
-    note: 'Narrow firmware parameter column down the left edge (SpO₂ at top, then NIBP, then CO₂/RR).',
+    note: 'Narrow firmware parameter column; stacked modules split by thin divider lines.',
   },
   {
     id: 'paramSpO2',
     name: 'SpO₂',
     layer: LAYERS.REGION,
     parent: 'leftParamColumn',
-    rect: { x: 0, y: 6, w: MAIN_X, h: 138 },
+    rect: { x: 0, y: 0, w: DIV, h: TOP }, // 0..104 (aligns with the top band)
     injects: [INJECTS.VITALS],
-    note: 'SpO₂ % (cyan).',
+    note: 'SpO₂ % module (cyan), top of the column.',
   },
   {
     id: 'paramNIBP',
     name: 'NIBP',
     layer: LAYERS.REGION,
     parent: 'leftParamColumn',
-    rect: { x: 0, y: 150, w: MAIN_X, h: 120 },
+    rect: { x: 0, y: TOP, w: DIV, h: 128 }, // 104..232
     injects: [INJECTS.VITALS],
-    note: 'NIBP mmHg (white).',
+    note: 'NIBP mmHg module (white).',
   },
   {
-    id: 'paramCO2',
+    id: 'paramCO2RR',
     name: 'CO₂ / RR',
     layer: LAYERS.REGION,
     parent: 'leftParamColumn',
-    rect: { x: 0, y: 278, w: MAIN_X, h: 174 },
+    rect: { x: 0, y: 232, w: DIV, h: WB - 232 }, // 232..410
     injects: [INJECTS.VITALS],
-    note: 'CO₂ mmHg + respiratory rate (amber).',
+    note: 'CO₂ mmHg + respiratory rate module (amber).',
   },
 
-  // ── Tightly packed top status strip (timer · CPR · ECG/HR) ──
+  // ── Compressed top status band (hugs the top) ──
   {
     id: 'topStatus',
-    name: 'Top Status Strip',
+    name: 'Top Status Band',
     layer: LAYERS.REGION,
-    rect: { x: MAIN_X, y: 0, w: MAIN_W, h: anchors.topRuleY }, // y 0..118
+    rect: { x: DIV, y: 0, w: MAIN_W, h: TOP }, // 0..104
     injects: [INJECTS.STATUS_ICONS],
-    note: 'Tightly packed firmware status band above the waveforms.',
+    note: 'Compressed firmware status band across the top of the main area.',
   },
   {
-    id: 'statusTimer',
-    name: 'Timer / Mode',
+    id: 'statusClockMode',
+    name: 'Clock / Mode',
     layer: LAYERS.REGION,
     parent: 'topStatus',
-    rect: { x: MAIN_X, y: 0, w: 150, h: anchors.topRuleY },
+    rect: { x: DIV, y: 0, w: 162, h: TOP }, // 138..300
     injects: [INJECTS.STATUS_ICONS],
-    note: 'Elapsed timer + operating mode (magenta).',
+    note: 'Elapsed clock + operating mode.',
   },
   {
     id: 'statusCpr',
     name: 'CPR (Release / PPI)',
     layer: LAYERS.REGION,
     parent: 'topStatus',
-    rect: { x: 336, y: 0, w: 150, h: anchors.topRuleY },
+    rect: { x: 300, y: 0, w: 152, h: TOP }, // 300..452
     injects: [INJECTS.CPR],
     note: 'CPR release bar + perfusion (PPI) diamond.',
   },
   {
     id: 'statusEcgHr',
-    name: 'ECG / Lead / HR',
+    name: 'Lead / Gain / HR',
     layer: LAYERS.REGION,
     parent: 'topStatus',
-    rect: { x: 486, y: 0, w: W - 486, h: anchors.topRuleY },
+    rect: { x: 452, y: 0, w: W - 452, h: TOP }, // 452..673
     injects: [INJECTS.VITALS, INJECTS.STATUS_ICONS],
-    note: 'Lead label, ECG size, and the large heart-rate readout (green).',
+    note: 'ECG lead + gain, heart icon, and the large heart-rate readout.',
   },
 
-  // ── ONE continuous waveform plotting area (no boxed lanes) ──
+  // ── ONE continuous waveform field (three baselines; no boxed lanes) ──
   {
-    id: 'waveformArea',
-    name: 'Waveform Plotting Area',
+    id: 'waveformField',
+    name: 'Waveform Field',
     layer: LAYERS.REGION,
-    rect: { x: MAIN_X, y: anchors.topRuleY, w: MAIN_W, h: 324 }, // y 118..442
+    rect: { x: DIV, y: TOP, w: MAIN_W, h: WB - TOP }, // 104..410
     injects: [INJECTS.WAVEFORMS],
-    note: 'Continuous plotting area — ECG upper, CO₂ lower. Traces flow directly on the glass; no per-trace boxes.',
+    baselines: waveform.baselines, // ECG / Pleth / CO₂ reference lines within the field
+    note: 'Continuous plotting field with thin ECG / Pleth / CO₂ baseline reference lines. No boxes.',
   },
 
-  // ── Value / readout row just above the softkeys ──
+  // ── Time / readout row (full width) ──
   {
-    id: 'valueRow',
-    name: 'Value / Readout Row',
+    id: 'readoutRow',
+    name: 'Time / Readout Row',
     layer: LAYERS.REGION,
-    rect: { x: 0, y: 442, w: W, h: anchors.softkeyRuleY - 442 }, // y 442..468, FULL WIDTH
+    rect: { x: 0, y: WB, w: W, h: SK - WB }, // 410..456
     injects: [INJECTS.THERAPY, INJECTS.CHARGING, INJECTS.PACING],
-    note: 'Full-width firmware readout line: clock at far left, then mA/PPM/capture · energy J SEL. · charge %.',
+    note: 'Firmware readout line: time at far left, then mode readouts (mA/PPM, J SEL., charge %).',
   },
 
-  // ── Firmware softkey label strip (separators + centered text, no buttons) ──
+  // ── Label-only softkey strip (no button chrome) ──
   {
     id: 'softkeyStrip',
     name: 'Softkey Label Strip',
     layer: LAYERS.REGION,
-    rect: { x: 0, y: anchors.softkeyRuleY, w: W, h: lcd.height - anchors.softkeyRuleY }, // y 468..515
+    rect: { x: 0, y: SK, w: W, h: lcd.height - SK }, // 456..515
     injects: [INJECTS.SOFTKEYS],
     columns: anchors.softkeyColumns,
-    note: 'Firmware label strip: six columns split by thin rules, centered white labels — NO button chrome.',
+    note: 'Firmware softkey LABELS only — thin column rules, centered text, no buttons (physical keys are below the LCD).',
   },
 
-  // ── Overlay layer (transient messages over the waveform area) ──
+  // ── Message zone INSIDE the waveform field (transient, no box) ──
   {
-    id: 'alarmBanner',
-    name: 'Alarm Banner',
+    id: 'messageArea',
+    name: 'Message Zone',
     layer: LAYERS.OVERLAY,
-    rect: { x: 206, y: 2, w: 440, h: 22 }, // top-center, over the status strip
-    injects: [INJECTS.ALARMS],
-    note: 'Transient alarm / suspend message across the top-center.',
-  },
-  {
-    id: 'therapyMessage',
-    name: 'Therapy / Mode Message',
-    layer: LAYERS.OVERLAY,
-    rect: { x: MAIN_X, y: 352, w: MAIN_W, h: 86 }, // occupies the lower waveform area
-    injects: [INJECTS.THERAPY, INJECTS.CHARGING, INJECTS.CPR],
-    note: 'Mode / therapy text drawn OVER the waveform area (MONITOR / PACE / ANALYZING / DEFIB READY / charging).',
+    rect: { x: DIV, y: 300, w: MAIN_W, h: WB - 300 }, // lower waveform field, 300..410
+    injects: [INJECTS.THERAPY, INJECTS.CHARGING, INJECTS.CPR, INJECTS.ALARMS],
+    note: 'Therapy / status messages (PACE · DEFIB READY · CHECK CPR PUCK · SET PACE MA · SYNC READY) drawn INSIDE the waveform field — no message box.',
   },
 ]
 

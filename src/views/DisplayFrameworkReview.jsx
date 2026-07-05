@@ -6,18 +6,17 @@ import { lcd, LAYERS, LAYER_ORDER, debugColors } from '../components/rseries/dis
 import { REGIONS, regionsInLayer, childRegions } from '../components/rseries/display/DisplayRegions'
 
 /**
- * TEMPORARY Display Operating Framework review (Package 4 — firmware rebuild).
- * Shows the framework as a traced reconstruction of the firmware LCD, with the
- * requested comparison: Manufacturer → Overlay → Framework. No patient data, no
- * simulator logic. Not part of the shipping app.
+ * TEMPORARY Firmware Skeleton review (Package 4A). Three views to check the skeleton
+ * against the manufacturer firmware: (1) Manufacturer, (2) Framework Overlay with an
+ * opacity slider, (3) Framework Only — plus a region legend and layer hierarchy.
+ * Layout only; no patient data, no simulator logic. Not part of the shipping app.
  */
 
 const VB = `0 0 ${lcd.width} ${lcd.height}`
 
-/** A titled LCD panel (673×515) in a dark bezel. */
-function Panel({ title, sub, children }) {
+function Panel({ title, sub, children, maxWidth = 760 }) {
   return (
-    <figure style={{ margin: 0 }}>
+    <figure style={{ margin: '0 auto', maxWidth }}>
       <figcaption style={{ textAlign: 'center', color: '#cfe', fontWeight: 700, marginBottom: 4 }}>
         {title}
         {sub && <span style={{ color: '#89a', fontWeight: 400, fontSize: '0.85rem' }}> — {sub}</span>}
@@ -31,37 +30,25 @@ function Panel({ title, sub, children }) {
   )
 }
 
-function Arrow() {
-  return <div style={{ textAlign: 'center', color: '#6cf', fontSize: '1.6rem', lineHeight: 1, margin: '6px 0' }}>↓</div>
-}
-
-/** Manufacturer panel: a real screenshot if dropped in, else the reconstruction. */
-function ManufacturerPanel() {
+/** Manufacturer: a real screenshot if dropped in, else the reconstruction. */
+function Manufacturer() {
   const [imgOk, setImgOk] = useState(true)
   return (
-    <Panel title="Manufacturer" sub="firmware LCD (traced reconstruction)">
+    <>
       {imgOk ? (
-        <image
-          href="/lcd_reference.png"
-          x="0"
-          y="0"
-          width={lcd.width}
-          height={lcd.height}
-          preserveAspectRatio="xMidYMid slice"
-          onError={() => setImgOk(false)}
-        />
+        <image href="/lcd_reference.png" x="0" y="0" width={lcd.width} height={lcd.height} preserveAspectRatio="xMidYMid slice" onError={() => setImgOk(false)} />
       ) : (
         <FirmwareReference />
       )}
-    </Panel>
+    </>
   )
 }
 
 const LAYER_LABEL = {
   [LAYERS.BASE]: 'Base — LCD glass',
-  [LAYERS.STRUCTURE]: 'Structure — firmware hairline rules',
+  [LAYERS.STRUCTURE]: 'Structure — firmware hairline rules + baselines',
   [LAYERS.REGION]: 'Region — persistent firmware regions',
-  [LAYERS.OVERLAY]: 'Overlay — transient messages over the waveform area',
+  [LAYERS.OVERLAY]: 'Overlay — messages inside the waveform field',
 }
 
 function Legend() {
@@ -118,52 +105,71 @@ function LayerHierarchy() {
 }
 
 export default function DisplayFrameworkReview() {
+  const [overlayPct, setOverlayPct] = useState(50)
+  const [showRegions, setShowRegions] = useState(false)
+
   return (
     <div className="artpreview">
       <header className="artpreview__bar">
-        <h1>Display Framework Review — Package 4 (firmware)</h1>
+        <h1>Firmware Skeleton Review — Package 4A</h1>
         <Link className="btn btn--ghost" to="/">Home</Link>
       </header>
 
-      <p className="artpreview__file" style={{ textAlign: 'center', maxWidth: 820, margin: '0.2rem auto 0.8rem' }}>
-        A traced reconstruction of the firmware LCD layout in the locked {lcd.width} × {lcd.height} space — narrow left parameter column,
-        tightly packed top status, one continuous waveform plotting area, therapy messages over the waveform, and a firmware softkey strip. Not a dashboard.
+      <p className="artpreview__file" style={{ textAlign: 'center', maxWidth: 840, margin: '0.2rem auto 0.8rem' }}>
+        The permanent firmware skeleton reconstructed from the manufacturer LCD — narrow ~20% left parameter column with thin-divider
+        modules, one continuous waveform field (ECG / Pleth / CO₂ baselines), compressed top status hugging the edge, messages inside the
+        waveform field, and a label-only softkey strip. A firmware screenshot with the dynamic values removed — not a dashboard.
       </p>
 
-      {/* ---- Manufacturer → Overlay → Framework ---- */}
-      <div style={{ maxWidth: 'min(760px, 96vw)', margin: '0 auto' }}>
-        <ManufacturerPanel />
-        <Arrow />
-        <Panel title="Overlay" sub="framework regions traced onto the firmware">
-          <FirmwareReference />
-          <DisplayFramework mode="debug" showBackground={false} showHints={false} idPrefix="dfr-ov" />
-        </Panel>
-        <Arrow />
-        <Panel title="Framework" sub="the empty firmware skeleton (injection slots)">
-          <DisplayFramework mode="clean" idPrefix="dfr-fw" />
+      {/* 1 — Manufacturer */}
+      <Panel title="1 · Manufacturer" sub="firmware LCD (reference / reconstruction)">
+        <Manufacturer />
+      </Panel>
+
+      {/* 2 — Framework overlay with opacity slider */}
+      <div style={{ margin: '1rem auto 0', maxWidth: 760 }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+          <label style={{ color: '#bcd', fontSize: '0.85rem' }}>
+            Framework opacity{' '}
+            <input type="range" min="0" max="100" value={overlayPct} onChange={(e) => setOverlayPct(Number(e.target.value))} style={{ verticalAlign: 'middle' }} />{' '}
+            <span style={{ fontFamily: 'ui-monospace, monospace' }}>{overlayPct}%</span>
+          </label>
+          <label style={{ color: '#bcd', fontSize: '0.85rem', cursor: 'pointer' }}>
+            <input type="checkbox" checked={showRegions} onChange={(e) => setShowRegions(e.target.checked)} /> region boxes
+          </label>
+        </div>
+        <Panel title="2 · Framework Overlay" sub={`skeleton over the manufacturer at ${overlayPct}%`}>
+          <Manufacturer />
+          <g opacity={overlayPct / 100}>
+            <DisplayFramework mode="clean" showBackground={false} showRegions={showRegions} idPrefix="ov" />
+          </g>
         </Panel>
       </div>
 
-      {/* ---- legend ---- */}
+      {/* 3 — Framework only */}
+      <div style={{ margin: '1rem auto 0' }}>
+        <Panel title="3 · Framework Only" sub="the empty firmware skeleton (injection slots)">
+          <DisplayFramework mode="clean" showRegions={showRegions} idPrefix="fw" />
+        </Panel>
+      </div>
+
+      {/* legend + hierarchy */}
       <section className="ctrlreview__assembled" style={{ marginTop: '1.4rem' }}>
         <h2>Region legend</h2>
         <p className="artpreview__note">Each firmware region, its overlay colour, its rectangle (<code>x,y·w×h</code> in {lcd.width}×{lcd.height} space), and the content it exposes for later injection.</p>
         <Legend />
       </section>
 
-      {/* ---- layer hierarchy ---- */}
       <section className="ctrlreview__assembled">
         <h2>Layer hierarchy</h2>
-        <p className="artpreview__note">Bottom → top. Persistent regions render first; transient messages draw above the waveform area.</p>
+        <p className="artpreview__note">Bottom → top. Persistent regions render first; messages draw inside the waveform field.</p>
         <LayerHierarchy />
       </section>
 
       <p className="artpreview__note" style={{ opacity: 0.75 }}>
-        The <strong>Manufacturer</strong> panel is a firmware-layout reconstruction from the documented reference
-        (<code>visual-alignment-report.md §1</code> + the firmware-accurate <code>LcdScreen.jsx</code> coordinates) — no
-        manufacturer screenshot ships in the repo. Drop a real capture at <code>public/lcd_reference.png</code> to trace
-        against it exactly. Binding real widgets into the framework slots is a later phase. No patient data, waveforms,
-        values, or simulator behaviour are wired here.
+        The <strong>Manufacturer</strong> panel is a firmware-layout reconstruction; no manufacturer screenshot ships in the repo. Drop a
+        real capture at <code>public/lcd_reference.png</code> to overlay the skeleton against the genuine article. Binding real widgets into
+        the skeleton slots is a later phase — no waveforms, vitals, patient data, or messages are added here.
       </p>
     </div>
   )

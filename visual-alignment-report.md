@@ -871,3 +871,35 @@ Corrections applied:
 No manufacturer screenshot is embedded in the repo. A local capture may be dropped at
 `public/lcd_reference.png`; the review page's Manufacturer panel will show it in place
 of the reconstruction for exact tracing.
+
+### 11.4 Display Framework — 2026-07-05 — Package 4A firmware skeleton (measured)
+
+Reconstructed the framework as the permanent firmware skeleton from the manufacturer
+LCD reference screens. This corrects the remaining dashboard traits from §11.2–§11.3.
+The locked 673 × 515 space is preserved; no device/LCD geometry, body, controls,
+typography, master assembly, physical softkeys, or simulator logic changed
+(`LcdScreen.jsx` untouched).
+
+Measured anchors (fraction of LCD → 673 × 515):
+- Left parameter column ≈ 20.5 % of width → **divider x = 138** (was 186). Stacked
+  SpO₂ / NIBP / CO₂·RR modules split by **thin firmware divider lines** — compact, not
+  oversized cards.
+- Top status band ≈ 20 % of height → **rule y = 104** (was 118), compressed and hugging
+  the top: Clock/Mode · CPR Release-bar/PPI-diamond · Lead/Gain/♥/large HR.
+- Main area = **one continuous waveform field** (x 138…673, y 104…410) with three thin
+  baseline reference lines: **ECG y = 168 · Pleth y = 258 · CO₂ y = 348**. No boxed lanes.
+- Messages occupy the firmware location: a **Message Zone inside the waveform field**
+  (y 300…410) — the large centered message box is removed.
+- Time / readout row y 410…456 (clock at far left); softkey label strip y 456…515,
+  six columns split by thin rules, **labels only — no button chrome**.
+
+Corrections vs the prior build: narrow column (was too wide); thin-divider modules
+(were boxed cards); continuous field with baselines (were three boxed regions);
+messages inside the field (was a message box); compressed top status (was taller);
+label-only softkeys (were separated but heavier). The skeleton chrome colours were
+brightened so the empty skeleton is legible on the near-black glass.
+
+Review: `/display-framework-review` shows three views — (1) Manufacturer (firmware
+reconstruction; drop `public/lcd_reference.png` to overlay a real capture), (2)
+Framework Overlay with an opacity slider + region-boxes toggle, (3) Framework Only.
+Only placeholders — no waveforms, vitals, patient data, or messages are added.

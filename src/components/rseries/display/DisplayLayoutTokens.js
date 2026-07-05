@@ -1,36 +1,47 @@
 /**
- * ZOLL R Series — Display layout tokens (Package 4, Display Operating Framework).
+ * ZOLL R Series — Display layout tokens (Package 4A, Firmware Skeleton).
  *
- * REBUILT as a traced reconstruction of the FIRMWARE LCD layout — not a modern
- * dashboard. The measurements below are anchored to the manufacturer reference
- * documented in `visual-alignment-report.md §1` (the PACE-mode reference screen) and
- * to the firmware-accurate `LcdScreen.jsx` reconstruction, which uses the SAME
- * coordinates. The framework preserves the locked **673 × 515 logical space**.
+ * RECONSTRUCTED from the manufacturer LCD firmware screens — not a dashboard. These
+ * measurements are the permanent firmware skeleton: the operating-system layout every
+ * future screen and widget fits inside. Dense, embedded, firmware-shaped — thin
+ * divider lines, a narrow left parameter column, one continuous waveform field, a
+ * compressed top status band, and a label-only softkey strip. The locked **673 × 515
+ * logical space** is preserved.
  *
- * Firmware layout (source of truth), all in 673 × 515:
- *   • Narrow left parameter column: x 0…186 (vertical rule at x=186).
- *   • Tightly packed top status strip: x 186…673, y 0…118 (rule at y=118).
- *   • ONE continuous waveform plotting area beneath (ECG upper / CO₂ lower) — the
- *     traces flow directly on the black, with small channel tags; NOT boxed lanes.
- *   • Therapy / mode messages are drawn OVER the waveform area (not a separate box).
- *   • Value / readout row just above the softkeys.
- *   • Firmware softkey strip: y 468…515, six columns split by thin rules, centered
- *     white labels — NO button chrome.
+ * Anchors (measured as fractions of the LCD, then mapped to 673 × 515):
+ *   • Left parameter column ≈ 20.5 % of width  → divider x = 138
+ *   • Top status band ≈ 20 % of height (compressed, hugs the top) → rule y = 104
+ *   • Softkey label strip at the bottom → rule y = 456, six columns (physical softkeys)
+ *   • Waveform field spans between them as ONE continuous plotting area with three
+ *     thin baseline reference lines: ECG, Pleth, CO₂.
  */
 
-// Locked LCD logical canvas (matches LcdScreen.jsx authoring space).
+// Locked LCD logical canvas.
 export const lcd = {
   width: 673,
   height: 515,
 }
 
-// Firmware structural anchors (match LcdScreen.jsx; do not change).
+// Firmware structural anchors (measured from the manufacturer screens).
 export const anchors = {
-  paramDividerX: 186, // vertical rule: left parameter column | main area
-  topRuleY: 118, // horizontal rule under the top status strip
-  softkeyRuleY: 468, // horizontal rule above the softkey label strip
-  softkeyColumns: 6, // six softkeys; firmware separators at x = i*112
-  softkeyPitch: 112, // firmware column pitch (LcdScreen: i*112, last col wider)
+  paramDividerX: 138, // vertical rule: narrow left parameter column | main area (≈20.5%)
+  topRuleY: 104, // horizontal rule under the compressed top status band (≈20%)
+  readoutTop: 410, // top of the time / readout row
+  softkeyRuleY: 456, // rule above the softkey label strip
+  softkeyColumns: 6, // six softkeys (aligned to the physical buttons below the LCD)
+  softkeyPitch: 673 / 6, // ≈112.17
+}
+
+// Waveform field: one continuous plotting area with three thin baseline reference
+// lines. Widgets align to these baselines; the field is not boxed into lanes.
+export const waveform = {
+  top: 104,
+  bottom: 410,
+  baselines: {
+    ecg: 168, // ECG lane baseline
+    pleth: 258, // Pleth (SpO₂) lane baseline
+    co2: 348, // CO₂ capnogram baseline
+  },
 }
 
 // Firmware phosphor palette (approved LCD colours).
@@ -41,33 +52,31 @@ export const phosphor = {
   magenta: '#ff00ff',
   white: '#ffffff',
   red: '#ff3830',
-  dim: '#0e3a2a',
-  rule: '#24463c', // firmware hairline rules on the glass
+  rule: '#3f7d68', // firmware hairline rules on the glass (visible on black)
+  ruleDim: '#2c5748',
   background: '#03100a', // near-black LCD glass
 }
 
-// Z-order layers, bottom → top. Regions declare which layer they belong to.
+// Z-order layers, bottom → top.
 export const LAYERS = {
-  BASE: 'base', // the LCD background itself
-  STRUCTURE: 'structure', // firmware hairline rules
-  REGION: 'region', // persistent content regions
-  OVERLAY: 'overlay', // transient messages drawn above the waveform area
+  BASE: 'base', // the LCD glass
+  STRUCTURE: 'structure', // firmware hairline rules + baselines
+  REGION: 'region', // persistent firmware regions
+  OVERLAY: 'overlay', // transient messages inside the waveform field
 }
 
 export const LAYER_ORDER = [LAYERS.BASE, LAYERS.STRUCTURE, LAYERS.REGION, LAYERS.OVERLAY]
 
-// Placeholder styling for the empty framework skeleton (dim, firmware-like).
+// Skeleton styling: firmware chrome is thin, dim phosphor — NOT boxed cards.
 export const frame = {
   background: phosphor.background,
   rule: phosphor.rule,
-  regionStroke: '#1f6f5c',
-  regionFill: '#0a1c15',
-  nestedStroke: '#2b5f7a',
-  overlayStroke: '#b06a2a',
-  overlayFill: '#170f04',
+  ruleDim: phosphor.ruleDim,
+  label: '#8fcfb2', // static chrome labels (SpO₂ / NIBP / channel tags …)
+  labelBright: '#b6ead2',
+  placeholder: '#5c9c84', // value placeholders (dashes)
   name: '#7fe0b8',
   hint: '#3f7d66',
-  dim: '#2f5f50',
 }
 
 // Framework text (reuse the LCD monospace family from the Typography Library).
@@ -78,23 +87,21 @@ export const displayType = {
   coordSize: 9,
 }
 
-// High-contrast per-region colours — DEBUG / overlay comparison only (a distinct
-// hue per firmware region so boundaries and the legend are unmistakable).
+// High-contrast per-region colours — DEBUG / overlay only.
 export const debugColors = {
   leftParamColumn: '#35d0ff',
   paramSpO2: '#00e5ff',
   paramNIBP: '#cfe0ff',
-  paramCO2: '#ffcf5a',
+  paramCO2RR: '#ffcf5a',
   topStatus: '#ff5d5d',
-  statusTimer: '#ff7ad6',
+  statusClockMode: '#ff7ad6',
   statusCpr: '#ffb03a',
   statusEcgHr: '#7cff4d',
-  waveformArea: '#4d9bff',
-  valueRow: '#ff9d5d',
+  waveformField: '#4d9bff',
+  messageArea: '#ffd93b',
+  readoutRow: '#ff9d5d',
   softkeyStrip: '#5dffc8',
-  alarmBanner: '#ff4d4d',
-  therapyMessage: '#ffd93b',
 }
 
-// LCD outer boundary highlight (review modes).
+// LCD outer boundary highlight (review/debug).
 export const lcdBoundaryColor = '#e6ff7a'

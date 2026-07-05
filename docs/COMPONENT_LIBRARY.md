@@ -238,31 +238,34 @@ for the *trace*, never for the device.
 Phosphor palette: green `#00FF66`, amber `#FFD100`, cyan `#00FFFF`,
 magenta `#FF00FF`, red `#FF3830`.
 
-### 7.1 Display Operating Framework — Package 4 ✅ built (firmware reconstruction)
+### 7.1 Display Operating Framework — Package 4A ✅ built (firmware skeleton)
 
-The reusable **LCD operating framework**: the permanent layout skeleton into which
-all future display widgets render, **rebuilt as a traced reconstruction of the
-firmware LCD layout — not a modern dashboard.** Rectangles are lifted from the
-firmware-accurate `LcdScreen.jsx` coordinates (which match the PACE-mode reference in
-`../visual-alignment-report.md §1`), in the **same locked 673×515 logical space**
-(anchors: parameter divider x=186, top rule y=118, softkey rule y=468, six softkey
-columns at pitch 112). It is **layout only** — no patient data, no waveforms, no
-values, no simulator logic — and modifies no locked asset (`LcdScreen.jsx` untouched).
+The reusable **LCD operating framework**: the permanent **firmware skeleton** — the
+operating-system layout every future screen and widget fits inside — **reconstructed
+from the manufacturer LCD firmware screens** (Package 4A). It reads like a firmware
+screenshot with the dynamic values removed, **not a dashboard**. Measured anchors in
+the locked **673×515 logical space**: narrow left parameter column at **x=138 (≈20.5%)**,
+compressed top status rule at **y=104 (≈20%)**, readout row from **y=410**, softkey rule
+at **y=456**, six softkey columns. Waveform baselines: **ECG y=168 · Pleth y=258 ·
+CO₂ y=348**. **Layout only** — no waveforms, no vitals, no patient data, no messages,
+no simulator logic — and modifies no locked asset (`LcdScreen.jsx` untouched).
 
 | Item | File | Notes |
 |------|------|-------|
-| Layout tokens | `display/DisplayLayoutTokens.js` | LCD canvas, firmware anchors, phosphor palette, z-`LAYERS`, placeholder styling, `debugColors`. |
+| Layout tokens | `display/DisplayLayoutTokens.js` | LCD canvas, measured firmware anchors, waveform baselines, phosphor palette, chrome styling, `debugColors`. |
 | Region map | `display/DisplayRegions.js` | The firmware regions as `{ id, name, layer, parent, rect, injects }` in 673×515 space, plus lookups. Single source of truth. |
-| Framework component | `display/DisplayFramework.jsx` | Renders the firmware skeleton (glass + hairline rules + region placeholders) and exposes each region as an injection **slot** (`slots={{ [id]: node }}`, clipped). Props: `mode` (`clean`/`debug`), `showBoundaries`/`showNames`/`showHints`/`showStructure`/`showBackground`/`showCoords`/`slots`/`idPrefix`. |
-| Firmware reference | `display/FirmwareReference.jsx` | A firmware-layout **reconstruction** (the "Manufacturer" panel) from the documented reference — not a screenshot copy. Continuous ECG/CO₂ strokes, idle-dash values, firmware softkeys. |
-| Review page | `views/DisplayFrameworkReview.jsx` (`/display-framework-review`) | The **Manufacturer → Overlay → Framework** comparison, plus the region legend and layer hierarchy. |
+| Framework component | `display/DisplayFramework.jsx` | Renders the firmware **chrome** (hairline rules, thin-divider parameter modules, three waveform baselines, label-only softkey strip) — not boxed cards — and exposes each region as an injection **slot**. Props: `mode` (`clean`/`debug`), `showChrome`/`showBackground`/`showRegions`/`showNames`/`showCoords`/`slots`/`idPrefix`. |
+| Firmware reference | `display/FirmwareReference.jsx` | A firmware-layout **reconstruction** (the "Manufacturer" stand-in) aligned to the measured anchors — not a screenshot copy. ECG/Pleth/CO₂ on baselines, representative static readouts, firmware softkeys. |
+| Review page | `views/DisplayFrameworkReview.jsx` (`/display-framework-review`) | Three views: **1 Manufacturer**, **2 Framework Overlay** (opacity slider + region-boxes toggle), **3 Framework Only** — plus the region legend and layer hierarchy. |
 
-**Firmware regions** (layer · nesting): Left Parameter Column (→ SpO₂, NIBP, CO₂/RR),
-Top Status Strip (→ Timer/Mode, CPR Release/PPI, ECG/Lead/HR), **one continuous
-Waveform Plotting Area** (no boxed lanes), Value/Readout Row, and the firmware Softkey
-Label Strip (thin column rules + centered labels, **no button chrome**) — all
-persistent `region` layer; plus Alarm Banner and Therapy/Mode Message (transient
-`overlay` layer, drawn **over the waveform area**).
+**Firmware regions** (layer · nesting): Left Parameter Column (→ SpO₂, NIBP, CO₂/RR;
+thin divider lines, ≈20% width), Top Status Band (→ Clock/Mode, CPR Release/PPI,
+Lead/Gain/HR; compressed, hugs the top), **one continuous Waveform Field** (three
+baseline reference lines — ECG/Pleth/CO₂ — no boxed lanes), Time/Readout Row (clock at
+far left), and the firmware Softkey Label Strip (thin column rules + centered labels,
+**no button chrome**) — all persistent `region` layer; plus the Message Zone
+(transient `overlay`, drawn **inside the waveform field** — PACE / DEFIB READY / CHECK
+CPR PUCK / SET PACE MA / SYNC READY).
 
 **Injection targets** each region exposes for later phases: Waveforms, Vitals,
 Therapy Messages, Charging Status, Pacing, CPR Feedback, Softkey Labels, Alarm
