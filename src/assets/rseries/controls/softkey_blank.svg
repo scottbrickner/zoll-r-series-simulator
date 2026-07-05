@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Softkey (single, blank molded key). Pass 2G.
+     Industrial Design — Physical Softkey Assembly.
+     One of the six identical warm-gray molded softkeys below the display.
+     Footprint matches the locked master layer 07_Softkeys (110 x 58, radius 6).
+     Factory-new satin molded plastic:
+       - darker warm-gray molded side edge (depth)
+       - warm-gray satin face (#fafaf8 -> #ececea -> #d1d2ce)
+       - subtle top bevel highlight
+     NO labels, NO text — the LCD provides the softkey labels. Physical only:
+     no React logic, no simulator behaviour. Local box for standalone review. -->
+<svg viewBox="0 0 122 74" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skb-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fafaf8"/>
+      <stop offset="0.5" stop-color="#ececea"/>
+      <stop offset="1" stop-color="#d1d2ce"/>
+    </linearGradient>
+    <linearGradient id="skb-hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g id="softkey_blank">
+    <!-- darker warm-gray molded side edge -->
+    <rect x="6" y="9" width="110" height="58" rx="6" fill="#b6b7b3"/>
+    <!-- warm-gray satin face -->
+    <rect x="6" y="6" width="110" height="58" rx="6" fill="url(#skb-face)" stroke="#c2c3bf" stroke-width="1.2"/>
+    <!-- subtle top bevel highlight -->
+    <rect x="9" y="8" width="104" height="22" rx="4" fill="url(#skb-hi)"/>
+  </g>
+</svg>

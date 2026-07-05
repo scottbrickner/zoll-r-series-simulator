@@ -7,9 +7,15 @@ import indicatorDot from '../assets/rseries/controls/mode_selector_indicator_dot
 import functionButton from '../assets/rseries/controls/function_button.svg'
 import therapyButtonAsset from '../assets/rseries/controls/therapy_button.svg'
 import shockButtonAsset from '../assets/rseries/controls/shock_button.svg'
+import pacerKnobAsset from '../assets/rseries/controls/pacer_knob.svg'
+import codeReadinessAsset from '../assets/rseries/controls/code_readiness_window.svg'
+import fourToOneAsset from '../assets/rseries/controls/four_to_one_button.svg'
 import ModeSelector, { MODE_ANGLE } from '../components/rseries/controls/ModeSelector'
 import FunctionButton from '../components/rseries/controls/FunctionButton'
 import TherapyButton from '../components/rseries/controls/TherapyButton'
+import PacerKnob from '../components/rseries/controls/PacerKnob'
+import CodeReadiness from '../components/rseries/controls/CodeReadiness'
+import FourToOneButton from '../components/rseries/controls/FourToOneButton'
 
 /**
  * TEMPORARY Controls Review page for Industrial Design Pass 2 (Controls Library).
@@ -61,6 +67,74 @@ function ShockTile({ state }) {
     </figure>
   )
 }
+
+/** One pacer knob tile (fixed teal socket + rotating knob). */
+function PKTile({ label, sub, props }) {
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+        <svg className="artpreview__layer" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`Pacer knob — ${label} ${sub || ''}`}>
+          <PacerKnob cx={90} cy={90} r={78} idPrefix={`pk-${label}${sub || ''}`.replace(/\W/g, '')} {...props} />
+        </svg>
+      </div>
+      <figcaption><strong>{label}</strong>{sub && <span className="artpreview__file">{sub}</span>}</figcaption>
+    </figure>
+  )
+}
+
+/** One Code Readiness window tile in a given status. */
+function CRTile({ label, status, flashing }) {
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: '140 / 92' }}>
+        <svg className="artpreview__layer" viewBox="-12 -12 140 92" xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`Code readiness — ${label}`}>
+          <CodeReadiness status={status} flashing={flashing} idPrefix={`cr-${status}${flashing ? '-f' : ''}`} />
+        </svg>
+      </div>
+      <figcaption><strong>{label}</strong><span className="artpreview__file">status="{status}"{flashing ? ' · flashing' : ''}</span></figcaption>
+    </figure>
+  )
+}
+/** One 4:1 button tile in a given state. */
+function FTOTile({ label, sub, props }) {
+  return (
+    <figure className="msc__griditem">
+      <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+        <svg className="artpreview__layer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+          role="img" aria-label={`4:1 button — ${label} ${sub || ''}`}>
+          <FourToOneButton idPrefix={`ftob-${label}${sub || ''}`.replace(/\W/g, '')} {...props} />
+        </svg>
+      </div>
+      <figcaption><strong>{label}</strong>{sub && <span className="artpreview__file">{sub}</span>}</figcaption>
+    </figure>
+  )
+}
+
+/** The 4:1 button seated between the two pacer knobs (OUTPUT / RATE) for context. */
+function FTOInContext() {
+  return (
+    <svg className="artpreview__layer" viewBox="0 0 440 180" xmlns="http://www.w3.org/2000/svg"
+      role="img" aria-label="4:1 button positioned between the OUTPUT and RATE pacer knobs">
+      {/* OUTPUT (mA) knob */}
+      <PacerKnob cx={70} cy={80} r={62} rotationAngle={-40} idPrefix="ftoctx-out" />
+      <text x="70" y="168" textAnchor="middle" fill="#2a2f36" fontFamily="'Segoe UI',system-ui,sans-serif"
+        fontSize="14" fontWeight="700">OUTPUT mA</text>
+      {/* 4:1 button, centered between the knobs */}
+      <g transform="translate(170 30)">
+        <FourToOneButton cx={50} cy={50} r={34} idPrefix="ftoctx-btn" />
+      </g>
+      <text x="220" y="168" textAnchor="middle" fill="#2a2f36" fontFamily="'Segoe UI',system-ui,sans-serif"
+        fontSize="14" fontWeight="700">4:1</text>
+      {/* RATE (ppm) knob */}
+      <PacerKnob cx={370} cy={80} r={62} rotationAngle={60} idPrefix="ftoctx-rate" />
+      <text x="370" y="168" textAnchor="middle" fill="#2a2f36" fontFamily="'Segoe UI',system-ui,sans-serif"
+        fontSize="14" fontWeight="700">RATE ppm</text>
+    </svg>
+  )
+}
+
 const PARTS = [
   { name: 'Background base plate', file: 'controls/mode_selector_background.svg', src: background },
   { name: 'Printed labels / colored sections (OFF / MONITOR / PACER / DEFIB)', file: 'controls/mode_selector_labels.svg', src: labels },
@@ -276,6 +350,115 @@ export default function ControlsReview() {
           its own (no button); <strong>charged-ready</strong> shows the same glow
           composited behind the physical button. Pressed and disabled show no glow.
         </p>
+      </section>
+
+      {/* ============ Pacer Knobs (Pass 2E) ============ */}
+      <section className="ctrlreview__assembled">
+        <h2>Pacer Knobs (Pass 2E)</h2>
+        <p className="artpreview__note">
+          Reusable rotary knob used for OUTPUT (mA) and RATE (ppm). Two layers: a
+          <strong> fixed teal socket ring</strong> (never rotates) and a
+          <strong> rotating knob</strong> — black molded body, teal inner accent,
+          simplified molded grip ridges, inner recessed face, centre hub, and one
+          white indicator line. Satin molded plastic, factory-new, minimal
+          reflections. Geometry never changes; React controls only the rotation
+          angle, pressed, and disabled. Footprint matches the locked master layer 15.
+        </p>
+
+        <div className="msc__grid">
+          <figure className="msc__griditem">
+            <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+              <img className="artpreview__layer" src={pacerKnobAsset} alt="Pacer knob — blank reusable asset" />
+            </div>
+            <figcaption><strong>Blank reusable asset</strong><span className="artpreview__file">controls/pacer_knob.svg</span></figcaption>
+          </figure>
+          <PKTile label="OUTPUT" sub="mA" props={{ rotationAngle: -40 }} />
+          <PKTile label="RATE" sub="ppm" props={{ rotationAngle: 60 }} />
+        </div>
+
+        <h3 style={{ fontSize: '0.98rem', margin: '1.1rem 0 0' }}>Default / pressed / disabled</h3>
+        <div className="msc__grid msc__grid--3">
+          <PKTile label="Default" props={{ rotationAngle: 0 }} />
+          <PKTile label="Pressed" props={{ rotationAngle: 0, pressed: true }} />
+          <PKTile label="Disabled" props={{ rotationAngle: 0, enabled: false }} />
+        </div>
+
+        <h3 style={{ fontSize: '0.98rem', margin: '1.1rem 0 0' }}>Rotation — minimum / midpoint / maximum</h3>
+        <div className="msc__grid msc__grid--3">
+          <PKTile label="Minimum" sub="−135°" props={{ rotationAngle: -135 }} />
+          <PKTile label="Midpoint" sub="0°" props={{ rotationAngle: 0 }} />
+          <PKTile label="Maximum" sub="+135°" props={{ rotationAngle: 135 }} />
+        </div>
+      </section>
+
+      {/* ============ 4:1 Button (Pass 2H) ============ */}
+      <section className="ctrlreview__assembled">
+        <h2>4:1 Button (Pass 2H)</h2>
+        <p className="artpreview__note">
+          Small round teal/blue-green molded button that sits between the PACER
+          <strong> OUTPUT (mA)</strong> and <strong>RATE (ppm)</strong> knobs, with a
+          white <strong>4:1</strong> legend. Satin molded plastic (single restrained
+          highlight — not glossy), a subtle bevel, a darker molded side edge for
+          depth, and a slight recessed seat/socket — a physical molded button, not a
+          web-UI button. Geometry never changes; React controls only state:
+          <code>pressed</code> (seats down + darkens + deeper lower shadow),
+          <code>active</code> (a restrained brighter teal ring/fill — <em>not</em> a
+          SHOCK-style glow), and <code>enabled</code> (muted/desaturated when
+          disabled). Belongs with the pacer control area.
+        </p>
+
+        <div className="msc__grid">
+          <figure className="msc__griditem">
+            <div className="artpreview__frame" style={{ aspectRatio: '1 / 1' }}>
+              <img className="artpreview__layer" src={fourToOneAsset} alt="4:1 button — blank reusable asset" />
+            </div>
+            <figcaption><strong>Blank reusable asset</strong><span className="artpreview__file">controls/four_to_one_button.svg</span></figcaption>
+          </figure>
+          <FTOTile label="Default" props={{}} />
+          <FTOTile label="Pressed" props={{ pressed: true }} />
+          <FTOTile label="Active / latched" props={{ active: true }} />
+          <FTOTile label="Disabled" props={{ enabled: false }} />
+        </div>
+
+        <h3 style={{ fontSize: '0.98rem', margin: '1.1rem 0 0' }}>In context — between the two pacer knobs</h3>
+        <figure className="artpreview__tile ctrlreview__assembled-tile">
+          <div className="artpreview__frame" style={{ aspectRatio: '440 / 180' }}>
+            <FTOInContext />
+          </div>
+          <figcaption>
+            <strong>4:1 seated between OUTPUT and RATE</strong>
+            <span className="artpreview__file">visual placement only — footprint locked to master layer 15</span>
+          </figcaption>
+        </figure>
+      </section>
+
+      {/* ============ Code Readiness Window (Pass 2F) ============ */}
+      <section className="ctrlreview__assembled">
+        <h2>Code Readiness Window (Pass 2F)</h2>
+        <p className="artpreview__note">
+          Reusable self-test / code-readiness window: a <strong>black recessed
+          window in a dark-gray satin molded bezel</strong> (physical, fixed
+          geometry) with a <strong>React-driven display</strong>. Only the display
+          changes — <code>status</code> = <code>blank</code> / <code>ready</code>
+          (green check) / <code>notReady</code> (red X) / <code>testing</code>
+          (rotating spinner), with optional <code>flashing</code>. The SVG geometry
+          never changes; a facilitator can later drive <code>status</code>.
+          Footprint matches the locked master layer 17.
+        </p>
+
+        <div className="msc__grid">
+          <figure className="msc__griditem">
+            <div className="artpreview__frame" style={{ aspectRatio: '140 / 92' }}>
+              <img className="artpreview__layer" src={codeReadinessAsset} alt="Code readiness window — physical asset (blank)" />
+            </div>
+            <figcaption><strong>Physical asset</strong><span className="artpreview__file">controls/code_readiness_window.svg</span></figcaption>
+          </figure>
+          <CRTile label="Blank" status="blank" />
+          <CRTile label="Ready — green check" status="ready" />
+          <CRTile label="Not ready — red X" status="notReady" />
+          <CRTile label="Testing" status="testing" />
+          <CRTile label="Ready · flashing" status="ready" flashing />
+        </div>
       </section>
 
       <p className="artpreview__note">

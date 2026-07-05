@@ -8,6 +8,7 @@ import ArtPreview from './views/ArtPreview'
 import ControlsReview from './views/ControlsReview'
 import ModeSelectorCompare from './views/ModeSelectorCompare'
 import EnergySelectReview from './views/EnergySelectReview'
+import SoftkeyReview from './views/SoftkeyReview'
 
 export default function App() {
   const [params] = useSearchParams()
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/controls-review" element={<ControlsReview />} />
         <Route path="/mode-selector-compare" element={<ModeSelectorCompare />} />
         <Route path="/energy-select-review" element={<EnergySelectReview />} />
+        <Route path="/softkey-review" element={<SoftkeyReview />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </SimulatorProvider>

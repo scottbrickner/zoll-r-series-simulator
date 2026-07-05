@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — 4:1 Button (reusable, blank / default state).
+     Industrial Design Pass 2H (Controls Library — 4:1 Button).
+     The small round teal/blue-green molded push-button that sits between the
+     PACER OUTPUT (mA) and RATE (ppm) knobs, reconstructed from the manufacturer
+     photos. Pressing it temporarily paces at a 4:1 ratio (pause-to-check).
+     Layers:
+       1. Recessed seat/socket (the faceplate cutout the button sits in)
+       2. Molded side depth (darker teal lip beneath the face)
+       3. Satin molded teal face (single restrained highlight — not glossy)
+       4. Subtle bevel highlight
+       5. White "4:1" label, centered
+     Satin molded plastic — factory-new, neutral CAD lighting, minimal shadows,
+     not glossy. Shown here in the default state. React controls only state
+     (pressed / active / disabled) — never geometry. Local box for review. -->
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- satin teal molded face — restrained top-to-bottom gradient -->
+    <linearGradient id="ftob-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#18b0aa"/>
+      <stop offset="0.55" stop-color="#0f9c97"/>
+      <stop offset="1" stop-color="#0b807b"/>
+    </linearGradient>
+    <!-- single restrained satin sheen (not a glossy hotspot) -->
+    <linearGradient id="ftob-hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g id="four_to_one_button">
+    <!-- recessed seat / socket ring in the faceplate -->
+    <circle cx="50" cy="50" r="40" fill="#c9cbc6"/>
+    <circle cx="50" cy="50" r="40" fill="none" stroke="#a7a9a4" stroke-width="1"/>
+    <circle cx="50" cy="50" r="37" fill="#8fa3a0"/>
+    <!-- molded side depth (darker teal lip beneath the face) -->
+    <circle cx="50" cy="52.5" r="34" fill="#0a716d"/>
+    <!-- satin molded teal face -->
+    <circle cx="50" cy="50" r="34" fill="url(#ftob-face)" stroke="#0a716d" stroke-width="1"/>
+    <!-- subtle bevel highlight (restrained satin, upper face only) -->
+    <ellipse cx="44" cy="39" rx="19" ry="9" fill="url(#ftob-hi)"/>
+    <!-- white "4:1" label, centered -->
+    <text x="50" y="50" text-anchor="middle" dominant-baseline="central"
+      fill="#ffffff" font-family="'Segoe UI','Helvetica Neue',system-ui,sans-serif"
+      font-size="26" font-weight="700" letter-spacing="0.5">4:1</text>
+  </g>
+</svg>

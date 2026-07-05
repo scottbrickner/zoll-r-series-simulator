@@ -127,10 +127,11 @@ reassembling to the identical master geometry (footprint/position locked).
 | Function buttons (LEAD / SIZE / ALARM SUSPEND / RECORDER) | `08_FunctionButtons` | `function_button.svg` (frozen) + `FunctionButton.jsx` (one part, N labels) | ✅ **Pass 2B — APPROVED / FROZEN (not yet wired into master)** |
 | Energy select rocker | `10_EnergySelect` | `energy_select_button.svg` (frozen) + `EnergySelect.jsx` | ✅ **Pass 2C — APPROVED / FROZEN (not yet wired into master)** |
 | Therapy buttons (ANALYZE / CHARGE / SHOCK) | `09_TherapyButtons` | `therapy_button.svg` + `shock_button.svg` (physical only) + `TherapyButton.jsx` (action + shock variants; React glow overlay) | ✅ **Pass 2D.1 — APPROVED / FROZEN (not yet wired into master)** |
-| Softkeys | `07_Softkeys` | reusable button × 6 | ⬜ pending |
-| Pacer knobs (OUTPUT / RATE) + 4:1 | `15_PacerKnobs` | knob part × 2 | ⬜ pending |
+| Pacer knobs (OUTPUT / RATE) | `15_PacerKnobs` | `pacer_knob.svg` + `PacerKnob.jsx` (fixed teal socket + rotating knob; React `rotationAngle`/`pressed`/`enabled`) | 🟡 **Pass 2E — built (not yet wired into master)** |
+| Softkeys | `07_Softkeys` | **Physical:** `softkey_blank.svg` + `softkey_row.svg` (Pass 2G, warm-gray molded × 6). **Framework:** `SoftKey.ts` + `softkeyLayouts.ts` + `SoftKeyRow.tsx` (Package 4, React label/enabled/visible/highlighted/pressed, per-mode layouts) | 🟡 **built (not yet wired into master)** |
+| 4:1 button | `15_PacerKnobs` | `four_to_one_button.svg` + `FourToOneButton.jsx` (small round teal molded button between the OUTPUT/RATE knobs; React `pressed`/`active`/`enabled`) | 🟡 **Pass 2H — built (not yet wired into master)** |
 | LED indicators (AC / BATT) | `16_LEDIndicators` | state-driven fill | ⬜ pending |
-| Self-test window (Code Readiness) | `17_SelfTestWindow` | blank / X / check | ⬜ pending |
+| Self-test window (Code Readiness) | `17_SelfTestWindow` | `code_readiness_window.svg` (physical) + `CodeReadiness.jsx` (React `status`: blank / ready / notReady / testing + flashing) | 🟡 **Pass 2F — built (not yet wired into master)** |
 | NIBP button (arm + cuff) | `18_BP_Button` | — | ⬜ pending |
 
 **Reuse rules:** buttons and knobs are single reusable parts; instances differ
@@ -313,5 +314,16 @@ src/assets/rseries/controls/energy_select_button.svg # Pass 2C — reusable blan
 src/components/rseries/controls/TherapyButton.jsx   # Pass 2D — therapy button family
 src/assets/rseries/controls/therapy_button.svg      # Pass 2D — peach action button
 src/assets/rseries/controls/shock_button.svg        # Pass 2D — flat orange shock button
+src/components/rseries/controls/PacerKnob.jsx       # Pass 2E — pacer knob (socket + rotating knob)
+src/assets/rseries/controls/pacer_knob.svg          # Pass 2E — reusable pacer knob asset
+src/components/rseries/controls/CodeReadiness.jsx   # Pass 2F — code readiness window (React status)
+src/assets/rseries/controls/code_readiness_window.svg # Pass 2F — physical window asset
+src/components/rseries/controls/FourToOneButton.jsx # Pass 2H — round teal 4:1 button (React pressed/active/enabled)
+src/assets/rseries/controls/four_to_one_button.svg  # Pass 2H — physical 4:1 button asset
+src/assets/rseries/controls/softkey_blank.svg       # Pass 2G — single molded softkey
+src/assets/rseries/controls/softkey_row.svg         # Pass 2G — six-key molded row
+src/components/rseries/controls/SoftKey.ts          # Package 4 — softkey model (TS)
+src/components/rseries/controls/softkeyLayouts.ts   # Package 4 — per-mode layouts (TS)
+src/components/rseries/controls/SoftKeyRow.tsx      # Package 4 — programmable 6-key row (TSX)
 src/assets/rseries/{lcd,icons,labels,reference}/   # scaffold (.gitkeep)
 ```

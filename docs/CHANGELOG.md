@@ -30,6 +30,111 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.19] — 2026-07-03 — Industrial Design Pass 2H: 4:1 Button
+
+Built the reusable **4:1 Button** — the small round teal button between the PACER
+OUTPUT (mA) and RATE (ppm) knobs. Not wired into the shipping master; no body, LCD,
+Mode Selector, Function Button, Energy Select, Therapy Button, Pacer Knob, Code
+Readiness, softkey, or simulator-logic change.
+
+### Added
+- `src/components/rseries/controls/FourToOneButton.jsx` — reusable small round teal
+  molded push-button with a centered white `4:1` legend. Satin molded plastic
+  (single restrained highlight — not glossy), subtle bevel, darker molded side edge
+  for depth, and a slight recessed seat/socket. Props: `cx/cy/r`, `pressed`,
+  `active`, `enabled`, `onClick`, `idPrefix`. Geometry never changes; React
+  controls only state — `pressed` (seats down + darkens + deeper lower shadow),
+  `active` (restrained brighter teal ring/fill, **not** a SHOCK-style glow),
+  `enabled=false` (muted/desaturated + reduced opacity).
+- `src/assets/rseries/controls/four_to_one_button.svg` — blank reusable button
+  asset (default state). Footprint belongs with the pacer control area (master
+  layer 15).
+- `/controls-review` gains a 4:1 Button section: blank asset; default / pressed /
+  active-latched / disabled; and the button seated in context between the two
+  pacer knobs (OUTPUT / RATE).
+- Recorded in `visual-alignment-report.md` §8.15; `COMPONENT_LIBRARY.md` §5.
+
+## [0.1.15] — 2026-07-02 — Industrial Design Pass 2E: Pacer Knobs
+
+Built the reusable Pacer Knob system. Not wired into the shipping master; no body,
+LCD, Mode Selector, Function Button, Energy Select, Therapy Button, or
+simulator-logic change.
+
+### Added
+- `src/components/rseries/controls/PacerKnob.jsx` — reusable rotary knob for
+  OUTPUT (mA) / RATE (ppm). Two layers: a fixed teal socket ring (never rotates)
+  and a rotating knob (black molded body, teal inner accent, simplified molded
+  grip ridges, inner recessed face, centre hub, white indicator line). Props:
+  `cx/cy/r`, `rotationAngle`, `pressed`, `enabled`, `onClick`, `idPrefix`.
+  Geometry never changes; React controls only rotation + pressed/disabled state.
+- `src/assets/rseries/controls/pacer_knob.svg` — blank reusable knob asset.
+- Satin molded plastic, factory-new, minimal reflections/shadows (not glossy).
+  Footprint matches the locked master layer 15.
+- `/controls-review` gains a Pacer Knobs section: blank asset; OUTPUT / RATE;
+  default / pressed / disabled; minimum / midpoint / maximum rotations.
+- Recorded in `visual-alignment-report.md` §8.11; `COMPONENT_LIBRARY.md` §5.
+- The 4:1 button is a separate later part (not built this pass).
+
+## [0.1.16] — 2026-07-02 — Industrial Design Pass 2F: Code Readiness Window
+
+Built the reusable Code Readiness / self-test window. Not wired into the shipping
+master; no body, LCD, or previously-frozen-control change, and no simulator logic.
+
+### Added
+- `src/components/rseries/controls/CodeReadiness.jsx` — physical black window in a
+  dark-gray satin molded bezel (fixed geometry) with a React-driven display.
+  Props: `status` ('blank' / 'ready' / 'notReady' / 'testing'), `flashing`,
+  `x/y/w/h`, `idPrefix`. Only the display changes: green check / red X / rotating
+  amber self-test spinner (SMIL) / optional flashing pulse. Geometry never changes.
+- `src/assets/rseries/controls/code_readiness_window.svg` — physical window asset
+  (blank; no status baked in). Footprint matches the locked master layer 17.
+- `/controls-review` gains a Code Readiness section: physical asset; blank / ready
+  (green check) / notReady (red X) / testing / ready-flashing.
+- Facilitator-ready: `status` is a plain prop for later facilitator control (no
+  simulator logic wired). Recorded in `visual-alignment-report.md` §8.12;
+  `COMPONENT_LIBRARY.md` §5.
+
+## [0.1.18] — 2026-07-03 — Industrial Design Pass 2G: Physical Softkey Assembly
+
+Built the physical softkey assets (the industrial design behind the approved
+Softkey Framework). Not wired into the shipping master; no body, LCD, or
+previously-frozen-control change, and no simulator logic.
+
+### Added
+- `src/assets/rseries/controls/softkey_blank.svg` — a single warm-gray molded
+  softkey (110 × 58, radius 6): satin face + darker molded side edge + subtle top
+  bevel. No labels, no text.
+- `src/assets/rseries/controls/softkey_row.svg` — six identical keys at pitch 122
+  (layer-07 spacing), drawn once and reused six times.
+- `/softkey-review` gains a Physical Softkey Assembly section: single key →
+  six-key row → mounted beneath the LCD.
+- Recorded in `visual-alignment-report.md` §8.14; `COMPONENT_LIBRARY.md` §5.
+
+## [0.1.17] — 2026-07-03 — Package 4: Softkey Framework
+
+Built the reusable Softkey Framework. Not wired into the shipping master; no body,
+LCD, previously-frozen-control, or simulator-logic change.
+
+### Added
+- `src/components/rseries/controls/SoftKey.ts` — softkey model (`SoftKey`:
+  id/label/enabled/visible/highlighted/pressed), `makeSoftKey`, `normalizeRow`.
+- `src/components/rseries/controls/softkeyLayouts.ts` — per-mode layouts. Monitor
+  uses the R Series baseline (Options / Param / Code Marker / Report Data /
+  Alarms / Sync On/Off); Pacer / Defib / Sync are example layouts.
+- `src/components/rseries/controls/SoftKeyRow.tsx` — programmable six-key row
+  (`<g>`); React drives label/enabled/visible/highlighted/pressed. The physical
+  keys (locked layer 07) never change. This is one row, not six buttons.
+- `src/views/SoftkeyReview.jsx` + route `/softkey-review` — physical keys; Monitor
+  / Pacer / Defib / Sync layouts; per-key states.
+
+### Note — TypeScript introduced
+- These three framework files are **TypeScript** (`.ts` / `.tsx`) as requested —
+  the first TS in this otherwise-JavaScript project (see `DECISIONS.md` D2). Vite/
+  esbuild transpiles them at build with no `tsconfig` and no type-check step; the
+  build and smoke tests pass. Can be converted to `.js`/`.jsx` for consistency if
+  preferred. Recorded in `visual-alignment-report.md` §8.13, `COMPONENT_LIBRARY.md`
+  §5.
+
 ## [0.1.14] — 2026-07-02 — End-of-day finalization: Pass 2 controls frozen
 
 Docs-only finalization of today's Industrial Design work (no artwork or code

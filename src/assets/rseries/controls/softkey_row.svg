@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Softkey row (six identical molded keys). Pass 2G.
+     Industrial Design — Physical Softkey Assembly.
+     The six warm-gray molded softkeys below the display. Footprint and spacing
+     match the locked master layer 07_Softkeys: each key 110 x 58, radius 6, at a
+     pitch of 122 (12 px gap). Factory-new satin molded plastic — same key as
+     softkey_blank.svg, repeated six times.
+     NO labels, NO text (the LCD provides labels); no React logic, no simulator
+     behaviour. Local box for standalone review. -->
+<svg viewBox="0 0 732 74" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skr-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fafaf8"/>
+      <stop offset="0.5" stop-color="#ececea"/>
+      <stop offset="1" stop-color="#d1d2ce"/>
+    </linearGradient>
+    <linearGradient id="skr-hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- one molded key (drawn at local x 6, y 6) -->
+    <g id="skr-key">
+      <rect x="6" y="9" width="110" height="58" rx="6" fill="#b6b7b3"/>
+      <rect x="6" y="6" width="110" height="58" rx="6" fill="url(#skr-face)" stroke="#c2c3bf" stroke-width="1.2"/>
+      <rect x="9" y="8" width="104" height="22" rx="4" fill="url(#skr-hi)"/>
+    </g>
+  </defs>
+  <g id="softkey_row">
+    <use href="#skr-key" x="0"/>
+    <use href="#skr-key" x="122"/>
+    <use href="#skr-key" x="244"/>
+    <use href="#skr-key" x="366"/>
+    <use href="#skr-key" x="488"/>
+    <use href="#skr-key" x="610"/>
+  </g>
+</svg>

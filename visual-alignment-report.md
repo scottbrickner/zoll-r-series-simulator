@@ -380,6 +380,121 @@ simulator-logic change.
 > charging / pressed / disabled) may still be connected when the family is wired
 > into the master.
 
+## 8.11 Pacer Knobs — 2026-07-02 — Industrial Design Pass 2E (built)
+
+Built the reusable **Pacer Knob** system (`pacer_knob.svg` + `PacerKnob.jsx`) from
+the manufacturer photos — the rotary knob used for OUTPUT (mA) and RATE (ppm).
+Footprint matches the locked master layer 15 (r 78).
+
+- **Two layers:** a **fixed teal socket ring** (`#0f9c97`, never rotates) and a
+  **rotating knob** — outer black molded body (satin `#2e2e2e → #101010`), teal
+  inner accent (`#16b3ad`), simplified molded grip ridges (18 flutes — not
+  aggressive knurling), inner recessed face (satin radial), centre hub, and one
+  **white indicator line** that rotates with the knob.
+- **Satin molded plastic:** factory-new, neutral lighting, minimal reflections /
+  shadows — not glossy (slight `0.08` highlight only), with visible depth from the
+  recessed face + socket layering.
+- **React model:** `rotationAngle`, `pressed` (subtle deeper recess), `enabled`
+  (dim + desaturated). **Geometry never changes** — only the rotation transform on
+  the knob layer and state colours. The socket stays fixed; only the knob (grip +
+  indicator) rotates. Rotation range for the examples: −135° / 0° / +135°.
+
+Reviewed on `/controls-review` (blank asset; OUTPUT / RATE; default / pressed /
+disabled; minimum / midpoint / maximum rotations). Not wired into the master. No
+body, LCD, Mode Selector, Function Button, Energy Select, Therapy Button, or
+simulator-logic change. The 4:1 button is a separate later part.
+
+## 8.12 Code Readiness Window — 2026-07-02 — Industrial Design Pass 2F (built)
+
+Built the reusable **Code Readiness / self-test window**
+(`code_readiness_window.svg` + `CodeReadiness.jsx`). Footprint matches the locked
+master layer 17 (116 × 68).
+
+- **Physical asset:** a **black recessed window** (`#0a0a0a`) in a **dark-gray
+  satin molded bezel** (`#3a3a3a → #242424`, stroke `#1a1a1a`), with a subtle inner
+  top recess shadow and a minimal satin highlight. Factory-new, neutral lighting,
+  minimal reflections. Fixed geometry.
+- **React states (display only):** `status = 'blank' | 'ready' | 'notReady' |
+  'testing'` → empty / green check (`#00ff66`) / red X (`#ff3830`) / rotating amber
+  self-test spinner (`#ffb84d`, SMIL). Optional `flashing` pulses the content.
+  Check/X reproduce the master's layer-17 proportions. **The SVG geometry never
+  changes — React changes only the display.**
+- **Facilitator-ready:** `status` is a plain prop a facilitator control can drive
+  later. **No simulator logic wired** this pass.
+
+Reviewed on `/controls-review` (physical asset; blank / ready / notReady / testing
+/ ready-flashing). Not wired into the master. No body, LCD, Mode Selector, Function
+Button, Energy Select, Therapy Button, Pacer Knob, or simulator-logic change.
+
+## 8.14 Physical Softkey Assembly — 2026-07-03 — Industrial Design Pass 2G (built)
+
+Built the physical softkey assets (`softkey_blank.svg` + `softkey_row.svg`) — the
+industrial design behind the approved Softkey Framework (§8.13). Footprint and
+spacing match the locked master layer 07_Softkeys exactly.
+
+- **Single key** (`softkey_blank.svg`): a warm-gray molded key, 110 × 58, radius
+  6 — satin face (`#fafaf8 → #ececea → #d1d2ce`) over a darker warm-gray molded
+  side edge (`#b6b7b3`), with a subtle top bevel highlight. Factory-new satin
+  molded plastic. **No labels, no text.**
+- **Six-key row** (`softkey_row.svg`): six *identical* keys at pitch **122**
+  (12 px gap) — the layer-07 spacing — drawn once and `<use>`d six times.
+- **Physical only:** no React logic, no simulator behaviour. The LCD provides the
+  labels later.
+
+Reviewed on `/softkey-review` (single key → six-key row → mounted beneath the
+LCD). Not wired into the master. No body, LCD, or previously-frozen-control change.
+
+## 8.13 Softkey Framework — 2026-07-03 — Package 4 (built)
+
+Built the reusable **Softkey Framework** (`SoftKey.ts` + `softkeyLayouts.ts` +
+`SoftKeyRow.tsx`). This is a *programmable* six-key system, **not** six separate
+buttons. The six physical softkeys are part of the locked body (master layer
+07_Softkeys) and are unchanged; the framework is the label/state layer over them.
+
+- **Model** (`SoftKey`): `id`, `label`, `enabled`, `visible`, `highlighted`,
+  `pressed`. `normalizeRow()` pads/truncates any layout to exactly six slots.
+- **Layouts** (per operating mode): **Monitor** uses the R Series baseline —
+  Options / Param / Code Marker / Report Data / Alarms / Sync On/Off. **Pacer**,
+  **Defib**, **Sync** are example layouts the framework supports (Pacer swaps in
+  `4:1`; Sync highlights the Sync toggle). Per-mode legends should be confirmed
+  against the R Series Operator's Guide before wire-in.
+- **Row** (`SoftKeyRow`): renders six keys (110 × 58, pitch 122 — layer-07
+  proportions) as a `<g>`; React changes only label / enabled (dim) / visible
+  (hidden slot) / highlighted (teal accent) / pressed (inset). The physical key
+  geometry never changes.
+- **Note:** these three files are **TypeScript** (`.ts` / `.tsx`) as requested —
+  the first TS in this JS project. Vite/esbuild transpiles them at build (no
+  tsconfig / no type-check step). See CHANGELOG for the flag.
+
+Reviewed on `/softkey-review` (physical keys; Monitor / Pacer / Defib / Sync
+layouts; per-key states). Not wired into the master. No body, LCD, or previously-
+frozen-control change, and no simulator logic.
+
+## 8.15 4:1 Button — 2026-07-03 — Industrial Design Pass 2H (built)
+
+Built the reusable **4:1 Button** (`four_to_one_button.svg` +
+`FourToOneButton.jsx`) from the manufacturer photos — the small round teal button
+that sits between the PACER **OUTPUT (mA)** and **RATE (ppm)** knobs (master layer
+15). Pressing it temporarily paces at a 4:1 ratio (pause-to-check the underlying
+rhythm).
+
+- **Physical asset:** a **small round teal/blue-green molded button** (satin face
+  `#18b0aa → #0f9c97 → #0b807b`) seated in a **recessed socket** (`#c9cbc6` rim →
+  `#8fa3a0` seat), over a darker molded **side edge** (`#0a716d`) for depth, with a
+  centered white **4:1** legend. A single restrained satin sheen (0.16 highlight —
+  toned down from the first cut so it reads satin, **not glossy**). Factory-new,
+  neutral CAD lighting, minimal shadows.
+- **React states (colour/opacity only):** `pressed` (seats down 2px + darker teal +
+  deeper lower shadow), `active` (a restrained brighter teal ring + fill — a
+  latched look, **not** a SHOCK-style glow/bloom), `enabled=false` (muted /
+  desaturated teal + 0.7 opacity). **The SVG geometry never changes.** Props:
+  `cx/cy/r`, `pressed`, `active`, `enabled`, `onClick`, `idPrefix`.
+
+Reviewed on `/controls-review` (blank asset; default / pressed / active-latched /
+disabled; and seated in context between the OUTPUT and RATE pacer knobs). Not wired
+into the master. No body, LCD, Mode Selector, Function Button, Energy Select,
+Therapy Button, Pacer Knob, Code Readiness, softkey, or simulator-logic change.
+
 ## 8.10 End-of-day finalization — 2026-07-02 — Pass 2 controls frozen
 
 Finalization of today's Industrial Design work. The following control families are

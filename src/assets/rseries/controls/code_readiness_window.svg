@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Code Readiness / Self-Test Window (reusable, PHYSICAL
+     only, blank). Industrial Design Pass 2F.
+     A black recessed window in a dark-gray satin molded bezel. Footprint matches
+     the locked master layer 17_SelfTestWindow (116 x 68). Factory-new satin
+     plastic, minimal reflections, neutral CAD lighting.
+
+     IMPORTANT: this SVG is the PHYSICAL window ONLY. The display (green check /
+     red X / self-test spinner) is React state, rendered by CodeReadiness.jsx —
+     it is NOT baked into this asset. Local box for standalone review. -->
+<svg viewBox="0 0 140 92" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="crw-bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3a3a"/>
+      <stop offset="1" stop-color="#242424"/>
+    </linearGradient>
+  </defs>
+  <g id="code_readiness_window">
+    <!-- dark-gray satin molded bezel -->
+    <rect x="12" y="12" width="116" height="68" rx="5" fill="url(#crw-bezel)" stroke="#1a1a1a" stroke-width="1"/>
+    <!-- recessed black window -->
+    <rect x="16" y="16" width="108" height="60" rx="3" fill="#0a0a0a" stroke="#000000" stroke-width="1"/>
+    <!-- subtle inner top shadow (recess) -->
+    <rect x="16" y="16" width="108" height="12" rx="3" fill="#000000" opacity="0.4"/>
+    <!-- minimal satin highlight -->
+    <rect x="15" y="13" width="110" height="4" rx="2" fill="#ffffff" opacity="0.05"/>
+  </g>
+</svg>

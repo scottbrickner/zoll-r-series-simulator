@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- R Series control part — Pacer Knob (reusable, blank / rotation 0).
+     Industrial Design Pass 2E (Controls Library — Pacer Knob Library).
+     The reusable rotary knob used for OUTPUT (mA) and RATE (ppm), reconstructed
+     from the manufacturer photos. Footprint matches the locked master layer 15
+     (r 78). Two layers:
+       1. FIXED teal socket ring (never rotates)
+       2. ROTATING knob — black molded body + teal inner accent + molded grip
+          ridges + inner recessed face + centre hub + white indicator line
+     Satin molded plastic — factory-new, minimal reflections/shadows, not glossy.
+     Shown here at rotation 0 (indicator up). React rotates only the knob layer.
+     Local box for standalone review. -->
+<svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pks-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2e2e2e"/>
+      <stop offset="1" stop-color="#101010"/>
+    </linearGradient>
+    <radialGradient id="pks-face" cx="0.42" cy="0.34" r="0.9">
+      <stop offset="0" stop-color="#3a3a3a"/>
+      <stop offset="0.6" stop-color="#1f1f1f"/>
+      <stop offset="1" stop-color="#0b0b0b"/>
+    </radialGradient>
+  </defs>
+  <g id="pacer_knob">
+    <!-- FIXED teal socket ring -->
+    <circle cx="90" cy="90" r="78" fill="#0f9c97" stroke="#0a716d" stroke-width="1.5"/>
+    <!-- ROTATING knob (rotation 0) -->
+    <circle cx="90" cy="90" r="72" fill="url(#pks-body)" stroke="#080808" stroke-width="1"/>
+    <circle cx="90" cy="90" r="69" fill="none" stroke="#16b3ad" stroke-width="2" opacity="0.8"/>
+    <!-- molded grip ridges (18 flutes) -->
+    <g stroke="#3a3a3a" stroke-width="2.4" stroke-linecap="round">
+      <line x1="90" y1="22" x2="90" y2="30"/>
+      <line x1="113.26" y1="26.10" x2="110.52" y2="33.62"/>
+      <line x1="133.70" y1="38.30" x2="128.56" y2="44.42"/>
+      <line x1="149.13" y1="56.87" x2="141.85" y2="61.09"/>
+      <line x1="157.94" y1="79.44" x2="149.24" y2="80.97"/>
+      <line x1="159.13" y1="103.60" x2="149.90" y2="102.00"/>
+      <line x1="152.42" y1="126.78" x2="143.44" y2="122.99"/>
+      <line x1="138.63" y1="146.35" x2="131.33" y2="140.86"/>
+      <line x1="119.42" y1="159.62" x2="114.28" y2="152.75"/>
+      <line x1="97.00" y1="165.36" x2="94.44" y2="157.36"/>
+      <line x1="73.66" y1="162.72" x2="73.09" y2="154.36"/>
+      <line x1="51.63" y1="151.90" x2="54.19" y2="143.90"/>
+      <line x1="33.66" y1="133.85" x2="38.80" y2="127.73"/>
+      <line x1="21.85" y1="110.62" x2="29.13" y2="106.40"/>
+      <line x1="17.66" y1="84.75" x2="26.36" y2="83.22"/>
+      <line x1="21.85" y1="59.38" x2="30.55" y2="60.91"/>
+      <line x1="33.66" y1="38.30" x2="40.94" y2="42.52"/>
+      <line x1="51.63" y1="26.10" x2="56.77" y2="32.97"/>
+    </g>
+    <!-- inner recessed face -->
+    <circle cx="90" cy="90" r="59" fill="url(#pks-face)" stroke="#070707" stroke-width="1.5"/>
+    <!-- slight satin highlight -->
+    <ellipse cx="77.5" cy="74.4" rx="21.8" ry="13.3" fill="#ffffff" opacity="0.08"/>
+    <!-- white indicator line -->
+    <rect x="87" y="36" width="6" height="26" rx="3" fill="#e6e9ec"/>
+    <!-- centre hub -->
+    <circle cx="90" cy="90" r="8" fill="#161616" stroke="#2c2c2c" stroke-width="1"/>
+  </g>
+</svg>
