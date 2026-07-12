@@ -17,6 +17,7 @@ import { channelName, storageKeyFor, newSessionId, DEFAULT_SESSION } from '../sr
 import { SCENARIOS, getScenario } from '../src/sync/scenarios.js'
 import { buildSessionData, toCSV } from '../src/sync/report.js'
 import { ecgFor, RHYTHM_KEYS, isSyncable, pacedPath, pacerSpikes, cprArtifactPath } from '../src/components/rseries/waveforms.js'
+import { REGION_BY_ID, INJECTS } from '../src/components/rseries/display/DisplayRegions.js'
 
 let pass = 0
 let fail = 0
@@ -71,6 +72,16 @@ const wantHeader = 'timestamp,eventType,action,mode,rhythm,heartRate,energy,shoc
 ok('CSV header matches required columns', lines[0] === wantHeader)
 ok('CSV has one row per event', lines.length - 1 === fakeState.eventLog.length)
 ok('CSV escapes commas/quotes', lines.some((l) => l.includes('"has, comma ""quote"""')))
+
+console.log('\n5. Display widgets — injection contract')
+// The region ids `mountWidgets()` targets must all exist in the frozen skeleton map.
+const WIDGET_SLOTS = ['paramSpO2', 'paramNIBP', 'paramCO2RR', 'statusClockMode', 'statusCpr', 'statusEcgHr', 'waveformField', 'messageArea', 'readoutRow', 'softkeyStrip']
+ok('all widget-target regions exist in the skeleton', WIDGET_SLOTS.every((id) => REGION_BY_ID[id]))
+ok('every targeted region declares an inject target', WIDGET_SLOTS.every((id) => REGION_BY_ID[id].injects?.length > 0))
+ok('Waveforms / Vitals / Softkeys inject targets are defined', [INJECTS.WAVEFORMS, INJECTS.VITALS, INJECTS.SOFTKEYS].every(Boolean))
+// The rhythms the review models drive must resolve to valid trace paths.
+const MODEL_RHYTHMS = ['Normal Sinus', 'Ventricular Fibrillation', 'Paced (Capture)', 'CPR Artifact']
+ok('widget review rhythms resolve to valid paths', MODEL_RHYTHMS.every((k) => validPath(ecgFor(k))))
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'} — ${pass} passed, ${fail} failed\n`)
 process.exit(fail === 0 ? 0 : 1)

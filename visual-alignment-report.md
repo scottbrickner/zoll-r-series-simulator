@@ -903,3 +903,57 @@ Review: `/display-framework-review` shows three views — (1) Manufacturer (firm
 reconstruction; drop `public/lcd_reference.png` to overlay a real capture), (2)
 Framework Overlay with an opacity slider + region-boxes toggle, (3) Framework Only.
 Only placeholders — no waveforms, vitals, patient data, or messages are added.
+
+### 11.5 Display Widgets — 2026-07-12 — Package 5 (built)
+
+Built the reusable LCD widgets that fill the §11.4 skeleton's injection slots. Each
+widget is authored in its region's **local** coordinate space (0,0 = region top-left)
+and injected via `DisplayFramework`'s `slots` prop, which translates it to the region
+origin and clips it to the region bounds — so the widgets land on the measured firmware
+anchors by construction. Widget local anchors are the §11.4 skeleton positions minus the
+region origin (e.g. NIBP value at skeleton y=186 → local y=82 inside `paramNIBP` at y=104;
+waveform baselines ECG/Pleth/CO₂ at field-local y = 64 / 154 / 244 = the 168/258/348
+skeleton baselines minus the field top y=104).
+
+Alignment verification (in-browser, `/display-widgets-review`):
+- **Manufacturer overlay** — the populated MONITOR screen laid over the firmware
+  reconstruction; SpO₂/NIBP/HR values and the ECG/Pleth/CO₂ traces register on the
+  manufacturer anchors.
+- **Region-boxes gallery** — each widget shown over the empty skeleton with its region
+  boxed; every widget renders inside its labeled slot (waveform traces sit on their
+  baselines within the Waveform Field; HR in Lead/Gain/HR; message in the Message Zone).
+- Four populated modes (MONITOR / DEFIB / PACER / CPR-arrest) exercise the value,
+  waveform (`ecgFor`/Pleth/CO₂), CPR release+PPI-fill, message-tone, readout, and
+  mode-dependent softkey widgets.
+
+The frozen skeleton (§11.4) is unchanged except for a backward-compatible
+`showPlaceholders` prop (default `true`; `false` suppresses the dim value stand-ins and
+default softkey labels so live widgets show through). No device/LCD geometry, body,
+controls, typography, master, physical softkeys, or simulator logic changed. Widgets are
+presentational parts driven by props — live-state binding and sweep animation are the
+later React Wiring phase. Build passes · smoke **23/23** · no console errors.
+
+**Manual-accuracy corrections** (verified against the R Series ALS Operator's Guide
+9650-0912-01 Rev. U):
+- **Clock** — Fig. 2-2 places the elapsed-time clock at the **bottom-left, above the
+  softkeys** (readout row); the top-left is the **MODE / status** word (IDLE / MONITOR /
+  DEFIB / PACER). The earlier reconstruction (§11.4) had a clock in the top band; that
+  slot is now the mode word (`ModeWidget`), and the elapsed clock renders only in the
+  readout row. Updated skeleton chrome, `FirmwareReference.jsx`, and the `statusClockMode`
+  region name (`Clock / Mode` → `Mode / Status`).
+- **Waveform channel tags** are **mode-dependent** and now live in the widget layer
+  (baselines remain structural chrome). Per Ch. 7 See-Thru CPR and the LEAD button
+  (p. 2-4): in DEFIB / CPR with OneStep CPR pads, **Trace 1 = PADS** (raw ECG from pads)
+  and **Trace 2 = FIL** (filtered ECG, CPR-artifact removed); MONITOR shows ECG/Pleth/CO₂;
+  PACER shows lead II/P3 (PADS monitoring is not available in PACER). Verified in the
+  review's four populated screens and the region-boxes gallery.
+- **Softkey labels** corrected to the documented sets (`softkeysForMode()`): the five
+  constant keys **Options · Param · Code Marker · Report Data · Alarms** plus a mode
+  toggle — **Sync On/Off** (MONITOR/DEFIB) or **Async On/Off** (PACER). ENERGY SELECT,
+  CHARGE, ANALYZE, OUTPUT mA, RATE ppm and 4:1 are **physical front-panel buttons**
+  (Table 2-2), not softkeys, and were removed from the strip.
+- **CPR feedback** (Ch. 6): "Push Harder" / "Good Compressions" are **voice prompts**
+  (auditory) — removed from the message banner. On-screen CPR feedback is the Real CPR
+  Help field (PPI diamond + Compression Release Bar + Depth/Rate); the only CPR *text* on
+  screen is the RATE/DEPTH hints and the optional FULLY RELEASE prompt. The CPR/arrest
+  review screen now shows the PPI/release/rate-depth indicators with no banner.

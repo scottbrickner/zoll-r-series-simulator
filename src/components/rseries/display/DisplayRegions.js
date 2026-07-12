@@ -13,7 +13,7 @@
  *
  * Layout only. NO waveforms, NO vitals, NO patient data, NO messages, NO logic.
  */
-import { lcd, anchors, waveform, LAYERS } from './DisplayLayoutTokens'
+import { lcd, anchors, waveform, LAYERS } from './DisplayLayoutTokens.js'
 
 const DIV = anchors.paramDividerX // 138
 const MAIN_W = lcd.width - DIV // 535
@@ -83,12 +83,12 @@ export const REGIONS = [
   },
   {
     id: 'statusClockMode',
-    name: 'Clock / Mode',
+    name: 'Mode / Status',
     layer: LAYERS.REGION,
     parent: 'topStatus',
     rect: { x: DIV, y: 0, w: 162, h: TOP }, // 138..300
     injects: [INJECTS.STATUS_ICONS],
-    note: 'Elapsed clock + operating mode.',
+    note: 'Operating mode / status word (IDLE / MONITOR / DEFIB / PACER). The elapsed-time clock is in the readout row, not here (Operator’s Guide Fig. 2-2).',
   },
   {
     id: 'statusCpr',
@@ -116,8 +116,8 @@ export const REGIONS = [
     layer: LAYERS.REGION,
     rect: { x: DIV, y: TOP, w: MAIN_W, h: WB - TOP }, // 104..410
     injects: [INJECTS.WAVEFORMS],
-    baselines: waveform.baselines, // ECG / Pleth / CO₂ reference lines within the field
-    note: 'Continuous plotting field with thin ECG / Pleth / CO₂ baseline reference lines. No boxes.',
+    baselines: waveform.baselines, // three trace baselines within the field
+    note: 'Continuous plotting field with three thin baseline reference lines (Trace 1/2/3). Channel tags are mode-dependent: ECG / Pleth / CO₂ in MONITOR; PADS + FIL (See-Thru CPR filtered) in DEFIB / CPR. No boxes.',
   },
 
   // ── Time / readout row (full width) ──

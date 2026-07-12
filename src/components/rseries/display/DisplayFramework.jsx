@@ -18,6 +18,9 @@
  * Props:
  *   mode         — 'clean' (firmware skeleton) | 'debug' (region overlay). Default 'clean'.
  *   showChrome   — draw the firmware chrome (rules, labels, baselines). Default true.
+ *   showPlaceholders — draw the dim dynamic value stand-ins (SpO₂/NIBP/CO₂/clock/HR/
+ *                  readouts/softkey labels). Default true. Set false when live widgets
+ *                  fill the slots so the placeholders don't show through.
  *   showBackground — draw the LCD glass (set false to overlay another render). Default true.
  *   showRegions  — draw the coloured region boxes (default: on in debug).
  *   showNames    — region name labels in the overlay (default true).
@@ -37,8 +40,9 @@ const COLS = anchors.softkeyColumns
 const PITCH = anchors.softkeyPitch
 const SOFTKEYS = ['Options', 'Param', 'Code Marker', 'Report Data', 'Alarms', 'Sync On/Off']
 
-/** The firmware chrome — the skeleton drawn as thin lines + static labels. */
-function SkeletonChrome() {
+/** The firmware chrome — the skeleton drawn as thin lines + static labels.
+ *  `ph` gates the dim dynamic value stand-ins (off when live widgets fill the slots). */
+function SkeletonChrome({ ph = true }) {
   const L = frame.label
   const P = frame.placeholder
   const R = frame.rule
@@ -54,64 +58,84 @@ function SkeletonChrome() {
         <line x1="0" y1={SK} x2={lcd.width} y2={SK} /> {/* above softkeys */}
       </g>
 
-      {/* ── left parameter column: static labels + value placeholders ── */}
+      {/* ── left parameter column: static unit labels (+ value placeholders) ── */}
       <g>
         <text x="8" y="24" fill={phosphor.cyan} fillOpacity="0.75" fontSize="16">SpO₂ %</text>
-        <text x="12" y="66" fill={P} fontSize="30">- - -</text>
         <text x="8" y="152" fill={L} fontSize="15">NIBP <tspan fontSize="11">mmHg</tspan></text>
-        <text x="12" y="186" fill={P} fontSize="22">- - -</text>
         <text x="8" y="272" fill={phosphor.amber} fillOpacity="0.65" fontSize="15">CO₂ <tspan fontSize="11">mmHg</tspan></text>
-        <text x="12" y="306" fill={P} fontSize="24">- -</text>
-        <text x="12" y="336" fill={P} fontSize="14">RR - -</text>
+        {ph && (
+          <g fill={P}>
+            <text x="12" y="66" fontSize="30">- - -</text>
+            <text x="12" y="186" fontSize="22">- - -</text>
+            <text x="12" y="306" fontSize="24">- -</text>
+            <text x="12" y="336" fontSize="14">RR - -</text>
+          </g>
+        )}
       </g>
 
-      {/* ── compressed top status band: labels + placeholders (hug the top) ── */}
+      {/* ── compressed top status band: static furniture (+ placeholders) ── */}
       <g>
-        {/* clock / mode */}
-        <text x={DIV + 8} y="24" fill={L} fontSize="13">CLOCK</text>
-        <text x={DIV + 8} y="62" fill={P} fontSize="30">--:--</text>
-        <text x={DIV + 8} y="92" fill={L} fontSize="13">MODE</text>
-        {/* CPR release bar + PPI diamond (dim outlines) */}
+        {/* mode / status placeholders (elapsed-time clock is in the readout row, not here) */}
+        {ph && (
+          <g>
+            <text x={DIV + 8} y="30" fill={L} fontSize="13">MODE</text>
+            <text x={DIV + 8} y="66" fill={P} fontSize="26">- - - -</text>
+          </g>
+        )}
+        {/* CPR release bar + PPI diamond outlines (firmware furniture — always) */}
         <text x="304" y="22" fill={L} fontSize="12">CPR</text>
         <rect x="304" y="30" width="12" height="42" fill="none" stroke={R} strokeWidth="1" />
         <path d="M360,32 L382,52 L360,72 L338,52 Z" fill="none" stroke={R} strokeWidth="1" />
         <text x="300" y="88" fill={L} fontSize="10">Release</text>
         <text x="352" y="88" fill={L} fontSize="10">PPI</text>
-        {/* lead / gain / heart / HR */}
-        <text x="458" y="22" fill={phosphor.green} fillOpacity="0.7" fontSize="13">ECG</text>
-        <text x="458" y="42" fill={L} fontSize="12">II</text>
-        <text x="486" y="42" fill={L} fontSize="12">x1</text>
-        <text x="524" y="24" fill={L} fontSize="14">♥</text>
-        <text x="664" y="72" textAnchor="end" fill={P} fontSize="46">- -</text>
+        {/* lead / gain / heart / HR placeholders */}
+        {ph && (
+          <g>
+            <text x="458" y="22" fill={phosphor.green} fillOpacity="0.7" fontSize="13">ECG</text>
+            <text x="458" y="42" fill={L} fontSize="12">II</text>
+            <text x="486" y="42" fill={L} fontSize="12">x1</text>
+            <text x="524" y="24" fill={L} fontSize="14">♥</text>
+            <text x="664" y="72" textAnchor="end" fill={P} fontSize="46">- -</text>
+          </g>
+        )}
       </g>
 
-      {/* ── continuous waveform field: three thin baselines + channel tags ── */}
+      {/* ── continuous waveform field: three thin baselines (structure) ── */}
       <g>
         {Object.entries(waveform.baselines).map(([k, y]) => (
           <line key={k} x1={DIV + 6} y1={y} x2={lcd.width - 6} y2={y} stroke={frame.ruleDim} strokeWidth="1" strokeDasharray="3 4" />
         ))}
-        <text x={DIV + 6} y={waveform.baselines.ecg - 30} fill={phosphor.green} fillOpacity="0.7" fontSize="13">ECG</text>
-        <text x={DIV + 6} y={waveform.baselines.pleth - 30} fill={phosphor.cyan} fillOpacity="0.6" fontSize="13">Pleth</text>
-        <text x={DIV + 6} y={waveform.baselines.co2 - 30} fill={phosphor.amber} fillOpacity="0.6" fontSize="13">CO₂</text>
+        {/* default channel tags — placeholders; the waveform widget draws mode-specific
+            tags (e.g. PADS / FIL in DEFIB / CPR) when it fills the slot */}
+        {ph && (
+          <g>
+            <text x={DIV + 6} y={waveform.baselines.ecg - 30} fill={phosphor.green} fillOpacity="0.7" fontSize="13">ECG</text>
+            <text x={DIV + 6} y={waveform.baselines.pleth - 30} fill={phosphor.cyan} fillOpacity="0.6" fontSize="13">Pleth</text>
+            <text x={DIV + 6} y={waveform.baselines.co2 - 30} fill={phosphor.amber} fillOpacity="0.6" fontSize="13">CO₂</text>
+          </g>
+        )}
       </g>
 
       {/* ── time / readout row: time at far left + readout placeholders ── */}
-      <g>
-        <text x="8" y={WB + 30} fill={P} fontSize="18">--:--</text>
-        <text x="300" y={WB + 30} fill={P} fontSize="16">- - -</text>
-        <text x="470" y={WB + 30} fill={P} fontSize="16">- - -</text>
-      </g>
+      {ph && (
+        <g fill={P}>
+          <text x="8" y={WB + 30} fontSize="18">--:--</text>
+          <text x="300" y={WB + 30} fontSize="16">- - -</text>
+          <text x="470" y={WB + 30} fontSize="16">- - -</text>
+        </g>
+      )}
 
-      {/* ── softkey strip: LABELS only, thin separators, NO buttons ── */}
+      {/* ── softkey strip: thin column separators (+ default labels) ── */}
       <g>
         {Array.from({ length: COLS - 1 }, (_, i) => (
           <line key={i} x1={(i + 1) * PITCH} y1={SK + 4} x2={(i + 1) * PITCH} y2={lcd.height - 3} stroke={frame.rule} strokeWidth="1" />
         ))}
-        {SOFTKEYS.map((label, i) => (
-          <text key={i} x={i * PITCH + PITCH / 2} y={SK + 32} textAnchor="middle" fill={frame.labelBright} fontSize="12">
-            {label}
-          </text>
-        ))}
+        {ph &&
+          SOFTKEYS.map((label, i) => (
+            <text key={i} x={i * PITCH + PITCH / 2} y={SK + 32} textAnchor="middle" fill={frame.labelBright} fontSize="12">
+              {label}
+            </text>
+          ))}
       </g>
     </g>
   )
@@ -169,6 +193,7 @@ function RegionBox({ region, showNames, showCoords, slot, clipId }) {
 export default function DisplayFramework({
   mode = 'clean',
   showChrome = true,
+  showPlaceholders = true,
   showBackground = true,
   showRegions,
   showNames = true,
@@ -187,7 +212,7 @@ export default function DisplayFramework({
     <g className="display-framework">
       {showBackground && <rect x="0" y="0" width={lcd.width} height={lcd.height} fill={frame.background} />}
 
-      {showChrome && <SkeletonChrome />}
+      {showChrome && <SkeletonChrome ph={showPlaceholders} />}
 
       {/* injected content (clipped per region) — even without the debug overlay */}
       {!regionsOn && hasSlots &&

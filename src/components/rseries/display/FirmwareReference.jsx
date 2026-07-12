@@ -83,9 +83,9 @@ export default function FirmwareReference() {
       <text x="8" y="24" fill={phosphor.cyan} fontSize="16">SpO₂ %</text>
       <text x="12" y="66" fill={phosphor.cyan} fontSize="34">100</text>
 
-      {/* compressed status band */}
-      <text x={DIV + 8} y="24" fill={phosphor.magenta} fontSize="13">IDLE</text>
-      <text x={DIV + 8} y="60" fill={phosphor.magenta} fontSize="30">13:38</text>
+      {/* compressed status band — mode / status word (the clock is the readout row) */}
+      <text x={DIV + 8} y="30" fill={phosphor.magenta} fontSize="13">MODE</text>
+      <text x={DIV + 8} y="66" fill={phosphor.magenta} fontSize="26">IDLE</text>
       <text x="304" y="22" fill={phosphor.cyan} fontSize="12">CPR</text>
       <rect x="304" y="30" width="12" height="42" fill="none" stroke={phosphor.magenta} strokeWidth="1.25" />
       <path d="M360,32 L382,52 L360,72 L338,52 Z" fill="none" stroke={phosphor.magenta} strokeWidth="1.25" />

@@ -1,7 +1,7 @@
 # ROADMAP
 
 **Project:** ZOLL R Series Simulator
-**Last reviewed:** 2026-07-05
+**Last reviewed:** 2026-07-12
 
 This roadmap is the single place to see where the project stands. It separates
 **what is implemented and shipping** from **what is partial** and **what is
@@ -18,9 +18,10 @@ for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 > **Current focus:** the **physical ZOLL R Series front-panel industrial asset
 > library is COMPLETE** — all thirteen front-panel families (Body + Controls Library
 > Passes 2A–2J) are **APPROVED / FROZEN**. No further physical-appearance passes are
-> planned; artwork is frozen. Work now shifts off physical artwork to: **Typography
-> Library → Display Operating Framework → Display Widgets → Master Assembly → React
-> Wiring → Clinical behavior refinement** (see Milestone 16 and "Remaining work").
+> planned; artwork is frozen. Work has shifted off physical artwork: **Typography
+> Library (🟡) → Display Operating Framework (✅ Package 4A) → Display Widgets (✅
+> Package 5) → Master Assembly (next) → React Wiring → Clinical behavior refinement**
+> (see Milestone 16 and "Remaining work").
 
 ---
 
@@ -49,10 +50,10 @@ for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 | 19 | Automated testing / CI | 🟡 Partial |
 | 20 | Release Candidate (1.0) | ⬜ Planned |
 | — | *Physical front-panel asset library* | ✅ **COMPLETE (all 13 families frozen)** |
-| 21 | **Typography Library** (next phase) | 🟡 **Started — tokens + label primitives built (Package 3)** |
-| 22 | **Display Operating Framework** | ⬜ Planned |
-| 23 | **Display Widgets** | ⬜ Planned |
-| 24 | **Master Assembly** (wire approved parts into the device) | ⬜ Planned |
+| 21 | **Typography Library** | 🟡 **Started — tokens + label primitives built (Package 3)** |
+| 22 | **Display Operating Framework** | ✅ **Built — firmware skeleton (Package 4A)** |
+| 23 | **Display Widgets** | ✅ **Built — value/waveform/status parts (Package 5)** |
+| 24 | **Master Assembly** (wire approved parts into the device) | ⬜ Planned (next phase) |
 | 25 | **React Wiring** (live state → assembled parts) | ⬜ Planned |
 | 26 | **Clinical behavior refinement** | ⬜ Planned |
 

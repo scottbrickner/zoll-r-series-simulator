@@ -259,19 +259,50 @@ no simulator logic — and modifies no locked asset (`LcdScreen.jsx` untouched).
 | Review page | `views/DisplayFrameworkReview.jsx` (`/display-framework-review`) | Three views: **1 Manufacturer**, **2 Framework Overlay** (opacity slider + region-boxes toggle), **3 Framework Only** — plus the region legend and layer hierarchy. |
 
 **Firmware regions** (layer · nesting): Left Parameter Column (→ SpO₂, NIBP, CO₂/RR;
-thin divider lines, ≈20% width), Top Status Band (→ Clock/Mode, CPR Release/PPI,
+thin divider lines, ≈20% width), Top Status Band (→ Mode/Status, CPR Release/PPI,
 Lead/Gain/HR; compressed, hugs the top), **one continuous Waveform Field** (three
-baseline reference lines — ECG/Pleth/CO₂ — no boxed lanes), Time/Readout Row (clock at
-far left), and the firmware Softkey Label Strip (thin column rules + centered labels,
+baseline reference lines — mode-dependent channel tags — no boxed lanes), Time/Readout
+Row (**elapsed-time clock** at far left, per Operator's Guide Fig. 2-2), and the firmware
+Softkey Label Strip (thin column rules + centered labels,
 **no button chrome**) — all persistent `region` layer; plus the Message Zone
 (transient `overlay`, drawn **inside the waveform field** — PACE / DEFIB READY / CHECK
 CPR PUCK / SET PACE MA / SYNC READY).
 
 **Injection targets** each region exposes for later phases: Waveforms, Vitals,
 Therapy Messages, Charging Status, Pacing, CPR Feedback, Softkey Labels, Alarm
-Messages, Status Icons. Binding real widgets is a later phase (Display Widgets →
-Master Assembly / React Wiring). A real screenshot dropped at `public/lcd_reference.png`
-is shown in the Manufacturer panel for exact tracing.
+Messages, Status Icons. These are filled by the **Display Widgets** (§7.2); binding
+live state to them is a later phase (Master Assembly / React Wiring). A real screenshot
+dropped at `public/lcd_reference.png` is shown in the Manufacturer panel for tracing.
+
+### 7.2 Display Widgets — Package 5 ✅ built (LCD value / waveform / status parts)
+
+The reusable **LCD widgets** that fill the skeleton's injection slots (§7.1). Each is a
+pure, presentational SVG part authored in its region's **local** coordinate space so it
+drops straight into `DisplayFramework`'s `slots` prop (which translates it to the region
+origin and clips it to the region bounds). **Parts only** — driven by props; they read
+no app state, do not animate, and modify no locked asset. Pair with
+`DisplayFramework showPlaceholders={false}` so the dim skeleton stand-ins step aside.
+
+| Item | File | Notes |
+|------|------|-------|
+| Widget library | `display/DisplayWidgets.jsx` | The widgets + `mountWidgets(model)`. Parameter numerics (`Spo2Widget`/`NibpWidget`/`Co2Widget`), top status (`ModeWidget`/`CprWidget`/`EcgHrWidget`), `WaveformFieldWidget` + `waveTraces()` (traces from `waveforms.js`), `MessageWidget`, `ReadoutRowWidget`, `SoftkeyWidget`. |
+| Mount helper | `display/DisplayWidgets.jsx` → `mountWidgets` | Maps a display **model** (spo2, nibp, co2, mode, hr/lead/gain, cpr, waveform, message, readout, softkeys) to a `slots` object; only regions present in the model get a widget. The elapsed-time clock is the readout row's `time` (bottom-left), not the top band. |
+| Framework hook | `display/DisplayFramework.jsx` → `showPlaceholders` | Backward-compatible prop (default `true`); set `false` when widgets fill the slots. |
+| Review page | `views/DisplayWidgetsReview.jsx` (`/display-widgets-review`) | Four populated screens (MONITOR / DEFIB / PACER / CPR-arrest), a manufacturer-overlay alignment check, and a per-widget gallery with the region-boxes toggle. |
+
+Widget → slot mapping (region ids from §7.1): `Spo2Widget`→`paramSpO2`,
+`NibpWidget`→`paramNIBP`, `Co2Widget`→`paramCO2RR`, `ModeWidget`→`statusClockMode`
+(mode/status word), `CprWidget`→`statusCpr` (fills the chrome's bar/diamond outlines),
+`EcgHrWidget`→`statusEcgHr`, `WaveformFieldWidget`→`waveformField`,
+`MessageWidget`→`messageArea`, `ReadoutRowWidget`→`readoutRow` (elapsed-time clock at
+far-left), `SoftkeyWidget`→`softkeyStrip` (labels via `softkeysForMode()`: Options ·
+Param · Code Marker · Report Data · Alarms + **Sync On/Off** in MONITOR/DEFIB or **Async
+On/Off** in PACER; ENERGY/CHARGE/ANALYZE/OUTPUT/RATE/4:1 are physical buttons, not
+softkeys). **Waveform channel tags are mode-dependent**
+(`waveTraces`): ECG/Pleth/CO₂ in MONITOR; **PADS** (raw pads ECG) + **FIL** (See-Thru CPR
+filtered ECG) in DEFIB / CPR; lead II/P3 in PACER — per the R Series Operator's Guide
+(9650-0912-01, Fig. 2-2 & Ch. 7). Colours reuse the phosphor palette; waveform paths
+reuse `waveforms.js`. Live-state binding + sweep animation are the later React Wiring phase.
 
 ---
 

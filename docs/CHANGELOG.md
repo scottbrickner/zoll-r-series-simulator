@@ -22,10 +22,11 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 1. **Typography Library** — 🟡 **started** (`[0.1.26]`): tokens + `RSeriesLabel` /
    `RSeriesLCDText` primitives built. Remaining: separate printed wordmarks/legends
    into a `labels/` asset group and adopt the tokens in `LcdScreen.jsx` / master.
-2. **Display Operating Framework** — the LCD operating model that drives what the
-   screen shows per mode/state.
-3. **Display Widgets** — the on-screen LCD widgets (values, waveforms, banners,
-   softkey labels) as reusable parts.
+2. **Display Operating Framework** — ✅ **built** (`[0.1.31]`, Package 4A): the
+   permanent firmware skeleton reconstructed from the manufacturer LCD.
+3. **Display Widgets** — ✅ **built** (`[0.1.32]`, Package 5): the on-screen LCD
+   widgets (values, waveforms, banner, readouts, softkey labels) as reusable parts that
+   fill the skeleton's injection slots. Remaining: bind live state (React Wiring).
 4. **Master Assembly** — assemble the approved modular parts into the shipping
    device, replacing the monolithic master part-by-part (identical geometry).
 5. **React Wiring** — bind live state to the assembled parts (button/knob/LED/
@@ -34,6 +35,60 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
    scenario/behaviour fidelity.
 
 ---
+
+## [0.1.32] — 2026-07-12 — Package 5: display widgets
+
+Built the reusable **LCD widgets** that fill the firmware skeleton's injection slots
+(Package 4A). Presentational parts driven by props — no simulator logic, no live-state
+binding, no animation (those are the later React Wiring phase). No locked asset,
+device/LCD geometry, or the frozen skeleton's structure changed.
+
+### Added
+- `display/DisplayWidgets.jsx` — the widget library, each part authored in its region's
+  **local** coordinate space so it drops straight into `DisplayFramework`'s `slots`:
+  - **Parameter numerics** — `Spo2Widget` (cyan), `NibpWidget` (sys/dia·mean·time, white),
+    `Co2Widget` (EtCO₂ + RR, amber).
+  - **Top status** — `ModeWidget` (mode / status word, magenta), `CprWidget`
+    (release-bar fill + PPI-diamond perfusion fill inside the chrome outlines),
+    `EcgHrWidget` (lead/gain/♥ + large HR, green).
+  - **Waveform field** — `WaveformFieldWidget` + `waveTraces(model)` draw up to three
+    traces with **mode-dependent channel tags**, reusing `waveforms.js`: ECG/Pleth/CO₂
+    in MONITOR; **PADS + FIL** (raw pads ECG + See-Thru CPR filtered ECG) in DEFIB / CPR;
+    lead II/P3 in PACER — per the R Series Operator's Guide (Fig. 2-2, Ch. 7).
+  - **Overlay / rows** — `MessageWidget` (tone: status/ready/alert/prompt/charging),
+    `ReadoutRowWidget` (time + mode readouts), `SoftkeyWidget` (mode-dependent labels).
+  - `mountWidgets(model)` — maps a display model to a `slots` object for one-call
+    injection; only regions present in the model get a widget.
+- `views/DisplayWidgetsReview.jsx` (`/display-widgets-review`) — four populated screens
+  (MONITOR / DEFIB / PACER / CPR-arrest), a manufacturer-overlay alignment check with an
+  opacity slider, and a per-widget gallery with the region-boxes toggle.
+
+### Changed
+- `DisplayFramework.jsx` — added a backward-compatible **`showPlaceholders`** prop
+  (default `true`). Set `false` when live widgets fill the slots so the skeleton's dim
+  value stand-ins / default softkey labels step aside. Default behavior (Package 4A) is
+  unchanged. `DisplayRegions.js` import given an explicit `.js` extension (Node ESM).
+- **Manual-accuracy corrections to the firmware skeleton (Package 4A), verified against
+  the R Series ALS Operator's Guide 9650-0912-01 Rev. U:**
+  - **Clock** — the elapsed-time clock is in the **bottom readout row** (bottom-left,
+    above the softkeys), not the top band; the top-left `statusClockMode` slot now
+    carries the **MODE / status** word (Fig. 2-2). Updated skeleton chrome + region name
+    (`Clock / Mode` → `Mode / Status`) + `FirmwareReference.jsx`.
+  - **Waveform channel tags** moved from static chrome into the widget layer so they can
+    be mode-dependent (PADS / FIL). Baselines remain structural chrome; the default
+    ECG/Pleth/CO₂ tags now render only as placeholders.
+  - **Softkey labels** corrected to the documented sets (Fig. 2-2, §5, §8) via
+    `softkeysForMode()`: **Options · Param · Code Marker · Report Data · Alarms** + a
+    mode toggle — **Sync On/Off** (MONITOR/DEFIB) or **Async On/Off** (PACER). ENERGY
+    SELECT / CHARGE / ANALYZE / OUTPUT mA / RATE ppm / 4:1 are physical front-panel
+    buttons (Table 2-2), not softkeys, and were removed from the strip.
+  - **CPR feedback** — "Push Harder" / "Good Compressions" are **voice prompts**
+    (auditory, §6), not a screen banner; removed from the message zone. On-screen CPR
+    feedback is the Real CPR Help field (PPI diamond + release bar + rate/depth readout).
+    `MessageWidget` is documented as mode/therapy prompts only.
+- `scripts/smoke.mjs` — added a **Display Widgets** section (injection-contract + review
+  rhythm checks); **23/23** passing (was 19).
+- Recorded in `COMPONENT_LIBRARY.md §7.2`; `visual-alignment-report.md §11.5`.
 
 ## [0.1.31] — 2026-07-05 — Package 4A: firmware skeleton reconstruction
 
