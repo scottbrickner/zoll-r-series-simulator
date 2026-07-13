@@ -36,6 +36,25 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.35] — 2026-07-13 — React Wiring (Milestone 25): interactions complete
+
+Finish the interaction layer on the assembled device:
+- **Clickable mode labels** — OFF/MONITOR/DEFIB/PACER select their mode directly
+  (knob rotates to it); mode knob stays snap-turn; hover highlight added. Fixed
+  `softkeysForMode` case sensitivity so Pacer's 6th softkey reads "Async On/Off".
+- **Physical softkeys** — all six wired: Code Marker → `code_marker`; key 6 →
+  Sync (Monitor/Defib) or Async pacing (Pacer); Options/Param/Report Data/Alarms
+  logged. `:active` press feedback.
+- **RECORDER** — toggles a `recording` state (recorder_start/stop log; button
+  shows active).
+- **Rotary-drag knobs** — OUTPUT/RATE pacer knobs turn by dragging (pointer angle
+  → value over the 270° sweep, stepped/clamped, centre dead zone), live while
+  dragging + commit on release; pacer knobs also ease (smooth) on programmatic
+  change. Layout: SHOCK / OUTPUT·mA / RATE·ppm moved onto the faceplate; 4:1 sits
+  in a gap between the spread knobs.
+
+Milestone 25 complete. Build passes; smoke 23/23; lint clean.
+
 ## [0.1.34] — 2026-07-13 — React Wiring (Milestone 25): press feedback · NIBP · power
 
 Deepen live-state binding on the assembled parts:
