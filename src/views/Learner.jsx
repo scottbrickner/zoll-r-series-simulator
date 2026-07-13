@@ -63,7 +63,8 @@ export default function Learner() {
     onEnergyDown: () => sim.cycleEnergy(-1),
     onSyncToggle: sim.toggleSync,
     onModeCycle: () => {
-      const order = ['Monitor', 'Defib', 'Pacer']
+      // Include Off so the knob can power the device down (Off → Monitor → Defib → Pacer → Off).
+      const order = ['Off', 'Monitor', 'Defib', 'Pacer']
       const next = order[(order.indexOf(state.mode) + 1) % order.length]
       sim.setMode(next)
     },
