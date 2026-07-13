@@ -52,7 +52,9 @@ export default function IndicatorLight({
     const h = r * 1.7
     const x = cx - w / 2
     const y = cy - h / 2
-    const on = enabled && status !== 'off'
+    // charged → green, charging/fault → yellow, off/disabled → gray.
+    const ramp = !enabled || status === 'off' ? null : status === 'charging' || status === 'yellow' || status === 'fault' ? LIT.yellow : LIT.green
+    const on = !!ramp
     const gid = `${idPrefix}-pill`
     const glyph = icon === 'battery' ? (
       <g fill="none" stroke="#ffffff" strokeWidth={r * 0.11} strokeLinejoin="round">
@@ -72,12 +74,12 @@ export default function IndicatorLight({
       <g id="indicator_light" role="img" aria-label={`${type === 'battery' ? 'Battery' : 'AC power'} indicator — ${on ? status : 'off'}`} opacity={enabled ? 1 : 0.5}>
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={on ? LIT.green.hi : '#c3c5c0'} />
-            <stop offset="0.5" stopColor={on ? LIT.green.core : '#a9aba6'} />
-            <stop offset="1" stopColor={on ? LIT.green.edge : '#8b8d88'} />
+            <stop offset="0" stopColor={on ? ramp.hi : '#c3c5c0'} />
+            <stop offset="0.5" stopColor={on ? ramp.core : '#a9aba6'} />
+            <stop offset="1" stopColor={on ? ramp.edge : '#8b8d88'} />
           </linearGradient>
         </defs>
-        <rect x={x} y={y} width={w} height={h} rx={r * 0.3} fill={`url(#${gid})`} stroke={on ? LIT.green.edge : '#7d7f7a'} strokeWidth="1" />
+        <rect x={x} y={y} width={w} height={h} rx={r * 0.3} fill={`url(#${gid})`} stroke={on ? ramp.edge : '#7d7f7a'} strokeWidth="1" />
         {glyph}
         {/* glossy top highlight */}
         <rect x={x + 2} y={y + 2} width={w - 4} height={h * 0.4} rx={r * 0.22} fill="#ffffff" opacity="0.22" pointerEvents="none" />

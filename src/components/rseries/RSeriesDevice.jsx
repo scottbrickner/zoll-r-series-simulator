@@ -56,6 +56,9 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   const selfTest = state.selfTest || 'x' // 'blank' | 'x' | 'check'
   // Map the app's self-test value to the CodeReadiness part's status vocabulary.
   const crStatus = selfTest === 'check' ? 'ready' : selfTest === 'x' ? 'notReady' : 'blank'
+  // Battery indicator: charged→green, charging→yellow, low/fault→fault, missing→off.
+  const batt = state.batteryStatus || 'charged'
+  const battStatus = batt === 'charging' ? 'charging' : batt === 'low' || batt === 'fault' ? 'fault' : batt === 'missing' ? 'off' : 'green'
   const a = actions
   return (
     <svg
@@ -302,10 +305,10 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <text x="1276" y="906" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">ppm</text>
       </g>
 
-      {/* ===== 16_LEDIndicators (BATT · AC) — IndicatorLight icon pills ===== */}
+      {/* ===== 16_LEDIndicators (BATT · AC) — IndicatorLight icon pills, driven by power state ===== */}
       <g id="16_LEDIndicators">
-        <IndicatorLight type="battery" icon="battery" status="green" cx={950} cy={100} r={16} idPrefix="led-batt" />
-        <IndicatorLight type="ac" icon="plug" status="green" cx={1000} cy={100} r={16} idPrefix="led-ac" />
+        <IndicatorLight type="battery" icon="battery" status={battStatus} cx={950} cy={100} r={16} idPrefix="led-batt" />
+        <IndicatorLight type="ac" icon="plug" status={state.acConnected === false ? 'off' : 'green'} cx={1000} cy={100} r={16} idPrefix="led-ac" />
       </g>
 
       {/* ===== 17_SelfTestWindow — CodeReadiness part (blank | red X | green check) ===== */}

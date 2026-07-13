@@ -85,6 +85,10 @@ export const DEFAULT_STATE = {
   spo2: 98,
   nibp: { sys: 120, dia: 80, mean: 93 },
   nibpMeasuring: false, // true while an NIBP cuff measurement is in progress
+
+  // ---- power: AC mains + battery status (drive the two indicator pills) ----
+  acConnected: true, // plugged into AC mains
+  batteryStatus: 'charged', // 'charged' | 'charging' | 'low' | 'fault' | 'missing'
   etco2: 38,
   rr: 16, // respiratory rate
   mode: 'Off', // Off | Monitor | Defib | Pacer — device starts powered off
@@ -948,6 +952,8 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       setVitalLive: (key, v) => update({ [key]: v }),
       commitVital: (key, v) => applyMonitor({ [key]: v }, { type: 'vitals', param: key, value: v }),
       measureNibp,
+      setAcConnected: (v) => { update({ acConnected: v }); log({ type: 'power', source: 'ac', state: v ? 'connected' : 'disconnected' }) },
+      setBatteryStatus: (v) => { update({ batteryStatus: v }); log({ type: 'power', source: 'battery', state: v }) },
       setNibpLive: (part, v) => update((p) => ({ nibp: { ...p.nibp, [part]: v } })),
       commitNibp: (part, v) =>
         applyMonitor({ nibp: { ...stateRef.current.nibp, [part]: v } }, { type: 'vitals', param: 'nibp_' + part, value: v }),
