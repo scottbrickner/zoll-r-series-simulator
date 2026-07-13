@@ -253,8 +253,8 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
            glow is the armed cue (shockReady); the approved CHARGE part has no armed tint. */}
       <g id="09_TherapyButtons">
         <Pressable>{(p) => <TherapyButton variant="shock" cx={1212} cy={120} r={46} pressed={p} shockReady={armed} onClick={a.onShock} idPrefix="tb-shock" />}</Pressable>
-        <text x="1252" y="130" className="rs-red" fontSize="32" fontWeight="800">3</text>
-        <text x="1276" y="128" className="rs-red" fontSize="22" fontWeight="700">SHOCK</text>
+        <text x="1266" y="128" className="rs-red" fontSize="28" fontWeight="800">3</text>
+        <text x="1288" y="126" className="rs-red" fontSize="18" fontWeight="700">SHOCK</text>
 
         <text x="1248" y="192" textAnchor="middle" className="rs-red" fontSize="28" fontWeight="800">2</text>
         <Pressable>{(p) => <TherapyButton variant="action" label="ANALYZE" x={1150} y={210} w={94} h={58} pressed={p} onClick={a.onAnalyze} idPrefix="tb-analyze" />}</Pressable>
