@@ -8,6 +8,9 @@ import NIBPButton from './controls/NIBPButton'
 import FunctionButton from './controls/FunctionButton'
 import TherapyButton from './controls/TherapyButton'
 import EnergySelect from './controls/EnergySelect'
+import ModeSelector from './controls/ModeSelector'
+import PacerKnob from './controls/PacerKnob'
+import FourToOneButton from './controls/FourToOneButton'
 
 /**
  * RSeries_Master — PERMANENT master artwork for the ZOLL R Series front panel.
@@ -24,16 +27,8 @@ import EnergySelect from './controls/EnergySelect'
  * Layers 01–22 are named per the Industrial Design Fidelity Guide v1.0.
  */
 
-// White indicator line (canonical points DOWN) rotates to the fixed position
-// dot for each mode: OFF 9 o'clock, PACER 7 o'clock, DEFIB 1 o'clock, MONITOR
-// 11 o'clock. Fixed dots are printed in layer 14 (they do not rotate).
-const MODE_ANGLE = { Off: 90, Monitor: 150, Defib: -150, Pacer: 30 }
-const MODE_DOTS = [
-  { m: 'Off', cx: 1121, cy: 556 },
-  { m: 'Pacer', cx: 1166, cy: 633 },
-  { m: 'Defib', cx: 1254, cy: 479 },
-  { m: 'Monitor', cx: 1166, cy: 479 },
-]
+// Mode-selector rotation/labels/dots now live in the ModeSelector part (layers
+// 11–14); it owns MODE_ANGLE / MODE_DOTS internally.
 function knobAngle(v, max) {
   return -135 + (Math.min(Math.max(v, 0), max) / max) * 270
 }
@@ -53,7 +48,6 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   const selfTest = state.selfTest || 'x' // 'blank' | 'x' | 'check'
   // Map the app's self-test value to the CodeReadiness part's status vocabulary.
   const crStatus = selfTest === 'check' ? 'ready' : selfTest === 'x' ? 'notReady' : 'blank'
-  const modeRot = `rotate(${MODE_ANGLE[state.mode] ?? 90} ${KX} ${KY})`
   const a = actions
   return (
     <svg
@@ -270,72 +264,26 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <rect x="1268" y="390" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyDown} />
       </g>
 
-      {/* ===== 11_ModeSelector_Back (base plate) ===== */}
-      <g id="11_ModeSelector_Back">
-        <circle cx={KX} cy={KY} r={KR + 14} fill="#dcded9" stroke="#c1c3bf" />
-      </g>
+      {/* ===== 11–14 ModeSelector — ModeSelector part (base · labels · rotating knob · dots) =====
+           Art-only part; a transparent hit target over the knob cycles the mode. */}
+      <ModeSelector mode={state.mode} activeMode={state.mode} idPrefix="ms" />
+      <circle cx={KX} cy={KY} r={KR} fill="transparent" className="rs-hit" onClick={a.onModeCycle} />
 
-      {/* ===== 12_ModeSelector_Arcs (printed labels/sections, STATIC — never rotate) =====
-           Colour lives in the printed sections (no wrapping arcs), per the
-           manufacturer photo: OFF black rect, PACER flat teal (angled leading
-           edge), DEFIB flat red (short inward tab), MONITOR subtle light gray. */}
-      <g id="12_ModeSelector_Arcs">
-        <text x="1050" y="489" className="rs-mono-label" fontSize="18" fontWeight="600">MONITOR</text>
-        <rect x="1008" y="541" width="104" height="30" rx="15" fill="#101316" />
-        <text x="1060" y="562" textAnchor="middle" className="rs-white" fontSize="18" fontWeight="800">OFF</text>
-        <path d="M984,603 H1072 L1058,627 H984 Q979,627 979,622 V608 Q979,603 984,603 Z" fill="#0f9c97" />
-        <text x="1024" y="620" textAnchor="middle" className="rs-white" fontSize="18" fontWeight="700">PACER</text>
-        <path d="M1298,490 H1370 Q1375,490 1375,495 V511 Q1375,516 1370,516 H1298 L1286,503 Z" fill="#cf2a20" />
-        <text x="1334" y="509" textAnchor="middle" className="rs-white" fontSize="18" fontWeight="800">DEFIB</text>
-      </g>
-
-      {/* ===== 13_ModeSelector_Knob (rotates: large black body, diagonal grip, white pointer insert) ===== */}
-      <g id="13_ModeSelector_Knob">
-        <circle cx={KX} cy={KY} r={KR} fill="#161616" />
-        <circle cx={KX} cy={KY} r={KR - 5} fill="url(#g-knob)" stroke="#0b0b0b" strokeWidth="2" />
-        {/* recessed inner shadow ring — deepens the seated/recessed knob depth */}
-        <circle cx={KX} cy={KY} r={KR - 7} fill="none" stroke="#000000" strokeOpacity="0.30" strokeWidth="3" />
-        <ellipse cx={KX - 16} cy={KY - 28} rx="44" ry="28" fill="#ffffff" opacity="0.16" />
-        {/* rotating molded grip (lighter satin gray) + bold white pointer */}
-        <g transform={modeRot}>
-          <rect x={KX - 10} y={KY - 8} width="20" height={KR + 2} rx="10" fill="url(#g-knobgrip)" stroke="#3a3a3a" strokeWidth="0.75" />
-          <rect x={KX - 6} y={KY + 8} width="12" height={KR - 12} rx="6" fill="#f4f6f8" />
-        </g>
-        <circle cx={KX} cy={KY} r="10" fill="#232323" stroke="#3a3a3a" />
-        {/* click target to cycle Monitor → Defib → Pacer */}
-        <circle cx={KX} cy={KY} r={KR} fill="transparent" className="rs-hit" onClick={a.onModeCycle} />
-      </g>
-
-      {/* ===== 14_ModeSelector_Dots (one fixed white dot per mode section — does NOT rotate) ===== */}
-      <g id="14_ModeSelector_Dots" pointerEvents="none">
-        {MODE_DOTS.map((d) => (
-          <circle key={d.m} cx={d.cx} cy={d.cy} r="5" fill="#ffffff" stroke="#9a9d99" strokeWidth="1.2" />
-        ))}
-      </g>
-
-      {/* ===== 15_PacerKnobs (OUTPUT mA · 4:1 · RATE ppm) ===== */}
+      {/* ===== 15_PacerKnobs — PacerKnob ×2 + FourToOneButton (OUTPUT mA · 4:1 · RATE ppm) =====
+           4:1 is momentary (press-and-hold); the part is art, the wrapper holds the handlers. */}
       <g id="15_PacerKnobs">
-        <g className="rs-hit" onClick={a.onOutputAdjust}>
-          <PacerKnob c={OUT} angle={knobAngle(state.pacerOutput, 140)} />
-        </g>
-        <g className="rs-hit" onClick={a.onRateAdjust}>
-          <PacerKnob c={RATE} angle={knobAngle(state.pacerRate, 180)} />
-        </g>
-        <circle
-          cx="1192"
-          cy="810"
-          r="24"
-          fill={state.fourToOne ? '#16b3ad' : '#0f9c97'}
-          stroke="#0a716d"
-          strokeWidth="2"
+        <PacerKnob cx={OUT.x} cy={OUT.y} r={OUT.r} rotationAngle={knobAngle(state.pacerOutput, 140)} onClick={a.onOutputAdjust} idPrefix="pk-out" />
+        <PacerKnob cx={RATE.x} cy={RATE.y} r={RATE.r} rotationAngle={knobAngle(state.pacerRate, 180)} onClick={a.onRateAdjust} idPrefix="pk-rate" />
+        <g
           className="rs-hit"
           onMouseDown={a.onFourToOneDown}
           onMouseUp={a.onFourToOneUp}
           onMouseLeave={a.onFourToOneUp}
           onTouchStart={a.onFourToOneDown}
           onTouchEnd={a.onFourToOneUp}
-        />
-        <text x="1192" y="817" textAnchor="middle" className="rs-white" fontSize="16" fontWeight="800" style={{ pointerEvents: 'none' }}>4:1</text>
+        >
+          <FourToOneButton cx={1192} cy={810} r={24} active={state.fourToOne} pressed={state.fourToOne} idPrefix="ftob" />
+        </g>
         <text x="1108" y="884" textAnchor="middle" className="rs-teal-label" fontSize="20" fontWeight="700">OUTPUT</text>
         <text x="1108" y="906" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">mA</text>
         <text x="1276" y="884" textAnchor="middle" className="rs-teal-label" fontSize="20" fontWeight="700">RATE</text>
@@ -368,26 +316,3 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   )
 }
 
-function PacerKnob({ c, angle }) {
-  return (
-    <g>
-      <circle cx={c.x} cy={c.y} r={c.r} fill="#0f9c97" />
-      <circle cx={c.x} cy={c.y} r={c.r - 6} fill="#0d0d0d" />
-      <circle cx={c.x} cy={c.y} r={c.r - 9} fill="none" stroke="#16b3ad" strokeWidth="2" opacity="0.8" />
-      {Array.from({ length: 32 }).map((_, i) => {
-        const a = (i * 11.25 * Math.PI) / 180
-        const r1 = c.r - 10
-        const r2 = c.r - 19
-        return (
-          <line key={i} x1={c.x + r1 * Math.sin(a)} y1={c.y - r1 * Math.cos(a)} x2={c.x + r2 * Math.sin(a)} y2={c.y - r2 * Math.cos(a)} stroke="#2b2b2b" strokeWidth="2" />
-        )
-      })}
-      <circle cx={c.x} cy={c.y} r={c.r - 19} fill="url(#g-pacerknob)" stroke="#080808" />
-      <ellipse cx={c.x - 12} cy={c.y - 16} rx="22" ry="14" fill="#ffffff" opacity="0.1" />
-      <g transform={`rotate(${angle} ${c.x} ${c.y})`}>
-        <rect x={c.x - 3} y={c.y - (c.r - 24)} width="6" height="24" rx="3" fill="#e6e9ec" />
-      </g>
-      <circle cx={c.x} cy={c.y} r="7" fill="#161616" />
-    </g>
-  )
-}
