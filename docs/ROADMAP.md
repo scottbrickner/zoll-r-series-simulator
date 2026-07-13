@@ -20,9 +20,11 @@ for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 > Passes 2A–2J) are **APPROVED / FROZEN**. No further physical-appearance passes are
 > planned; artwork is frozen. Work has shifted off physical artwork: **Typography
 > Library (🟡) → Display Operating Framework (✅ Package 4A) → Display Widgets (✅
-> Package 5) → Master Assembly (✅ Phases A–E) → React Wiring (🟡, next) → Clinical
-> behavior refinement** (see Milestone 16 and "Remaining work"). The Learner device
-> (`RSeriesDevice.jsx`) is now assembled entirely from the approved modular parts.
+> Package 5) → Master Assembly (✅ Phases A–E) → React Wiring (✅) → Clinical
+> behavior refinement (🟡 next)** (see Milestone 16 and "Remaining work"). The Learner
+> device (`RSeriesDevice.jsx`) is assembled entirely from the approved modular parts and
+> wired to live state; the display chain is essentially complete. Focus now shifts to
+> **clinical behavior + typography adoption + testing/CI toward the 1.0 Release Candidate.**
 
 ---
 
