@@ -295,12 +295,10 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <text x="1276" y="906" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">ppm</text>
       </g>
 
-      {/* ===== 16_LEDIndicators (AC · BATT) — IndicatorLight parts ===== */}
+      {/* ===== 16_LEDIndicators (BATT · AC) — IndicatorLight icon pills ===== */}
       <g id="16_LEDIndicators">
-        <text x="952" y="80" textAnchor="middle" className="rs-mini-label" fontSize="13" fontWeight="700">AC</text>
-        <text x="996" y="80" textAnchor="middle" className="rs-mini-label" fontSize="13" fontWeight="700">BATT</text>
-        <IndicatorLight type="ac" status="green" cx={952} cy={100} r={13} idPrefix="led-ac" />
-        <IndicatorLight type="battery" status="green" cx={996} cy={100} r={13} idPrefix="led-batt" />
+        <IndicatorLight type="battery" icon="battery" status="green" cx={950} cy={100} r={16} idPrefix="led-batt" />
+        <IndicatorLight type="ac" icon="plug" status="green" cx={1000} cy={100} r={16} idPrefix="led-ac" />
       </g>
 
       {/* ===== 17_SelfTestWindow — CodeReadiness part (blank | red X | green check) ===== */}

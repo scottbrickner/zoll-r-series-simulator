@@ -43,8 +43,47 @@ export default function IndicatorLight({
   cx = 50,
   cy = 50,
   r = 28,
+  icon, // 'battery' | 'plug' → green rounded-rect icon indicator (per the R Series photo)
   idPrefix = 'il',
 }) {
+  // Icon-pill variant: a green glossy rounded-rect with a white battery/plug glyph.
+  if (icon) {
+    const w = r * 2.4
+    const h = r * 1.7
+    const x = cx - w / 2
+    const y = cy - h / 2
+    const on = enabled && status !== 'off'
+    const gid = `${idPrefix}-pill`
+    const glyph = icon === 'battery' ? (
+      <g fill="none" stroke="#ffffff" strokeWidth={r * 0.11} strokeLinejoin="round">
+        <rect x={cx - r * 0.62} y={cy - r * 0.4} width={r * 1.15} height={r * 0.8} rx={r * 0.12} />
+        <line x1={cx + r * 0.6} y1={cy - r * 0.16} x2={cx + r * 0.6} y2={cy + r * 0.16} />
+      </g>
+    ) : (
+      <g fill="#ffffff">
+        {/* AC plug: two prongs + body */}
+        <rect x={cx - r * 0.4} y={cy - r * 0.12} width={r * 0.8} height={r * 0.5} rx={r * 0.08} />
+        <rect x={cx - r * 0.28} y={cy - r * 0.5} width={r * 0.14} height={r * 0.42} rx={r * 0.05} />
+        <rect x={cx + r * 0.14} y={cy - r * 0.5} width={r * 0.14} height={r * 0.42} rx={r * 0.05} />
+        <rect x={cx - r * 0.08} y={cy + r * 0.34} width={r * 0.16} height={r * 0.34} rx={r * 0.05} />
+      </g>
+    )
+    return (
+      <g id="indicator_light" role="img" aria-label={`${type === 'battery' ? 'Battery' : 'AC power'} indicator — ${on ? status : 'off'}`} opacity={enabled ? 1 : 0.5}>
+        <defs>
+          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor={on ? LIT.green.hi : '#c3c5c0'} />
+            <stop offset="0.5" stopColor={on ? LIT.green.core : '#a9aba6'} />
+            <stop offset="1" stopColor={on ? LIT.green.edge : '#8b8d88'} />
+          </linearGradient>
+        </defs>
+        <rect x={x} y={y} width={w} height={h} rx={r * 0.3} fill={`url(#${gid})`} stroke={on ? LIT.green.edge : '#7d7f7a'} strokeWidth="1" />
+        {glyph}
+        {/* glossy top highlight */}
+        <rect x={x + 2} y={y + 2} width={w - 4} height={h * 0.4} rx={r * 0.22} fill="#ffffff" opacity="0.22" pointerEvents="none" />
+      </g>
+    )
+  }
   const dim = !enabled
   const rimId = `${idPrefix}-rim`
   const lensId = `${idPrefix}-lens`
