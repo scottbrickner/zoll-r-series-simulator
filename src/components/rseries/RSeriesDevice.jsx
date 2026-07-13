@@ -315,7 +315,9 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
 
       {/* ===== 18_BP_Button — NIBPButton part (arm + cuff icon) ===== */}
       <g id="18_BP_Button">
-        <NIBPButton cx={128} cy={792} r={32} idPrefix="nibp" />
+        <Pressable>
+          {(p) => <NIBPButton cx={128} cy={792} r={32} pressed={p} measuring={state.nibpMeasuring} active={state.nibpMeasuring} onClick={a.onNibp} idPrefix="nibp" />}
+        </Pressable>
       </g>
 
       {/* ===== 20_Labels (ZOLL wordmark) ===== */}

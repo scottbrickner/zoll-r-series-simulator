@@ -75,6 +75,7 @@ export default function Learner() {
     onLead: sim.cycleLead,
     onSize: sim.cycleSize,
     onAlarmSuspend: sim.suspendAlarms,
+    onNibp: sim.measureNibp,
   }
 
   // Education-mode guidance is shown only in education mode with the notes

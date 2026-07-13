@@ -84,6 +84,7 @@ export const DEFAULT_STATE = {
   hr: 72,
   spo2: 98,
   nibp: { sys: 120, dia: 80, mean: 93 },
+  nibpMeasuring: false, // true while an NIBP cuff measurement is in progress
   etco2: 38,
   rr: 16, // respiratory rate
   mode: 'Off', // Off | Monitor | Defib | Pacer — device starts powered off
@@ -351,6 +352,7 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
   const cprIdleIvl = useRef(null)
   const alarmSuspendTo = useRef(null)
   const testAlarmTo = useRef(null)
+  const nibpTo = useRef(null)
 
   const STORAGE_KEY = storageKeyFor(sessionId)
 
@@ -468,6 +470,22 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       clearTimeout(analyzeTo.current)
       clearTimeout(shockTo.current)
       clearInterval(cprIdleIvl.current)
+      clearTimeout(nibpTo.current)
+    }
+
+    // Start a non-invasive blood-pressure measurement: inflate (measuring) for
+    // ~3.5s, then complete (the physiological nibp becomes the displayed reading).
+    const NIBP_MS = 3500
+    const measureNibp = () => {
+      const s = stateRef.current
+      if (s.mode === 'Off' || !s.nibpAvailable || s.nibpMeasuring) return
+      update({ nibpMeasuring: true })
+      log({ type: 'nibp_start' })
+      clearTimeout(nibpTo.current)
+      nibpTo.current = setTimeout(() => {
+        update({ nibpMeasuring: false })
+        log({ type: 'nibp_result', value: stateRef.current.nibp })
+      }, NIBP_MS)
     }
 
     const setMode = (mode) => {
@@ -929,6 +947,7 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       // vitals (live drag + commit-with-alarm-detection)
       setVitalLive: (key, v) => update({ [key]: v }),
       commitVital: (key, v) => applyMonitor({ [key]: v }, { type: 'vitals', param: key, value: v }),
+      measureNibp,
       setNibpLive: (part, v) => update((p) => ({ nibp: { ...p.nibp, [part]: v } })),
       commitNibp: (part, v) =>
         applyMonitor({ nibp: { ...stateRef.current.nibp, [part]: v } }, { type: 'vitals', param: 'nibp_' + part, value: v }),
