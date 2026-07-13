@@ -1,5 +1,7 @@
 import './rseries.css'
-import LcdScreen from './LcdScreen'
+import DisplayFramework from './display/DisplayFramework'
+import { mountWidgets } from './display/DisplayWidgets'
+import { displayModel } from './display/displayModel'
 // ── Master Assembly (Milestone 24): approved modular parts replace the inline
 // artwork layer-by-layer, at identical geometry. Phase A — indicators. ──
 import IndicatorLight from './controls/IndicatorLight'
@@ -214,7 +216,9 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <clipPath id="clip-lcd">
           <rect x="0" y="0" width="673" height="515" rx="3" />
         </clipPath>
-        <LcdScreen state={state} elapsed={elapsed} />
+        {/* Display Operating Framework (skeleton) + live widgets, bound to state
+            via displayModel() (Master Assembly Phase E — replaces LcdScreen). */}
+        <DisplayFramework mode="clean" showPlaceholders={false} slots={mountWidgets(displayModel(state, elapsed))} idPrefix="lcd" />
         {flash && <rect x="0" y="0" width="673" height="515" className="rs-flash-rect" />}
       </g>
 

@@ -89,6 +89,9 @@
 /* ---- shock flash overlay on the LCD ---- */
 .rs-flash-rect {
   fill: #fff7e0;
+  /* base transparent: the animation drives the brief 0.9→0 flash, then it returns
+     to invisible (without this it reverts to opacity 1 and covers the LCD). */
+  opacity: 0;
   animation: rs-flash 0.25s ease;
 }
 @keyframes rs-flash {
