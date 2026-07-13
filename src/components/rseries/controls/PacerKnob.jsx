@@ -29,6 +29,7 @@ export default function PacerKnob({
   rotationAngle = 0,
   pressed = false,
   enabled = true,
+  smooth = false, // animate the rotation to a new angle (CSS transform transition)
   onClick,
   idPrefix = 'pk',
 }) {
@@ -39,7 +40,11 @@ export default function PacerKnob({
   const tealAccent = dim ? '#b0bab6' : '#16b3ad'
   const tealRim = dim ? '#8f9a96' : '#0a716d'
   const indicator = dim ? '#b7bcbf' : '#e6e9ec'
-  const rot = `rotate(${rotationAngle} ${cx} ${cy})`
+  // Snap rotation via the SVG transform attribute, or animate it smoothly via a
+  // CSS transform transition about the knob centre (transform-box: view-box).
+  const rotProps = smooth
+    ? { style: { transform: `rotate(${rotationAngle}deg)`, transformBox: 'view-box', transformOrigin: `${cx}px ${cy}px`, transition: 'transform 0.28s ease' } }
+    : { transform: `rotate(${rotationAngle} ${cx} ${cy})` }
 
   return (
     <g id="pacer_knob" className={onClick ? 'rs-hit' : undefined} onClick={onClick} opacity={dim ? 0.72 : 1}>
@@ -61,7 +66,7 @@ export default function PacerKnob({
       <circle cx={cx} cy={cy} r={r} fill={teal} stroke={tealRim} strokeWidth="1.5" />
 
       {/* ── ROTATING knob ── */}
-      <g transform={rot}>
+      <g {...rotProps}>
         {/* outer black molded knob body */}
         <circle cx={cx} cy={cy} r={r - 6} fill={`url(#${bodyId})`} stroke="#080808" strokeWidth="1" />
         {/* teal inner accent ring */}

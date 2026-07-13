@@ -22,6 +22,18 @@
   filter: brightness(0.92);
 }
 
+/* mode-selector label hit targets: subtle highlight on hover so it reads as clickable */
+.rs-mode-hit {
+  transition: fill 0.15s ease, stroke-opacity 0.15s ease;
+  stroke: #ffffff;
+  stroke-opacity: 0;
+  stroke-width: 1.5;
+}
+.rs-mode-hit:hover {
+  fill: rgba(255, 255, 255, 0.18);
+  stroke-opacity: 0.55;
+}
+
 /* ---- printed labels on the housing ---- */
 .rs-red {
   fill: #c4231a;

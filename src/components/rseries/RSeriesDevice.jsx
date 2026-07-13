@@ -48,8 +48,10 @@ const LCD = { x: 204, y: 200, w: 697, h: 526 }
 const KX = 1210
 const KY = 556
 const KR = 82
-const OUT = { x: 1108, y: 780, r: 78 }
-const RATE = { x: 1276, y: 780, r: 78 }
+// Pacer knobs: spread apart (gap for the 4:1 between them) and raised so the
+// OUTPUT/RATE labels sit on the faceplate rather than the blue bumper edge.
+const OUT = { x: 1094, y: 758, r: 72 }
+const RATE = { x: 1290, y: 758, r: 72 }
 
 export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   const armed = state.shockReady
@@ -251,8 +253,8 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
            glow is the armed cue (shockReady); the approved CHARGE part has no armed tint. */}
       <g id="09_TherapyButtons">
         <Pressable>{(p) => <TherapyButton variant="shock" cx={1212} cy={120} r={46} pressed={p} shockReady={armed} onClick={a.onShock} idPrefix="tb-shock" />}</Pressable>
-        <text x="1270" y="130" className="rs-red" fontSize="32" fontWeight="800">3</text>
-        <text x="1296" y="128" className="rs-red" fontSize="22" fontWeight="700">SHOCK</text>
+        <text x="1252" y="130" className="rs-red" fontSize="32" fontWeight="800">3</text>
+        <text x="1276" y="128" className="rs-red" fontSize="22" fontWeight="700">SHOCK</text>
 
         <text x="1248" y="192" textAnchor="middle" className="rs-red" fontSize="28" fontWeight="800">2</text>
         <Pressable>{(p) => <TherapyButton variant="action" label="ANALYZE" x={1150} y={210} w={94} h={58} pressed={p} onClick={a.onAnalyze} idPrefix="tb-analyze" />}</Pressable>
@@ -283,17 +285,17 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
       <g transform="translate(0 26)">
         <ModeSelector mode={state.mode} activeMode={state.mode} idPrefix="ms" />
         <circle cx={KX} cy={KY} r={KR} fill="transparent" className="rs-hit" onClick={a.onModeCycle} />
-        <rect x={1010} y={472} width={148} height={32} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Monitor')} role="button" aria-label="MONITOR mode" />
-        <rect x={1004} y={539} width={112} height={34} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Off')} role="button" aria-label="OFF" />
-        <rect x={977} y={599} width={100} height={32} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Pacer')} role="button" aria-label="PACER mode" />
-        <rect x={1284} y={486} width={94} height={32} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Defib')} role="button" aria-label="DEFIB mode" />
+        <rect x={1010} y={472} width={148} height={32} rx={4} fill="transparent" className="rs-hit rs-mode-hit" onClick={() => a.onSelectMode('Monitor')} role="button" aria-label="MONITOR mode" />
+        <rect x={1004} y={539} width={112} height={34} rx={4} fill="transparent" className="rs-hit rs-mode-hit" onClick={() => a.onSelectMode('Off')} role="button" aria-label="OFF" />
+        <rect x={977} y={599} width={100} height={32} rx={4} fill="transparent" className="rs-hit rs-mode-hit" onClick={() => a.onSelectMode('Pacer')} role="button" aria-label="PACER mode" />
+        <rect x={1284} y={486} width={94} height={32} rx={4} fill="transparent" className="rs-hit rs-mode-hit" onClick={() => a.onSelectMode('Defib')} role="button" aria-label="DEFIB mode" />
       </g>
 
       {/* ===== 15_PacerKnobs — PacerKnob ×2 + FourToOneButton (OUTPUT mA · 4:1 · RATE ppm) =====
            4:1 is momentary (press-and-hold); the part is art, the wrapper holds the handlers. */}
       <g id="15_PacerKnobs">
-        <PacerKnob cx={OUT.x} cy={OUT.y} r={OUT.r} rotationAngle={knobAngle(state.pacerOutput, 140)} onClick={a.onOutputAdjust} idPrefix="pk-out" />
-        <PacerKnob cx={RATE.x} cy={RATE.y} r={RATE.r} rotationAngle={knobAngle(state.pacerRate, 180)} onClick={a.onRateAdjust} idPrefix="pk-rate" />
+        <PacerKnob cx={OUT.x} cy={OUT.y} r={OUT.r} rotationAngle={knobAngle(state.pacerOutput, 140)} smooth onClick={a.onOutputAdjust} idPrefix="pk-out" />
+        <PacerKnob cx={RATE.x} cy={RATE.y} r={RATE.r} rotationAngle={knobAngle(state.pacerRate, 180)} smooth onClick={a.onRateAdjust} idPrefix="pk-rate" />
         <g
           className="rs-hit"
           onMouseDown={a.onFourToOneDown}
@@ -302,12 +304,12 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
           onTouchStart={a.onFourToOneDown}
           onTouchEnd={a.onFourToOneUp}
         >
-          <FourToOneButton cx={1192} cy={810} r={24} active={state.fourToOne} pressed={state.fourToOne} idPrefix="ftob" />
+          <FourToOneButton cx={1192} cy={770} r={24} active={state.fourToOne} pressed={state.fourToOne} idPrefix="ftob" />
         </g>
-        <text x="1108" y="884" textAnchor="middle" className="rs-teal-label" fontSize="20" fontWeight="700">OUTPUT</text>
-        <text x="1108" y="906" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">mA</text>
-        <text x="1276" y="884" textAnchor="middle" className="rs-teal-label" fontSize="20" fontWeight="700">RATE</text>
-        <text x="1276" y="906" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">ppm</text>
+        <text x={OUT.x} y="850" textAnchor="middle" className="rs-teal-label" fontSize="20" fontWeight="700">OUTPUT</text>
+        <text x={OUT.x} y="870" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">mA</text>
+        <text x={RATE.x} y="850" textAnchor="middle" className="rs-teal-label" fontSize="20" fontWeight="700">RATE</text>
+        <text x={RATE.x} y="870" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">ppm</text>
       </g>
 
       {/* ===== 16_LEDIndicators (BATT · AC) — IndicatorLight icon pills, driven by power state ===== */}
