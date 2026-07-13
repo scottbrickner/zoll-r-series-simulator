@@ -1,5 +1,10 @@
 import './rseries.css'
 import LcdScreen from './LcdScreen'
+// ── Master Assembly (Milestone 24): approved modular parts replace the inline
+// artwork layer-by-layer, at identical geometry. Phase A — indicators. ──
+import IndicatorLight from './controls/IndicatorLight'
+import CodeReadiness from './controls/CodeReadiness'
+import NIBPButton from './controls/NIBPButton'
 
 /**
  * RSeries_Master — PERMANENT master artwork for the ZOLL R Series front panel.
@@ -43,6 +48,8 @@ const RATE = { x: 1276, y: 780, r: 78 }
 export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   const armed = state.shockReady
   const selfTest = state.selfTest || 'x' // 'blank' | 'x' | 'check'
+  // Map the app's self-test value to the CodeReadiness part's status vocabulary.
+  const crStatus = selfTest === 'check' ? 'ready' : selfTest === 'x' ? 'notReady' : 'blank'
   const modeRot = `rotate(${MODE_ANGLE[state.mode] ?? 90} ${KX} ${KY})`
   const a = actions
   return (
@@ -346,39 +353,22 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <text x="1276" y="906" textAnchor="middle" className="rs-teal-label" fontSize="18" fontWeight="700">ppm</text>
       </g>
 
-      {/* ===== 16_LEDIndicators (AC · BATT) ===== */}
+      {/* ===== 16_LEDIndicators (AC · BATT) — IndicatorLight parts ===== */}
       <g id="16_LEDIndicators">
         <text x="952" y="80" textAnchor="middle" className="rs-mini-label" fontSize="13" fontWeight="700">AC</text>
         <text x="996" y="80" textAnchor="middle" className="rs-mini-label" fontSize="13" fontWeight="700">BATT</text>
-        <circle id="led-ac" cx="952" cy="100" r="13" fill="#2fd24a" stroke="#1f7a2b" strokeWidth="1.5" />
-        <circle cx="948" cy="96" r="4" fill="#cdf7cf" opacity="0.85" />
-        <circle id="led-batt" cx="996" cy="100" r="13" fill="#2fd24a" stroke="#1f7a2b" strokeWidth="1.5" />
-        <circle cx="992" cy="96" r="4" fill="#cdf7cf" opacity="0.85" />
+        <IndicatorLight type="ac" status="green" cx={952} cy={100} r={13} idPrefix="led-ac" />
+        <IndicatorLight type="battery" status="green" cx={996} cy={100} r={13} idPrefix="led-batt" />
       </g>
 
-      {/* ===== 17_SelfTestWindow (blank | red X | green check — React controlled) ===== */}
+      {/* ===== 17_SelfTestWindow — CodeReadiness part (blank | red X | green check) ===== */}
       <g id="17_SelfTestWindow">
-        <rect x="1036" y="68" width="116" height="68" rx="5" fill="#0a0a0a" stroke="#2a2a2a" />
-        {selfTest === 'x' && (
-          <path d="M1070,86 l48,32 M1118,86 l-48,32" stroke="#ff3830" strokeWidth="11" strokeLinecap="round" />
-        )}
-        {selfTest === 'check' && (
-          <path d="M1068,104 l14,18 l32,-42" fill="none" stroke="#00ff66" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" />
-        )}
+        <CodeReadiness status={crStatus} x={1036} y={68} w={116} h={68} idPrefix="cr" />
       </g>
 
-      {/* ===== 18_BP_Button (NIBP arm + cuff icon) ===== */}
+      {/* ===== 18_BP_Button — NIBPButton part (arm + cuff icon) ===== */}
       <g id="18_BP_Button">
-        <circle cx="128" cy="792" r="32" fill="url(#g-key)" stroke="#c2c3bf" strokeWidth="1.5" />
-        <g fill="none" stroke="#0066b3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          {/* forearm */}
-          <path d="M110,800 h34" strokeWidth="8" />
-          {/* cuff wrap */}
-          <rect x="117" y="787" width="20" height="24" rx="3" fill="#ffffff" />
-          {/* inflation bulb + tube */}
-          <path d="M139,786 q9,-1 8,7" />
-          <circle cx="149" cy="796" r="4" fill="#0066b3" />
-        </g>
+        <NIBPButton cx={128} cy={792} r={32} idPrefix="nibp" />
       </g>
 
       {/* ===== 20_Labels (ZOLL wordmark) ===== */}
