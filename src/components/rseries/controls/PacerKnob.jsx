@@ -80,14 +80,14 @@ export default function PacerKnob({
         })}
         {/* inner recessed face (depth) */}
         <circle cx={cx} cy={cy} r={r - 19} fill={`url(#${faceId})`} stroke="#070707" strokeWidth="1.5" />
-        {/* slight satin highlight (not a glossy hotspot) */}
-        {!pressed && <ellipse cx={cx - r * 0.16} cy={cy - r * 0.2} rx={r * 0.28} ry={r * 0.17} fill="#ffffff" opacity="0.08" pointerEvents="none" />}
+        {/* broad horizontal gloss band across the face (per the manufacturer photo) */}
+        {!pressed && <ellipse cx={cx} cy={cy - r * 0.14} rx={r - 12} ry={r * 0.16} fill="#ffffff" opacity="0.09" pointerEvents="none" />}
         {/* pressed: subtle deeper recess */}
         {pressed && <circle cx={cx} cy={cy} r={r - 19} fill="#000000" opacity="0.18" pointerEvents="none" />}
-        {/* white indicator line (rotates with the knob) */}
-        <rect x={cx - 3} y={cy - (r - 24)} width="6" height="26" rx="3" fill={indicator} pointerEvents="none" />
-        {/* centre hub */}
-        <circle cx={cx} cy={cy} r="8" fill="#161616" stroke="#2c2c2c" strokeWidth="1" />
+        {/* molded finger grip: a raised satin bar across the face (NOT a thin pointer),
+            with a soft gloss streak — reads orientation as it rotates */}
+        <rect x={cx - (r - 22)} y={cy - 7} width={2 * (r - 22)} height="14" rx="7" fill="#404040" stroke="#0a0a0a" strokeWidth="0.75" pointerEvents="none" />
+        <rect x={cx - (r - 24)} y={cy - 4} width={2 * (r - 24)} height="4" rx="2" fill={indicator} opacity="0.5" pointerEvents="none" />
       </g>
     </g>
   )

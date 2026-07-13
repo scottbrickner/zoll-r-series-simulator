@@ -46,10 +46,10 @@ export default function CodeReadiness({
       {/* ── PHYSICAL window (fixed geometry) ── */}
       {/* dark-gray satin molded bezel */}
       <rect x={x} y={y} width={w} height={h} rx="5" fill={`url(#${bezelId})`} stroke="#1a1a1a" strokeWidth="1" />
-      {/* recessed black window */}
-      <rect x={x + 4} y={y + 4} width={w - 8} height={h - 8} rx="3" fill="#0a0a0a" stroke="#000000" strokeWidth="1" />
+      {/* recessed lavender/purple window (per the manufacturer photo) */}
+      <rect x={x + 4} y={y + 4} width={w - 8} height={h - 8} rx="3" fill="#6f6b9c" stroke="#413e63" strokeWidth="1" />
       {/* subtle inner top shadow (recess) + minimal satin highlight */}
-      <rect x={x + 4} y={y + 4} width={w - 8} height="12" rx="3" fill="#000000" opacity="0.4" pointerEvents="none" />
+      <rect x={x + 4} y={y + 4} width={w - 8} height="12" rx="3" fill="#000000" opacity="0.18" pointerEvents="none" />
       <rect x={x + 3} y={y + 1} width={w - 6} height="4" rx="2" fill="#ffffff" opacity="0.05" pointerEvents="none" />
 
       {/* ── REACT status display (only this changes) ── */}

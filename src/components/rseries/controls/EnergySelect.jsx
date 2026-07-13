@@ -52,8 +52,8 @@ export default function EnergySelect({
   const dim = !enabled
 
   // warm-beige palette (dim = desaturated when disabled) — LOCKED colour system
-  const edge = dim ? '#c1beb4' : '#c9bd9c'
-  const stroke = dim ? '#bdbab0' : '#bdb49d'
+  const edge = dim ? '#c7c0a6' : '#d6bd5e' // warm butter-yellow molded side edge
+  const stroke = dim ? '#bdbab0' : '#cbb154'
   const red = dim ? '#b3a89a' : '#cf2a20' // triangles
   const redText = dim ? '#aca596' : '#c4231a' // ENERGY / SELECT
 
@@ -74,14 +74,14 @@ export default function EnergySelect({
             </>
           ) : pressed ? (
             <>
-              <stop offset="0" stopColor="#e6dcc2" />
-              <stop offset="1" stopColor="#cabd99" />
+              <stop offset="0" stopColor="#ecd882" />
+              <stop offset="1" stopColor="#d6bd58" />
             </>
           ) : (
             <>
-              <stop offset="0" stopColor="#f3ecda" />
-              <stop offset="0.5" stopColor="#e8dcc0" />
-              <stop offset="1" stopColor="#d8c9a6" />
+              <stop offset="0" stopColor="#f9e9a4" />
+              <stop offset="0.5" stopColor="#efd77a" />
+              <stop offset="1" stopColor="#e4c65c" />
             </>
           )}
         </linearGradient>

@@ -78,7 +78,8 @@ export default function ModeSelector({
           activeMode adds a translucent outline to the selected label — a state
           overlay, not a restyle. */}
       <g id="mode_selector_labels">
-        <text x="1050" y="489" fill="#9a9d99" fontSize="18" fontWeight="600" stroke={ring('Monitor')} strokeOpacity="0.5" strokeWidth="0.6">MONITOR</text>
+        <path d="M1022,474 H1150 L1164,489 L1150,504 H1022 Q1017,504 1017,499 V479 Q1017,474 1022,474 Z" fill="#c4c7c3" stroke={ring('Monitor')} strokeOpacity="0.6" strokeWidth="2" />
+        <text x="1086" y="496" textAnchor="middle" fill="#2a2f36" fontSize="18" fontWeight="700">MONITOR</text>
         <rect x="1008" y="541" width="104" height="30" rx="15" fill="#101316" stroke={ring('Off')} strokeOpacity="0.6" strokeWidth="2" />
         <text x="1060" y="562" textAnchor="middle" fill="#f1f4f7" fontSize="18" fontWeight="800">OFF</text>
         <path d="M984,603 H1072 L1058,627 H984 Q979,627 979,622 V608 Q979,603 984,603 Z" fill="#0f9c97" stroke={ring('Pacer')} strokeOpacity="0.6" strokeWidth="2" />
@@ -94,10 +95,13 @@ export default function ModeSelector({
         {/* recessed inner shadow ring — deepens the seated knob depth */}
         <circle cx={KX} cy={KY} r={KR - 7} fill="none" stroke="#000000" strokeOpacity="0.30" strokeWidth="3" />
         <ellipse cx={KX - 16} cy={KY - 28} rx="44" ry="28" fill="#ffffff" opacity="0.16" />
-        {/* rotating molded grip (lighter satin gray) + bold white pointer */}
+        {/* rotating molded finger grip — a raised satin-gray ridge spanning the face
+            (NOT a stark white pointer line), per the manufacturer photo. A soft gloss
+            streak + a slightly brighter cap at the pointing end read the orientation. */}
         <g id="mode_selector_knob_grip" transform={rot}>
-          <rect x={KX - 10} y={KY - 8} width="20" height={KR + 2} rx="10" fill={`url(#${gripId})`} stroke="#3a3a3a" strokeWidth="0.75" />
-          <rect x={KX - 6} y={KY + 8} width="12" height={KR - 12} rx="6" fill="#f4f6f8" />
+          <rect x={KX - 11} y={KY - (KR - 14)} width="22" height={2 * (KR - 14)} rx="11" fill={`url(#${gripId})`} stroke="#2b2b2b" strokeWidth="1" />
+          <rect x={KX - 8} y={KY - (KR - 20)} width="6" height={2 * (KR - 20)} rx="3" fill="#c4c8cb" opacity="0.45" />
+          <rect x={KX - 9} y={KY - (KR - 16)} width="18" height="15" rx="7" fill="#aeb2b5" opacity="0.6" />
         </g>
         <circle cx={KX} cy={KY} r="10" fill="#232323" stroke="#3a3a3a" />
       </g>

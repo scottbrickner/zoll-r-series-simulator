@@ -124,8 +124,8 @@ export default function TherapyButton({
   const hiId = `${idPrefix}-ah`
   const lowId = `${idPrefix}-al`
   const dy = pressed ? 2 : 0
-  const edge = dim ? '#d8cdba' : '#e3c9a6'
-  const stroke = dim ? '#cdc2b0' : '#d8bfa0'
+  const edge = dim ? '#d3ccb0' : '#d8bf5e' // warm butter-yellow molded side edge
+  const stroke = dim ? '#c7c0a6' : '#cbb154'
   const textCol = dim ? '#ad9a8b' : '#c4231a'
   const ccx = x + w / 2
 
@@ -140,14 +140,14 @@ export default function TherapyButton({
             </>
           ) : pressed ? (
             <>
-              <stop offset="0" stopColor="#eed9bd" />
-              <stop offset="1" stopColor="#e3c9a2" />
+              <stop offset="0" stopColor="#ecd882" />
+              <stop offset="1" stopColor="#dcc460" />
             </>
           ) : (
             <>
-              <stop offset="0" stopColor="#fdf0e0" />
-              <stop offset="0.5" stopColor="#f6e6d0" />
-              <stop offset="1" stopColor="#f2dcc0" />
+              <stop offset="0" stopColor="#f9e9a4" />
+              <stop offset="0.5" stopColor="#efd77a" />
+              <stop offset="1" stopColor="#e6c85e" />
             </>
           )}
         </linearGradient>
