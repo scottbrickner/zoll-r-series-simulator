@@ -79,11 +79,12 @@ export default function Learner() {
       else if (label === 'Code Marker') sim.codeMarker()
       else sim.softkeyPress(label)
     },
-    // pacer output/rate step via the knob's ghost up/down arrows (Pacer mode)
-    onOutputUp: () => sim.adjustPacerOutput(10),
-    onOutputDown: () => sim.adjustPacerOutput(-10),
-    onRateUp: () => sim.adjustPacerRate(10),
-    onRateDown: () => sim.adjustPacerRate(-10),
+    // pacer output/rate step via the knob's ghost up/down arrows (Pacer mode).
+    // Per the R Series Operator's Guide: output ±2 mA (0–140), rate ±2 ppm (30–180).
+    onOutputUp: () => sim.adjustPacerOutput(2),
+    onOutputDown: () => sim.adjustPacerOutput(-2),
+    onRateUp: () => sim.adjustPacerRate(2),
+    onRateDown: () => sim.adjustPacerRate(-2),
     onRecorder: sim.toggleRecorder,
     onFourToOneDown: () => sim.setFourToOne(true),
     onFourToOneUp: () => sim.setFourToOne(false),
