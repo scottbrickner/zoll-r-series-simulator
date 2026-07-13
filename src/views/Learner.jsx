@@ -68,6 +68,8 @@ export default function Learner() {
       const next = order[(order.indexOf(state.mode) + 1) % order.length]
       sim.setMode(next)
     },
+    // Click a mode label to turn the knob straight to that mode.
+    onSelectMode: (m) => sim.setMode(m),
     onOutputAdjust: () => sim.adjustPacerOutput(10),
     onRateAdjust: () => sim.adjustPacerRate(10),
     onFourToOneDown: () => sim.setFourToOne(true),

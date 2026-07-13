@@ -277,11 +277,16 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
       </g>
 
       {/* ===== 11–14 ModeSelector — ModeSelector part (base · labels · rotating knob · dots) =====
-           Art-only part; a transparent hit target over the knob cycles the mode. Shifted
-           down so the dial's "MONITOR" label clears the RECORDER function button above. */}
+           Art-only part; shifted down so the dial's "MONITOR" label clears the RECORDER
+           button above. Each mode LABEL is a click target that turns the knob straight to
+           that mode (primary); clicking the knob still cycles (secondary). */}
       <g transform="translate(0 26)">
         <ModeSelector mode={state.mode} activeMode={state.mode} idPrefix="ms" />
         <circle cx={KX} cy={KY} r={KR} fill="transparent" className="rs-hit" onClick={a.onModeCycle} />
+        <rect x={1010} y={472} width={148} height={32} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Monitor')} role="button" aria-label="MONITOR mode" />
+        <rect x={1004} y={539} width={112} height={34} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Off')} role="button" aria-label="OFF" />
+        <rect x={977} y={599} width={100} height={32} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Pacer')} role="button" aria-label="PACER mode" />
+        <rect x={1284} y={486} width={94} height={32} rx={4} fill="transparent" className="rs-hit" onClick={() => a.onSelectMode('Defib')} role="button" aria-label="DEFIB mode" />
       </g>
 
       {/* ===== 15_PacerKnobs — PacerKnob ×2 + FourToOneButton (OUTPUT mA · 4:1 · RATE ppm) =====
