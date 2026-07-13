@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './rseries.css'
 import DisplayFramework from './display/DisplayFramework'
 import { mountWidgets } from './display/DisplayWidgets'
@@ -367,6 +367,35 @@ function Pressable({ children }) {
  * top or bottom half reveals a ghost chevron — click the top to step the value up,
  * the bottom to step it down — and the knob rotates smoothly to the new setting.
  */
+/**
+ * HoldRepeatArrow — a ghost arrow hit zone that steps once on press and then
+ * auto-repeats (accelerating) while held, so you can run the value up/down without
+ * separate clicks. A quick tap = a single step.
+ */
+function HoldRepeatArrow({ onStep, ariaLabel, children }) {
+  const timer = useRef(null)
+  const stop = () => {
+    clearTimeout(timer.current)
+    timer.current = null
+  }
+  const start = (e) => {
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* older browsers */ }
+    onStep()
+    let delay = 300
+    const tick = () => {
+      onStep()
+      delay = Math.max(55, delay - 30) // accelerate as the hold continues
+      timer.current = setTimeout(tick, delay)
+    }
+    timer.current = setTimeout(tick, delay)
+  }
+  return (
+    <g className="rs-hit rs-ghost-arrow" role="button" aria-label={ariaLabel} style={{ touchAction: 'none' }} onPointerDown={start} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop}>
+      {children}
+    </g>
+  )
+}
+
 function PacerKnobControl({ cx, cy, r, value, max, interactive, onUp, onDown, idPrefix }) {
   const up = `M${cx - 13},${cy - r * 0.52} L${cx},${cy - r * 0.52 - 15} L${cx + 13},${cy - r * 0.52} Z`
   const down = `M${cx - 13},${cy + r * 0.52} L${cx},${cy + r * 0.52 + 15} L${cx + 13},${cy + r * 0.52} Z`
@@ -375,14 +404,14 @@ function PacerKnobControl({ cx, cy, r, value, max, interactive, onUp, onDown, id
       <PacerKnob cx={cx} cy={cy} r={r} rotationAngle={knobAngle(value, max)} smooth idPrefix={idPrefix} />
       {interactive && (
         <>
-          <g className="rs-hit rs-ghost-arrow" onClick={onUp} role="button" aria-label="increase">
+          <HoldRepeatArrow onStep={onUp} ariaLabel="increase">
             <rect x={cx - r} y={cy - r} width={2 * r} height={r} fill="transparent" />
             <path className="rs-ghost-chevron" d={up} />
-          </g>
-          <g className="rs-hit rs-ghost-arrow" onClick={onDown} role="button" aria-label="decrease">
+          </HoldRepeatArrow>
+          <HoldRepeatArrow onStep={onDown} ariaLabel="decrease">
             <rect x={cx - r} y={cy} width={2 * r} height={r} fill="transparent" />
             <path className="rs-ghost-chevron" d={down} />
-          </g>
+          </HoldRepeatArrow>
         </>
       )}
     </g>
