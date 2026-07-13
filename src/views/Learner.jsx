@@ -79,13 +79,11 @@ export default function Learner() {
       else if (label === 'Code Marker') sim.codeMarker()
       else sim.softkeyPress(label)
     },
-    onOutputAdjust: () => sim.adjustPacerOutput(10),
-    onRateAdjust: () => sim.adjustPacerRate(10),
-    // rotary-drag: live update while dragging, commit (with logging) on release
-    onOutputLive: sim.setPacerOutputLive,
-    onOutputCommit: sim.commitPacerOutput,
-    onRateLive: sim.setPacerRateLive,
-    onRateCommit: sim.commitPacerRate,
+    // pacer output/rate step via the knob's ghost up/down arrows (Pacer mode)
+    onOutputUp: () => sim.adjustPacerOutput(10),
+    onOutputDown: () => sim.adjustPacerOutput(-10),
+    onRateUp: () => sim.adjustPacerRate(10),
+    onRateDown: () => sim.adjustPacerRate(-10),
     onRecorder: sim.toggleRecorder,
     onFourToOneDown: () => sim.setFourToOne(true),
     onFourToOneUp: () => sim.setFourToOne(false),

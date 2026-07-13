@@ -39,6 +39,20 @@
   fill: rgba(0, 0, 0, 0.14);
 }
 
+/* pacer-knob ghost up/down arrows: invisible until the knob half is hovered */
+.rs-ghost-chevron {
+  fill: #dff3ef;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.rs-ghost-arrow:hover .rs-ghost-chevron {
+  opacity: 0.9;
+}
+.rs-ghost-arrow:active .rs-ghost-chevron {
+  opacity: 1;
+}
+
 /* ---- printed labels on the housing ---- */
 .rs-red {
   fill: #c4231a;

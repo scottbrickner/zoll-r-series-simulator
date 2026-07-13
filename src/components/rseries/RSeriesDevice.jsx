@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import './rseries.css'
 import DisplayFramework from './display/DisplayFramework'
 import { mountWidgets } from './display/DisplayWidgets'
@@ -62,10 +62,8 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   const batt = state.batteryStatus || 'charged'
   const battStatus = batt === 'charging' ? 'charging' : batt === 'low' || batt === 'fault' ? 'fault' : batt === 'missing' ? 'off' : 'green'
   const a = actions
-  const svgRef = useRef(null)
   return (
     <svg
-      ref={svgRef}
       className="rs-svg"
       viewBox="0 0 1440 1120"
       xmlns="http://www.w3.org/2000/svg"
@@ -301,8 +299,8 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
       {/* ===== 15_PacerKnobs — PacerKnob ×2 + FourToOneButton (OUTPUT mA · 4:1 · RATE ppm) =====
            4:1 is momentary (press-and-hold); the part is art, the wrapper holds the handlers. */}
       <g id="15_PacerKnobs">
-        <RotaryPacerKnob svgRef={svgRef} cx={OUT.x} cy={OUT.y} r={OUT.r} value={state.pacerOutput} min={0} max={140} step={5} onLive={a.onOutputLive} onCommit={a.onOutputCommit} idPrefix="pk-out" />
-        <RotaryPacerKnob svgRef={svgRef} cx={RATE.x} cy={RATE.y} r={RATE.r} value={state.pacerRate} min={30} max={180} step={5} onLive={a.onRateLive} onCommit={a.onRateCommit} idPrefix="pk-rate" />
+        <PacerKnobControl cx={OUT.x} cy={OUT.y} r={OUT.r} value={state.pacerOutput} max={140} interactive={state.mode === 'Pacer'} onUp={a.onOutputUp} onDown={a.onOutputDown} idPrefix="pk-out" />
+        <PacerKnobControl cx={RATE.x} cy={RATE.y} r={RATE.r} value={state.pacerRate} max={180} interactive={state.mode === 'Pacer'} onUp={a.onRateUp} onDown={a.onRateDown} idPrefix="pk-rate" />
         <g
           className="rs-hit"
           onMouseDown={a.onFourToOneDown}
@@ -364,53 +362,29 @@ function Pressable({ children }) {
 }
 
 /**
- * RotaryPacerKnob — a PacerKnob you turn by dragging. The pointer's angle about the
- * knob centre maps to the value over the knob's 270° sweep (−135°…+135°, clockwise
- * from 12 o'clock), stepped and clamped to [min,max]. Live-updates while dragging
- * (no smoothing, so it follows the finger) and commits on release. A dead zone near
- * the centre avoids value jumps from a stray centre click.
+ * PacerKnobControl — a smoothly-rotating pacer knob adjusted by ghost up/down arrows.
+ * The knob eases to the current value; when `interactive` (Pacer mode), hovering the
+ * top or bottom half reveals a ghost chevron — click the top to step the value up,
+ * the bottom to step it down — and the knob rotates smoothly to the new setting.
  */
-function RotaryPacerKnob({ svgRef, cx, cy, r, value, min, max, step, onLive, onCommit, idPrefix }) {
-  const dragging = useRef(false)
-  const [smoothOn, setSmoothOn] = useState(true)
-  const toValue = (e) => {
-    const svg = svgRef.current
-    const ctm = svg && svg.getScreenCTM && svg.getScreenCTM()
-    if (!ctm) return null
-    const pt = svg.createSVGPoint()
-    pt.x = e.clientX
-    pt.y = e.clientY
-    const loc = pt.matrixTransform(ctm.inverse())
-    const dx = loc.x - cx
-    const dy = loc.y - cy
-    if (Math.hypot(dx, dy) < r * 0.3) return null // dead zone near the hub
-    let ang = (Math.atan2(dx, -dy) * 180) / Math.PI // clockwise from 12 o'clock
-    ang = Math.max(-135, Math.min(135, ang))
-    const v = Math.round((((ang + 135) / 270) * max) / step) * step
-    return Math.max(min, Math.min(max, v))
-  }
-  const down = (e) => {
-    dragging.current = true
-    setSmoothOn(false)
-    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* older browsers */ }
-    const v = toValue(e)
-    if (v != null && onLive) onLive(v)
-  }
-  const move = (e) => {
-    if (!dragging.current) return
-    const v = toValue(e)
-    if (v != null && onLive) onLive(v)
-  }
-  const end = (e) => {
-    if (!dragging.current) return
-    dragging.current = false
-    setSmoothOn(true)
-    const v = toValue(e)
-    if (onCommit) onCommit(v != null ? v : value)
-  }
+function PacerKnobControl({ cx, cy, r, value, max, interactive, onUp, onDown, idPrefix }) {
+  const up = `M${cx - 13},${cy - r * 0.52} L${cx},${cy - r * 0.52 - 15} L${cx + 13},${cy - r * 0.52} Z`
+  const down = `M${cx - 13},${cy + r * 0.52} L${cx},${cy + r * 0.52 + 15} L${cx + 13},${cy + r * 0.52} Z`
   return (
-    <g className="rs-hit" style={{ touchAction: 'none' }} onPointerDown={down} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
-      <PacerKnob cx={cx} cy={cy} r={r} rotationAngle={knobAngle(value, max)} smooth={smoothOn} idPrefix={idPrefix} />
+    <g>
+      <PacerKnob cx={cx} cy={cy} r={r} rotationAngle={knobAngle(value, max)} smooth idPrefix={idPrefix} />
+      {interactive && (
+        <>
+          <g className="rs-hit rs-ghost-arrow" onClick={onUp} role="button" aria-label="increase">
+            <rect x={cx - r} y={cy - r} width={2 * r} height={r} fill="transparent" />
+            <path className="rs-ghost-chevron" d={up} />
+          </g>
+          <g className="rs-hit rs-ghost-arrow" onClick={onDown} role="button" aria-label="decrease">
+            <rect x={cx - r} y={cy} width={2 * r} height={r} fill="transparent" />
+            <path className="rs-ghost-chevron" d={down} />
+          </g>
+        </>
+      )}
     </g>
   )
 }
