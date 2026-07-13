@@ -5,6 +5,9 @@ import LcdScreen from './LcdScreen'
 import IndicatorLight from './controls/IndicatorLight'
 import CodeReadiness from './controls/CodeReadiness'
 import NIBPButton from './controls/NIBPButton'
+import FunctionButton from './controls/FunctionButton'
+import TherapyButton from './controls/TherapyButton'
+import EnergySelect from './controls/EnergySelect'
 
 /**
  * RSeries_Master — PERMANENT master artwork for the ZOLL R Series front panel.
@@ -235,50 +238,36 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         ))}
       </g>
 
-      {/* ===== 08_FunctionButtons (LEAD / SIZE / ALARM SUSPEND / RECORDER) ===== */}
+      {/* ===== 08_FunctionButtons — FunctionButton parts (LEAD / SIZE / ALARM SUSPEND / RECORDER) ===== */}
       <g id="08_FunctionButtons">
-        <KeyButton x={980} y={200} w={110} h={60} lines={['LEAD']} onClick={a.onLead} />
-        <KeyButton x={980} y={270} w={110} h={60} lines={['SIZE']} onClick={a.onSize} />
-        <KeyButton x={980} y={340} w={110} h={70} lines={['ALARM', 'SUSPEND']} onClick={a.onAlarmSuspend} active={state.alarmsSuspended} />
-        <KeyButton x={980} y={420} w={110} h={60} lines={['RECORDER']} />
+        <FunctionButton x={980} y={200} w={110} h={60} lines={['LEAD']} onClick={a.onLead} idPrefix="fb-lead" />
+        <FunctionButton x={980} y={270} w={110} h={60} lines={['SIZE']} onClick={a.onSize} idPrefix="fb-size" />
+        <FunctionButton x={980} y={340} w={110} h={70} lines={['ALARM', 'SUSPEND']} onClick={a.onAlarmSuspend} active={state.alarmsSuspended} idPrefix="fb-alarm" />
+        <FunctionButton x={980} y={420} w={110} h={60} lines={['RECORDER']} idPrefix="fb-rec" />
       </g>
 
-      {/* ===== 09_TherapyButtons (3 SHOCK · 2 ANALYZE / CHARGE) ===== */}
+      {/* ===== 09_TherapyButtons — TherapyButton parts (3 SHOCK · 2 ANALYZE / CHARGE) =====
+           Step numbers (3/2/1) and the SHOCK word are printed labels and stay. The SHOCK
+           glow is the armed cue (shockReady); the approved CHARGE part has no armed tint. */}
       <g id="09_TherapyButtons">
-        <g className="rs-hit" onClick={a.onShock}>
-          {armed && <circle cx="1212" cy="120" r="58" className="rs-shock-glow" />}
-          <circle cx="1212" cy="120" r="46" fill="url(#g-shock)" stroke="#bb5d0e" strokeWidth="3" />
-          <circle cx="1198" cy="107" r="13" fill="#ffffff" opacity="0.18" />
-        </g>
+        <TherapyButton variant="shock" cx={1212} cy={120} r={46} shockReady={armed} onClick={a.onShock} idPrefix="tb-shock" />
         <text x="1270" y="130" className="rs-red" fontSize="32" fontWeight="800">3</text>
         <text x="1296" y="128" className="rs-red" fontSize="22" fontWeight="700">SHOCK</text>
 
         <text x="1238" y="196" className="rs-red" fontSize="28" fontWeight="800">2</text>
-        <g className="rs-hit" onClick={a.onAnalyze}>
-          <rect x="1150" y="210" width="94" height="58" rx="6" fill="url(#g-peach)" stroke="#d8bfa0" filter="url(#f-soft)" />
-          <text x="1197" y="245" textAnchor="middle" className="rs-red" fontSize="17" fontWeight="700">ANALYZE</text>
-        </g>
-        <g className="rs-hit" onClick={a.onCharge}>
-          <rect x="1252" y="210" width="94" height="58" rx="6" fill={armed ? '#ffe7bf' : 'url(#g-peach)'} stroke={armed ? '#e0a92b' : '#d8bfa0'} strokeWidth={armed ? 2 : 1} filter="url(#f-soft)" />
-          <text x="1299" y="245" textAnchor="middle" className="rs-red" fontSize="17" fontWeight="700">CHARGE</text>
-        </g>
+        <TherapyButton variant="action" label="ANALYZE" x={1150} y={210} w={94} h={58} onClick={a.onAnalyze} idPrefix="tb-analyze" />
+        <TherapyButton variant="action" label="CHARGE" x={1252} y={210} w={94} h={58} onClick={a.onCharge} idPrefix="tb-charge" />
       </g>
 
-      {/* ===== 10_EnergySelect (1 · beige rocker, red triangles) ===== */}
+      {/* ===== 10_EnergySelect — EnergySelect part (art) + value + up/down hit zones =====
+           The approved part is art-only with one onClick; the master needs a two-way
+           rocker + the live energy value, so both overlay the part at locked geometry. */}
       <g id="10_EnergySelect">
         <text x="1218" y="400" className="rs-red" fontSize="28" fontWeight="800">1</text>
-        <rect x="1256" y="298" width="112" height="140" rx="8" fill="url(#g-beige)" stroke="#bdb49d" filter="url(#f-soft)" />
-        <g className="rs-hit" onClick={a.onEnergyUp}>
-          <rect x="1268" y="302" width="88" height="26" fill="transparent" />
-          <path d="M1312,312 l15,21 h-30 Z" fill="#cf2a20" />
-        </g>
-        <text x="1312" y="366" textAnchor="middle" className="rs-red" fontSize="15" fontWeight="800">ENERGY</text>
-        <text x="1312" y="383" textAnchor="middle" className="rs-red" fontSize="15" fontWeight="800">SELECT</text>
-        <text x="1312" y="406" textAnchor="middle" className="rs-dark" fontSize="16" fontWeight="800">{state.energy}J</text>
-        <g className="rs-hit" onClick={a.onEnergyDown}>
-          <rect x="1268" y="410" width="88" height="26" fill="transparent" />
-          <path d="M1312,424 l15,-21 h-30 Z" fill="#cf2a20" />
-        </g>
+        <EnergySelect x={1256} y={298} w={112} h={140} idPrefix="es" />
+        <text x="1312" y="406" textAnchor="middle" className="rs-dark" fontSize="16" fontWeight="800" style={{ pointerEvents: 'none' }}>{state.energy}J</text>
+        <rect x="1268" y="312" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyUp} />
+        <rect x="1268" y="390" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyDown} />
       </g>
 
       {/* ===== 11_ModeSelector_Back (base plate) ===== */}
@@ -376,27 +365,6 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <text x="560" y="120" textAnchor="middle" fill="#0066b3" fontSize="42" fontWeight="800" letterSpacing="2">ZOLL</text>
       </g>
     </svg>
-  )
-}
-
-function KeyButton({ x, y, w, h, lines, onClick, active }) {
-  return (
-    <g className={onClick ? 'rs-hit' : undefined} onClick={onClick}>
-      <rect x={x} y={y} width={w} height={h} rx="8" fill={active ? '#ffe7bf' : 'url(#g-key)'} stroke={active ? '#e0a92b' : '#c2c3bf'} strokeWidth="1.5" filter="url(#f-soft)" />
-      {lines.map((ln, i) => (
-        <text
-          key={ln}
-          x={x + w / 2}
-          y={y + h / 2 + 6 + (i - (lines.length - 1) / 2) * 20}
-          textAnchor="middle"
-          className="rs-dark"
-          fontSize="18"
-          fontWeight="700"
-        >
-          {ln}
-        </text>
-      ))}
-    </g>
   )
 }
 
