@@ -217,8 +217,11 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
           <rect x="0" y="0" width="673" height="515" rx="3" />
         </clipPath>
         {/* Display Operating Framework (skeleton) + live widgets, bound to state
-            via displayModel() (Master Assembly Phase E — replaces LcdScreen). */}
-        <DisplayFramework mode="clean" showPlaceholders={false} slots={mountWidgets(displayModel(state, elapsed))} idPrefix="lcd" />
+            via displayModel() (Master Assembly Phase E — replaces LcdScreen). The
+            screen is dark when the mode selector is OFF (device powered down). */}
+        {state.mode !== 'Off' && (
+          <DisplayFramework mode="clean" showPlaceholders={false} slots={mountWidgets(displayModel(state, elapsed))} idPrefix="lcd" />
+        )}
         {flash && <rect x="0" y="0" width="673" height="515" className="rs-flash-rect" />}
       </g>
 
@@ -258,15 +261,18 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
       <g id="10_EnergySelect">
         <text x="1218" y="400" className="rs-red" fontSize="28" fontWeight="800">1</text>
         <EnergySelect x={1256} y={298} w={112} h={140} idPrefix="es" />
-        <text x="1312" y="406" textAnchor="middle" className="rs-dark" fontSize="16" fontWeight="800" style={{ pointerEvents: 'none' }}>{state.energy}J</text>
+        {/* selected energy is shown on the LCD readout ("120 J SEL."), not the button */}
         <rect x="1268" y="312" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyUp} />
         <rect x="1268" y="390" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyDown} />
       </g>
 
       {/* ===== 11–14 ModeSelector — ModeSelector part (base · labels · rotating knob · dots) =====
-           Art-only part; a transparent hit target over the knob cycles the mode. */}
-      <ModeSelector mode={state.mode} activeMode={state.mode} idPrefix="ms" />
-      <circle cx={KX} cy={KY} r={KR} fill="transparent" className="rs-hit" onClick={a.onModeCycle} />
+           Art-only part; a transparent hit target over the knob cycles the mode. Shifted
+           down so the dial's "MONITOR" label clears the RECORDER function button above. */}
+      <g transform="translate(0 26)">
+        <ModeSelector mode={state.mode} activeMode={state.mode} idPrefix="ms" />
+        <circle cx={KX} cy={KY} r={KR} fill="transparent" className="rs-hit" onClick={a.onModeCycle} />
+      </g>
 
       {/* ===== 15_PacerKnobs — PacerKnob ×2 + FourToOneButton (OUTPUT mA · 4:1 · RATE ppm) =====
            4:1 is momentary (press-and-hold); the part is art, the wrapper holds the handlers. */}

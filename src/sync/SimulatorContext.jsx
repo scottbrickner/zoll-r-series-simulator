@@ -86,8 +86,8 @@ export const DEFAULT_STATE = {
   nibp: { sys: 120, dia: 80, mean: 93 },
   etco2: 38,
   rr: 16, // respiratory rate
-  mode: 'Monitor', // Monitor | Defib | Pacer
-  energy: 150, // selected defib energy (J)
+  mode: 'Off', // Off | Monitor | Defib | Pacer — device starts powered off
+  energy: 120, // selected defib energy (J) — ZOLL default for Defib
 
   // ---- monitor: lead / size / connections / display toggles ----
   lead: 'II',
