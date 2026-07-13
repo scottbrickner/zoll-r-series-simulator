@@ -11,6 +11,11 @@ import EnergySelect from './controls/EnergySelect'
 import ModeSelector from './controls/ModeSelector'
 import PacerKnob from './controls/PacerKnob'
 import FourToOneButton from './controls/FourToOneButton'
+import SoftKeyRow from './controls/SoftKeyRow'
+import { makeSoftKey } from './controls/SoftKey'
+
+// Six physical softkeys are blank (labels live on the LCD, per the real device).
+const BLANK_SOFTKEYS = Array.from({ length: 6 }, (_, i) => makeSoftKey(`sk${i}`, ''))
 
 /**
  * RSeries_Master — PERMANENT master artwork for the ZOLL R Series front panel.
@@ -213,23 +218,13 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         {flash && <rect x="0" y="0" width="673" height="515" className="rs-flash-rect" />}
       </g>
 
-      {/* ===== 07_Softkeys (six pale physical keys) ===== */}
+      {/* ===== 07_Softkeys — SoftKeyRow part (six blank physical keys) =====
+           Labels live on the LCD; only the 6th key (Sync On/Off) is interactive. */}
       <g id="07_Softkeys">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <rect
-            key={i}
-            x={186 + i * 122}
-            y="772"
-            width="110"
-            height="58"
-            rx="6"
-            fill="url(#g-key)"
-            stroke="#c2c3bf"
-            strokeWidth="1.5"
-            className={i === 5 ? 'rs-hit' : undefined}
-            onClick={i === 5 ? a.onSyncToggle : undefined}
-          />
-        ))}
+        <g transform="translate(186 772)">
+          <SoftKeyRow keys={BLANK_SOFTKEYS} />
+        </g>
+        <rect x={796} y={772} width={110} height={58} rx={6} fill="transparent" className="rs-hit" onClick={a.onSyncToggle} />
       </g>
 
       {/* ===== 08_FunctionButtons — FunctionButton parts (LEAD / SIZE / ALARM SUSPEND / RECORDER) ===== */}
