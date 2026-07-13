@@ -36,6 +36,24 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.34] — 2026-07-13 — React Wiring (Milestone 25): press feedback · NIBP · power
+
+Deepen live-state binding on the assembled parts:
+- **Button press feedback** — a `Pressable` wrapper gives every face button
+  (LEAD / SIZE / ALARM SUSPEND / RECORDER / SHOCK / ANALYZE / CHARGE / ENERGY
+  SELECT / NIBP) a momentary molded depress while the pointer is held; the
+  part's onClick still fires the action.
+- **NIBP measurement** — new `measureNibp` action (`nibpMeasuring` state +
+  `nibpTo` timer, cancelled on mode change): clicking NIBP inflates for ~3.5s
+  (measuring ring) then completes (nibp_start → nibp_result). Learner `onNibp`.
+- **AC/BATT power state** — `acConnected` + `batteryStatus`
+  ('charged'|'charging'|'low'|'fault'|'missing') drive the indicator pills via
+  `IndicatorLight`'s status-colored icon variant (green / yellow / gray), with
+  `setAcConnected` / `setBatteryStatus` setters (was hardcoded green).
+
+Remaining M25 items: physical softkey actions, RECORDER, rotary-drag knobs.
+Build passes; smoke 23/23; lint clean.
+
 ## [0.1.33] — 2026-07-13 — Master Assembly (Milestone 24): device built from parts
 
 Assembled the shipping **Learner device** (`RSeriesDevice.jsx`) from the approved

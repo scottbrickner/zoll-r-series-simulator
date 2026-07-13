@@ -55,7 +55,7 @@ for decisions and their rationale see [`DECISIONS.md`](DECISIONS.md).
 | 22 | **Display Operating Framework** | ✅ **Built — firmware skeleton (Package 4A)** |
 | 23 | **Display Widgets** | ✅ **Built — value/waveform/status parts (Package 5)** |
 | 24 | **Master Assembly** (wire approved parts into the device) | ✅ **Built — device assembled from parts (Phases A–E)** |
-| 25 | **React Wiring** (live state → assembled parts) | 🟡 **Started — LCD bound via displayModel (Phase E); controls wired** |
+| 25 | **React Wiring** (live state → assembled parts) | 🟡 **In progress — LCD, controls, button press feedback, NIBP measurement, AC/BATT power wired; softkey actions / recorder / rotary-drag remain** |
 | 26 | **Clinical behavior refinement** | ⬜ Planned |
 
 ---
