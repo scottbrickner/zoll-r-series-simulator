@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './rseries.css'
 import DisplayFramework from './display/DisplayFramework'
 import { mountWidgets } from './display/DisplayWidgets'
@@ -236,23 +237,23 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
 
       {/* ===== 08_FunctionButtons — FunctionButton parts (LEAD / SIZE / ALARM SUSPEND / RECORDER) ===== */}
       <g id="08_FunctionButtons">
-        <FunctionButton x={980} y={200} w={110} h={60} lines={['LEAD']} onClick={a.onLead} idPrefix="fb-lead" />
-        <FunctionButton x={980} y={270} w={110} h={60} lines={['SIZE']} onClick={a.onSize} idPrefix="fb-size" />
-        <FunctionButton x={980} y={340} w={110} h={70} lines={['ALARM', 'SUSPEND']} onClick={a.onAlarmSuspend} active={state.alarmsSuspended} idPrefix="fb-alarm" />
-        <FunctionButton x={980} y={420} w={110} h={60} lines={['RECORDER']} idPrefix="fb-rec" />
+        <Pressable>{(p) => <FunctionButton x={980} y={200} w={110} h={60} lines={['LEAD']} pressed={p} onClick={a.onLead} idPrefix="fb-lead" />}</Pressable>
+        <Pressable>{(p) => <FunctionButton x={980} y={270} w={110} h={60} lines={['SIZE']} pressed={p} onClick={a.onSize} idPrefix="fb-size" />}</Pressable>
+        <Pressable>{(p) => <FunctionButton x={980} y={340} w={110} h={70} lines={['ALARM', 'SUSPEND']} pressed={p} onClick={a.onAlarmSuspend} active={state.alarmsSuspended} idPrefix="fb-alarm" />}</Pressable>
+        <Pressable>{(p) => <FunctionButton x={980} y={420} w={110} h={60} lines={['RECORDER']} pressed={p} idPrefix="fb-rec" />}</Pressable>
       </g>
 
       {/* ===== 09_TherapyButtons — TherapyButton parts (3 SHOCK · 2 ANALYZE / CHARGE) =====
            Step numbers (3/2/1) and the SHOCK word are printed labels and stay. The SHOCK
            glow is the armed cue (shockReady); the approved CHARGE part has no armed tint. */}
       <g id="09_TherapyButtons">
-        <TherapyButton variant="shock" cx={1212} cy={120} r={46} shockReady={armed} onClick={a.onShock} idPrefix="tb-shock" />
+        <Pressable>{(p) => <TherapyButton variant="shock" cx={1212} cy={120} r={46} pressed={p} shockReady={armed} onClick={a.onShock} idPrefix="tb-shock" />}</Pressable>
         <text x="1270" y="130" className="rs-red" fontSize="32" fontWeight="800">3</text>
         <text x="1296" y="128" className="rs-red" fontSize="22" fontWeight="700">SHOCK</text>
 
         <text x="1248" y="192" textAnchor="middle" className="rs-red" fontSize="28" fontWeight="800">2</text>
-        <TherapyButton variant="action" label="ANALYZE" x={1150} y={210} w={94} h={58} onClick={a.onAnalyze} idPrefix="tb-analyze" />
-        <TherapyButton variant="action" label="CHARGE" x={1252} y={210} w={94} h={58} onClick={a.onCharge} idPrefix="tb-charge" />
+        <Pressable>{(p) => <TherapyButton variant="action" label="ANALYZE" x={1150} y={210} w={94} h={58} pressed={p} onClick={a.onAnalyze} idPrefix="tb-analyze" />}</Pressable>
+        <Pressable>{(p) => <TherapyButton variant="action" label="CHARGE" x={1252} y={210} w={94} h={58} pressed={p} onClick={a.onCharge} idPrefix="tb-charge" />}</Pressable>
       </g>
 
       {/* ===== 10_EnergySelect — EnergySelect part (art) + value + up/down hit zones =====
@@ -260,10 +261,16 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
            rocker + the live energy value, so both overlay the part at locked geometry. */}
       <g id="10_EnergySelect">
         <text x="1224" y="378" textAnchor="middle" className="rs-red" fontSize="28" fontWeight="800">1</text>
-        <EnergySelect x={1252} y={298} w={94} h={140} idPrefix="es" />
         {/* selected energy is shown on the LCD readout ("120 J SEL."), not the button */}
-        <rect x="1255" y="312" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyUp} />
-        <rect x="1255" y="390" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyDown} />
+        <Pressable>
+          {(p) => (
+            <g>
+              <EnergySelect x={1252} y={298} w={94} h={140} pressed={p} idPrefix="es" />
+              <rect x="1255" y="312" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyUp} />
+              <rect x="1255" y="390" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyDown} />
+            </g>
+          )}
+        </Pressable>
       </g>
 
       {/* ===== 11–14 ModeSelector — ModeSelector part (base · labels · rotating knob · dots) =====
@@ -319,3 +326,20 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   )
 }
 
+
+/**
+ * Pressable — momentary tactile press feedback for a device-face part. Tracks a
+ * `pressed` flag while the pointer is held and passes it to the render function so
+ * the (art-only) part shows its molded press-down state. The part's own onClick
+ * still fires the action.
+ */
+function Pressable({ children }) {
+  const [pressed, setPressed] = useState(false)
+  const down = () => setPressed(true)
+  const up = () => setPressed(false)
+  return (
+    <g onMouseDown={down} onMouseUp={up} onMouseLeave={up} onTouchStart={down} onTouchEnd={up}>
+      {children(pressed)}
+    </g>
+  )
+}
