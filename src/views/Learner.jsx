@@ -81,6 +81,12 @@ export default function Learner() {
     },
     onOutputAdjust: () => sim.adjustPacerOutput(10),
     onRateAdjust: () => sim.adjustPacerRate(10),
+    // rotary-drag: live update while dragging, commit (with logging) on release
+    onOutputLive: sim.setPacerOutputLive,
+    onOutputCommit: sim.commitPacerOutput,
+    onRateLive: sim.setPacerRateLive,
+    onRateCommit: sim.commitPacerRate,
+    onRecorder: sim.toggleRecorder,
     onFourToOneDown: () => sim.setFourToOne(true),
     onFourToOneUp: () => sim.setFourToOne(false),
     onLead: sim.cycleLead,

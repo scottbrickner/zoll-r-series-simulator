@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './rseries.css'
 import DisplayFramework from './display/DisplayFramework'
 import { mountWidgets } from './display/DisplayWidgets'
@@ -62,8 +62,10 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
   const batt = state.batteryStatus || 'charged'
   const battStatus = batt === 'charging' ? 'charging' : batt === 'low' || batt === 'fault' ? 'fault' : batt === 'missing' ? 'off' : 'green'
   const a = actions
+  const svgRef = useRef(null)
   return (
     <svg
+      ref={svgRef}
       className="rs-svg"
       viewBox="0 0 1440 1120"
       xmlns="http://www.w3.org/2000/svg"
@@ -250,7 +252,7 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <Pressable>{(p) => <FunctionButton x={980} y={200} w={110} h={60} lines={['LEAD']} pressed={p} onClick={a.onLead} idPrefix="fb-lead" />}</Pressable>
         <Pressable>{(p) => <FunctionButton x={980} y={270} w={110} h={60} lines={['SIZE']} pressed={p} onClick={a.onSize} idPrefix="fb-size" />}</Pressable>
         <Pressable>{(p) => <FunctionButton x={980} y={340} w={110} h={70} lines={['ALARM', 'SUSPEND']} pressed={p} onClick={a.onAlarmSuspend} active={state.alarmsSuspended} idPrefix="fb-alarm" />}</Pressable>
-        <Pressable>{(p) => <FunctionButton x={980} y={420} w={110} h={60} lines={['RECORDER']} pressed={p} idPrefix="fb-rec" />}</Pressable>
+        <Pressable>{(p) => <FunctionButton x={980} y={420} w={110} h={60} lines={['RECORDER']} pressed={p} active={state.recording} onClick={a.onRecorder} idPrefix="fb-rec" />}</Pressable>
       </g>
 
       {/* ===== 09_TherapyButtons — TherapyButton parts (3 SHOCK · 2 ANALYZE / CHARGE) =====
@@ -299,8 +301,8 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
       {/* ===== 15_PacerKnobs — PacerKnob ×2 + FourToOneButton (OUTPUT mA · 4:1 · RATE ppm) =====
            4:1 is momentary (press-and-hold); the part is art, the wrapper holds the handlers. */}
       <g id="15_PacerKnobs">
-        <PacerKnob cx={OUT.x} cy={OUT.y} r={OUT.r} rotationAngle={knobAngle(state.pacerOutput, 140)} smooth onClick={a.onOutputAdjust} idPrefix="pk-out" />
-        <PacerKnob cx={RATE.x} cy={RATE.y} r={RATE.r} rotationAngle={knobAngle(state.pacerRate, 180)} smooth onClick={a.onRateAdjust} idPrefix="pk-rate" />
+        <RotaryPacerKnob svgRef={svgRef} cx={OUT.x} cy={OUT.y} r={OUT.r} value={state.pacerOutput} min={0} max={140} step={5} onLive={a.onOutputLive} onCommit={a.onOutputCommit} idPrefix="pk-out" />
+        <RotaryPacerKnob svgRef={svgRef} cx={RATE.x} cy={RATE.y} r={RATE.r} value={state.pacerRate} min={30} max={180} step={5} onLive={a.onRateLive} onCommit={a.onRateCommit} idPrefix="pk-rate" />
         <g
           className="rs-hit"
           onMouseDown={a.onFourToOneDown}
@@ -357,6 +359,58 @@ function Pressable({ children }) {
   return (
     <g onMouseDown={down} onMouseUp={up} onMouseLeave={up} onTouchStart={down} onTouchEnd={up}>
       {children(pressed)}
+    </g>
+  )
+}
+
+/**
+ * RotaryPacerKnob — a PacerKnob you turn by dragging. The pointer's angle about the
+ * knob centre maps to the value over the knob's 270° sweep (−135°…+135°, clockwise
+ * from 12 o'clock), stepped and clamped to [min,max]. Live-updates while dragging
+ * (no smoothing, so it follows the finger) and commits on release. A dead zone near
+ * the centre avoids value jumps from a stray centre click.
+ */
+function RotaryPacerKnob({ svgRef, cx, cy, r, value, min, max, step, onLive, onCommit, idPrefix }) {
+  const dragging = useRef(false)
+  const [smoothOn, setSmoothOn] = useState(true)
+  const toValue = (e) => {
+    const svg = svgRef.current
+    const ctm = svg && svg.getScreenCTM && svg.getScreenCTM()
+    if (!ctm) return null
+    const pt = svg.createSVGPoint()
+    pt.x = e.clientX
+    pt.y = e.clientY
+    const loc = pt.matrixTransform(ctm.inverse())
+    const dx = loc.x - cx
+    const dy = loc.y - cy
+    if (Math.hypot(dx, dy) < r * 0.3) return null // dead zone near the hub
+    let ang = (Math.atan2(dx, -dy) * 180) / Math.PI // clockwise from 12 o'clock
+    ang = Math.max(-135, Math.min(135, ang))
+    const v = Math.round((((ang + 135) / 270) * max) / step) * step
+    return Math.max(min, Math.min(max, v))
+  }
+  const down = (e) => {
+    dragging.current = true
+    setSmoothOn(false)
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* older browsers */ }
+    const v = toValue(e)
+    if (v != null && onLive) onLive(v)
+  }
+  const move = (e) => {
+    if (!dragging.current) return
+    const v = toValue(e)
+    if (v != null && onLive) onLive(v)
+  }
+  const end = (e) => {
+    if (!dragging.current) return
+    dragging.current = false
+    setSmoothOn(true)
+    const v = toValue(e)
+    if (onCommit) onCommit(v != null ? v : value)
+  }
+  return (
+    <g className="rs-hit" style={{ touchAction: 'none' }} onPointerDown={down} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
+      <PacerKnob cx={cx} cy={cy} r={r} rotationAngle={knobAngle(value, max)} smooth={smoothOn} idPrefix={idPrefix} />
     </g>
   )
 }

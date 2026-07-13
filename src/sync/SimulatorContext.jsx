@@ -90,6 +90,7 @@ export const DEFAULT_STATE = {
   acConnected: true, // plugged into AC mains
   batteryStatus: 'charged', // 'charged' | 'charging' | 'low' | 'fault' | 'missing'
   asyncPacing: false, // asynchronous (fixed-rate) pacing vs demand pacing
+  recording: false, // strip-chart recorder running
   etco2: 38,
   rr: 16, // respiratory rate
   mode: 'Off', // Off | Monitor | Defib | Pacer — device starts powered off
@@ -743,6 +744,11 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
     // Softkey actions. Code Marker drops a timeline marker (used during a code for
     // the debrief); Async On/Off toggles asynchronous pacing; the rest are logged
     // so the session report shows which softkeys the learner used.
+    const toggleRecorder = () => {
+      const next = !stateRef.current.recording
+      update({ recording: next })
+      log({ type: next ? 'recorder_start' : 'recorder_stop' })
+    }
     const codeMarker = () => log({ type: 'code_marker' })
     const softkeyPress = (label) => log({ type: 'softkey', label })
     const toggleAsyncPacing = () => {
@@ -964,6 +970,7 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       setVitalLive: (key, v) => update({ [key]: v }),
       commitVital: (key, v) => applyMonitor({ [key]: v }, { type: 'vitals', param: key, value: v }),
       measureNibp,
+      toggleRecorder,
       codeMarker,
       softkeyPress,
       toggleAsyncPacing,
