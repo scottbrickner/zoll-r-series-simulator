@@ -78,8 +78,8 @@ export default function ModeSelector({
           activeMode adds a translucent outline to the selected label — a state
           overlay, not a restyle. */}
       <g id="mode_selector_labels">
-        <path d="M1022,474 H1150 L1164,489 L1150,504 H1022 Q1017,504 1017,499 V479 Q1017,474 1022,474 Z" fill="#c4c7c3" stroke={ring('Monitor')} strokeOpacity="0.6" strokeWidth="2" />
-        <text x="1086" y="496" textAnchor="middle" fill="#2a2f36" fontSize="18" fontWeight="700">MONITOR</text>
+        {/* MONITOR is plain gray text on the faceplate (no colored tab), per the photo */}
+        <text x="1050" y="489" fill="#8a8d89" fontSize="18" fontWeight="600" stroke={ring('Monitor')} strokeOpacity="0.5" strokeWidth="0.6">MONITOR</text>
         <rect x="1008" y="541" width="104" height="30" rx="15" fill="#101316" stroke={ring('Off')} strokeOpacity="0.6" strokeWidth="2" />
         <text x="1060" y="562" textAnchor="middle" fill="#f1f4f7" fontSize="18" fontWeight="800">OFF</text>
         <path d="M984,603 H1072 L1058,627 H984 Q979,627 979,622 V608 Q979,603 984,603 Z" fill="#0f9c97" stroke={ring('Pacer')} strokeOpacity="0.6" strokeWidth="2" />

@@ -250,7 +250,7 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <text x="1270" y="130" className="rs-red" fontSize="32" fontWeight="800">3</text>
         <text x="1296" y="128" className="rs-red" fontSize="22" fontWeight="700">SHOCK</text>
 
-        <text x="1238" y="196" className="rs-red" fontSize="28" fontWeight="800">2</text>
+        <text x="1248" y="192" textAnchor="middle" className="rs-red" fontSize="28" fontWeight="800">2</text>
         <TherapyButton variant="action" label="ANALYZE" x={1150} y={210} w={94} h={58} onClick={a.onAnalyze} idPrefix="tb-analyze" />
         <TherapyButton variant="action" label="CHARGE" x={1252} y={210} w={94} h={58} onClick={a.onCharge} idPrefix="tb-charge" />
       </g>
@@ -259,11 +259,11 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
            The approved part is art-only with one onClick; the master needs a two-way
            rocker + the live energy value, so both overlay the part at locked geometry. */}
       <g id="10_EnergySelect">
-        <text x="1218" y="400" className="rs-red" fontSize="28" fontWeight="800">1</text>
-        <EnergySelect x={1256} y={298} w={112} h={140} idPrefix="es" />
+        <text x="1224" y="378" textAnchor="middle" className="rs-red" fontSize="28" fontWeight="800">1</text>
+        <EnergySelect x={1252} y={298} w={94} h={140} idPrefix="es" />
         {/* selected energy is shown on the LCD readout ("120 J SEL."), not the button */}
-        <rect x="1268" y="312" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyUp} />
-        <rect x="1268" y="390" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyDown} />
+        <rect x="1255" y="312" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyUp} />
+        <rect x="1255" y="390" width="88" height="34" fill="transparent" className="rs-hit" onClick={a.onEnergyDown} />
       </g>
 
       {/* ===== 11–14 ModeSelector — ModeSelector part (base · labels · rotating knob · dots) =====
