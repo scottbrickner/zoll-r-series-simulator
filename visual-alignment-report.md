@@ -957,3 +957,29 @@ later React Wiring phase. Build passes · smoke **23/23** · no console errors.
   Help field (PPI diamond + Compression Release Bar + Depth/Rate); the only CPR *text* on
   screen is the RATE/DEPTH hints and the optional FULLY RELEASE prompt. The CPR/arrest
   review screen now shows the PPI/release/rate-depth indicators with no banner.
+
+## 12. Master Assembly — 2026-07-13 — Milestone 24 (built)
+
+Assembled the shipping Learner device (`RSeriesDevice.jsx`, viewBox 1440×1120) from the
+approved modular parts, replacing the monolithic inline artwork **layer-by-layer at
+identical geometry**. Positions/sizes stay pixel-locked to the master; appearance
+upgrades to the frozen approved parts (gradients, molded press/active states). Body /
+housing layers (bumper, faceplate, bezel, LCD frame, handle, labels, shadows,
+highlights) are unchanged. `RSeriesDevice.jsx` is consumed only by `Learner.jsx`.
+
+Per-phase (each verified against `/learner` — geometry parity + interactions + no
+console errors; build + smoke 23/23 + lint clean):
+- **A** indicators — 16→IndicatorLight ×2, 17→CodeReadiness, 18→NIBPButton.
+- **B** buttons — 08→FunctionButton ×4, 09→TherapyButton ×3, 10→EnergySelect.
+- **C** mode/knobs — 11–14→ModeSelector, 15→PacerKnob ×2 + FourToOneButton.
+- **D** softkeys — 07→SoftKeyRow (blank keys; labels on the LCD).
+- **E** LCD — LcdScreen→DisplayFramework + DisplayWidgets via `displayModel(state, elapsed)`,
+  preserving pacing/CPR-artifact/leads-off/sync-marker/alarm fidelity, verified across
+  MONITOR / DEFIB / PACER.
+
+Assembly pattern: approved parts are art-only (`<g>`, no `onClick`) — transparent
+`rs-hit` targets overlay them for interaction (mode-cycle, energy up/down, sync, 4:1
+press-hold); printed text labels (AC/BATT, therapy step numbers, OUTPUT/RATE) stay.
+Fixed `.rs-flash-rect` (base `opacity: 0`) so the post-shock flash no longer reverts to
+opaque and covers the LCD. Long lead labels (PADS/PADDLES) stack over the gain so they
+don't collide. Next: React Wiring (Milestone 25) — deepen live-state binding.

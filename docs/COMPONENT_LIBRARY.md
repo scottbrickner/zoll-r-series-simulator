@@ -102,6 +102,15 @@ Layers React may animate (attributes only): `16_LEDIndicators`,
 knob/dot `transform` (the printed arcs `12` **never** rotate), plus the separate
 LCD content and waveforms.
 
+**Master Assembly (Milestone 24 ✅):** the control and display layers are now rendered
+by the **approved modular parts** (not inline art), at identical geometry — body layers
+stay inline. `07`→`SoftKeyRow`, `08`→`FunctionButton`, `09`→`TherapyButton`,
+`10`→`EnergySelect`, `11–14`→`ModeSelector`, `15`→`PacerKnob`+`FourToOneButton`,
+`16`→`IndicatorLight`, `17`→`CodeReadiness`, `18`→`NIBPButton`, and `LCD_Content`→
+`DisplayFramework`+`DisplayWidgets` bound by `display/displayModel.js`. Parts are art-only
+(no `onClick`); interactions use transparent `rs-hit` overlays. Legacy `LcdScreen.jsx` is
+now unused (kept as reference). See §7.2 and `CHANGELOG.md [0.1.33]`.
+
 ---
 
 ## 4. Body (housing / chassis) — Pass 1, LOCKED / APPROVED

@@ -36,6 +36,34 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.33] — 2026-07-13 — Master Assembly (Milestone 24): device built from parts
+
+Assembled the shipping **Learner device** (`RSeriesDevice.jsx`) from the approved
+modular parts, replacing the monolithic inline artwork layer-by-layer at **identical
+geometry** (appearance upgrades to the frozen approved parts). Body/housing layers
+(bumper, faceplate, bezel, LCD frame, handle, labels, shadows, highlights) are
+untouched. Committed per phase; each verified against `/learner`.
+
+- **Phase A — indicators:** 16→IndicatorLight ×2, 17→CodeReadiness, 18→NIBPButton.
+- **Phase B — buttons:** 08→FunctionButton ×4, 09→TherapyButton ×3, 10→EnergySelect
+  (+ overlaid live value and up/down hit zones). Removed the local KeyButton helper.
+- **Phase C — mode/knobs:** 11–14→ModeSelector (+ mode-cycle hit target), 15→PacerKnob
+  ×2 + FourToOneButton (press-and-hold). Removed local MODE_ANGLE/MODE_DOTS/PacerKnob.
+- **Phase D — softkeys:** 07→SoftKeyRow (six blank keys; sync hit target on key 6).
+- **Phase E — LCD:** LcdScreen→DisplayFramework + DisplayWidgets via a new
+  `display/displayModel.js` state→model adapter (full fidelity: ANALYZING/SHOCK
+  ADVISED/CHARGING/DEFIB READY, pacing spikes, CPR artifact, leads-off, sync markers,
+  alarms). DisplayWidgets extended (explicit ECG path, spikes/overlay/markers/leads-off/
+  alarm-banner, vitals alarm-flash). Manual-correct: elapsed clock in the readout row,
+  MODE word top, CPR feedback via PPI/release/rate-depth (voice prompts are auditory).
+
+Interaction pattern: approved parts are art-only (`<g>`, no onClick) — transparent
+`rs-hit` targets overlay them; printed text labels (AC/BATT, step numbers, OUTPUT/RATE)
+stay. Fixed `.rs-flash-rect` (added base `opacity: 0`; it reverted to opacity 1 after
+its animation and covered the LCD with cream when a shock flash outlasted the anim).
+Build passes; smoke 23/23; lint clean. Legacy `LcdScreen.jsx` is now unused (kept as
+reference).
+
 ## [0.1.32] — 2026-07-12 — Package 5: display widgets
 
 Built the reusable **LCD widgets** that fill the firmware skeleton's injection slots
