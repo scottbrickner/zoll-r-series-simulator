@@ -34,6 +34,11 @@
   stroke-opacity: 0.55;
 }
 
+/* physical softkey hit targets: brief press darkening over the key */
+.rs-softkey-hit:active {
+  fill: rgba(0, 0, 0, 0.14);
+}
+
 /* ---- printed labels on the housing ---- */
 .rs-red {
   fill: #c4231a;

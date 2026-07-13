@@ -89,6 +89,7 @@ export const DEFAULT_STATE = {
   // ---- power: AC mains + battery status (drive the two indicator pills) ----
   acConnected: true, // plugged into AC mains
   batteryStatus: 'charged', // 'charged' | 'charging' | 'low' | 'fault' | 'missing'
+  asyncPacing: false, // asynchronous (fixed-rate) pacing vs demand pacing
   etco2: 38,
   rr: 16, // respiratory rate
   mode: 'Off', // Off | Monitor | Defib | Pacer — device starts powered off
@@ -739,6 +740,17 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       log({ type: 'sync_toggle', enabled: next })
     }
 
+    // Softkey actions. Code Marker drops a timeline marker (used during a code for
+    // the debrief); Async On/Off toggles asynchronous pacing; the rest are logged
+    // so the session report shows which softkeys the learner used.
+    const codeMarker = () => log({ type: 'code_marker' })
+    const softkeyPress = (label) => log({ type: 'softkey', label })
+    const toggleAsyncPacing = () => {
+      const next = !stateRef.current.asyncPacing
+      update({ asyncPacing: next })
+      log({ type: 'async_pacing', enabled: next })
+    }
+
     // Apply a pacer-affecting patch, logging any capture transition it causes.
     const applyPacer = (patch, logEntry) => {
       const prev = stateRef.current
@@ -952,6 +964,9 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       setVitalLive: (key, v) => update({ [key]: v }),
       commitVital: (key, v) => applyMonitor({ [key]: v }, { type: 'vitals', param: key, value: v }),
       measureNibp,
+      codeMarker,
+      softkeyPress,
+      toggleAsyncPacing,
       setAcConnected: (v) => { update({ acConnected: v }); log({ type: 'power', source: 'ac', state: v ? 'connected' : 'disconnected' }) },
       setBatteryStatus: (v) => { update({ batteryStatus: v }); log({ type: 'power', source: 'battery', state: v }) },
       setNibpLive: (part, v) => update((p) => ({ nibp: { ...p.nibp, [part]: v } })),

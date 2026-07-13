@@ -241,7 +241,8 @@ export function ReadoutRowWidget({ time = '--:--', center, right } = {}) {
  */
 const SOFTKEYS_BASE = ['Options', 'Param', 'Code Marker', 'Report Data', 'Alarms']
 export function softkeysForMode(mode = 'MONITOR') {
-  return [...SOFTKEYS_BASE, mode === 'PACER' ? 'Async On/Off' : 'Sync On/Off']
+  // case-insensitive: accepts 'Pacer' (app state) or 'PACER' (uppercased display).
+  return [...SOFTKEYS_BASE, String(mode).toUpperCase() === 'PACER' ? 'Async On/Off' : 'Sync On/Off']
 }
 
 /** Mode-dependent softkey labels, centered per column (region softkeyStrip, local). */

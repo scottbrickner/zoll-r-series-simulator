@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useSimulator } from '../sync/SimulatorContext'
 import { getScenario } from '../sync/scenarios'
 import RSeriesPanel from '../components/rseries/RSeriesPanel'
+import { softkeysForMode } from '../components/rseries/display/DisplayWidgets'
 import SafetyLabel from '../components/SafetyLabel'
 
 /**
@@ -70,6 +71,14 @@ export default function Learner() {
     },
     // Click a mode label to turn the knob straight to that mode.
     onSelectMode: (m) => sim.setMode(m),
+    // Physical softkey i → the action for the current mode's label at that position.
+    onSoftkey: (i) => {
+      const label = softkeysForMode(state.mode)[i]
+      if (label === 'Sync On/Off') sim.toggleSync()
+      else if (label === 'Async On/Off') sim.toggleAsyncPacing()
+      else if (label === 'Code Marker') sim.codeMarker()
+      else sim.softkeyPress(label)
+    },
     onOutputAdjust: () => sim.adjustPacerOutput(10),
     onRateAdjust: () => sim.adjustPacerRate(10),
     onFourToOneDown: () => sim.setFourToOne(true),

@@ -237,7 +237,12 @@ export default function RSeriesDevice({ state, elapsed, flash, actions = {} }) {
         <g transform="translate(186 772)">
           <SoftKeyRow keys={BLANK_SOFTKEYS} />
         </g>
-        <rect x={796} y={772} width={110} height={58} rx={6} fill="transparent" className="rs-hit" onClick={a.onSyncToggle} />
+        {/* one hit target per physical key; the action resolves from the current
+            mode's LCD label at that position (Options/Param/Code Marker/Report Data/
+            Alarms/Sync·Async On/Off). */}
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <rect key={i} x={186 + i * 122} y={772} width={110} height={58} rx={6} fill="transparent" className="rs-hit rs-softkey-hit" onClick={() => a.onSoftkey(i)} role="button" aria-label={`Softkey ${i + 1}`} />
+        ))}
       </g>
 
       {/* ===== 08_FunctionButtons — FunctionButton parts (LEAD / SIZE / ALARM SUSPEND / RECORDER) ===== */}
