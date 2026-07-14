@@ -9,6 +9,8 @@ import {
 } from '../sync/SimulatorContext'
 import { SCENARIOS, getScenario } from '../sync/scenarios'
 import { exportSessionJSON, exportEventCSV } from '../sync/report'
+import { getFacilitatorRole, lockFacilitator } from '../config/access'
+import FacilitatorBasic from './FacilitatorBasic'
 import SafetyLabel from '../components/SafetyLabel'
 
 /**
@@ -18,9 +20,14 @@ import SafetyLabel from '../components/SafetyLabel'
 export default function Facilitator() {
   const sim = useSimulator()
   const { state, update, reset } = sim
+  const [role, setRole] = useState(getFacilitatorRole())
   const [pick, setPick] = useState(state.scenarioId || SCENARIOS[0].id)
   const [note, setNote] = useState('')
   const [logFilter, setLogFilter] = useState('all')
+
+  // Bedside SMEs get the locked basic view; NPD/NE unlock the full console.
+  if (role !== 'educator') return <FacilitatorBasic onUnlock={() => setRole('educator')} />
+
   const scenario = getScenario(state.scenarioId)
   const fullLog = state.eventLog || []
   const shownLog = logFilter === 'all' ? fullLog : fullLog.filter((e) => e.category === logFilter)
@@ -36,6 +43,9 @@ export default function Facilitator() {
         <div className="facilitator__header-actions">
           <button className="btn" onClick={() => window.open(routeFor('learner'), '_blank')}>
             Open learner window
+          </button>
+          <button className="btn btn--ghost" onClick={() => { lockFacilitator(); setRole('sme') }} title="Return to basic (SME) mode">
+            Lock (SME)
           </button>
           <Link className="btn btn--ghost" to="/">
             Exit

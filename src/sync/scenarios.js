@@ -249,3 +249,10 @@ export const SCENARIOS = [
 export function getScenario(id) {
   return SCENARIOS.find((s) => s.id === id) || null
 }
+
+/**
+ * Curated "defib skill" scenarios — the shock / cardioversion / pacing / shock-vs-no-shock
+ * cases the SME (basic) facilitator can run. Edit this list to change what bedside SMEs see.
+ */
+export const DEFIB_SCENARIO_IDS = ['vf-arrest', 'pulseless-vt', 'svt-cardioversion', 'brady-pacing', 'asystole-pea']
+export const DEFIB_SCENARIOS = SCENARIOS.filter((s) => DEFIB_SCENARIO_IDS.includes(s.id))

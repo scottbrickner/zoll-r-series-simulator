@@ -36,6 +36,24 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.36] — 2026-07-13 — Facilitator role gate (SME lockout)
+
+Add a role gate so bedside-nurse SMEs get a locked "basic" facilitator — a picker
+of the prebuilt defib-skill scenarios (VF Arrest, Pulseless VT, Unstable SVT
+cardioversion, Bradycardia pacing, Asystole/PEA) with run controls (load / Next
+step / Reset) and the expected-action list — while NPD/NE staff unlock the full
+facilitator console with a passcode.
+
+- `config/access.js` — passcode + role helpers (localStorage-persisted unlock).
+- `views/FacilitatorBasic.jsx` — the SME view + educator-access passcode prompt.
+- `Facilitator.jsx` — renders basic vs full by role; "Lock (SME)" to re-lock.
+- `scenarios.js` — `DEFIB_SCENARIOS` / `DEFIB_SCENARIO_IDS` (curatable list).
+
+NOTE: client-side deterrence only — the app is a static front-end with no backend,
+so the passcode ships in the bundle and can be bypassed by a determined user; it is
+not real authentication. Passcode default `npd-defib`, overridable via
+`VITE_FACILITATOR_PASSCODE`. Build passes; smoke 23/23; lint clean.
+
 ## [0.1.35] — 2026-07-13 — React Wiring (Milestone 25): interactions complete
 
 Finish the interaction layer on the assembled device:
