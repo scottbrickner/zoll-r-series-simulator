@@ -120,6 +120,7 @@ export function displayModel(state, elapsed) {
       markers,
       leadsOffText: view.leadsOff ? view.status || 'CHECK ECG LEADS' : null,
       recording: !!s.recording,
+      live: s.mode !== 'Off', // scroll the traces live whenever the device is on
     },
     message: msgText ? { text: msgText, tone } : null,
     readout: buildReadout(s, elapsed),

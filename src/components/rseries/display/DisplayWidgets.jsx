@@ -34,11 +34,24 @@ const TRACE_W = FIELD.w - 12 // leave the same 6px margin the chrome baselines u
 const PITCH = anchors.softkeyPitch
 const COLS = anchors.softkeyColumns
 
-/** A waveform trace centered on a field baseline. Paths live in 300×80 space. */
-function Trace({ d, base, color, height = 78, width = 2 }) {
+/**
+ * A waveform trace centered on a field baseline. Paths live in 300×80 space.
+ * When `live`, the trace scrolls left continuously (two tiled copies + a SMIL
+ * translate) so the rhythm reads as a live monitor sweep; else it's static.
+ */
+function Trace({ d, base, color, height = 78, width = 2, live = false, dur = 3 }) {
+  const strokeProps = { fill: 'none', stroke: color, strokeWidth: width, strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }
   return (
-    <svg x={TRACE_X} y={base - height / 2} width={TRACE_W} height={height} viewBox="0 0 300 80" preserveAspectRatio="none" overflow="visible">
-      <path d={d} fill="none" stroke={color} strokeWidth={width} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    <svg x={TRACE_X} y={base - height / 2} width={TRACE_W} height={height} viewBox="0 0 300 80" preserveAspectRatio="none" overflow={live ? 'hidden' : 'visible'}>
+      {live ? (
+        <g>
+          <animateTransform attributeName="transform" type="translate" from="0 0" to="-300 0" dur={`${dur}s`} repeatCount="indefinite" />
+          <path d={d} {...strokeProps} />
+          <path d={d} transform="translate(300 0)" {...strokeProps} />
+        </g>
+      ) : (
+        <path d={d} {...strokeProps} />
+      )}
     </svg>
   )
 }
@@ -166,7 +179,7 @@ export function waveTraces({ rhythm = 'Normal Sinus', ecgPath, filteredPath, pad
  *   alarms       active alarm messages → flashing banner at the top of the field
  *   recording    strip-chart recorder running → blinking REC + scrolling strip
  */
-export function WaveformFieldWidget({ traces = [], spikes, overlay, markers = [], leadsOffText, alarms = [], recording = false } = {}) {
+export function WaveformFieldWidget({ traces = [], spikes, overlay, markers = [], leadsOffText, alarms = [], recording = false, live = false } = {}) {
   return (
     <g>
       {recording && (
@@ -180,11 +193,11 @@ export function WaveformFieldWidget({ traces = [], spikes, overlay, markers = []
       {traces.map((tr, i) => (
         <g key={i}>
           <text x={TRACE_X} y={tr.base - 30} fontFamily={T} fill={tr.color} fillOpacity="0.85" fontSize="13">{tr.label}</text>
-          <Trace d={tr.d} base={tr.base} color={tr.color} height={tr.height} />
+          <Trace d={tr.d} base={tr.base} color={tr.color} height={tr.height} live={live} />
         </g>
       ))}
-      {overlay && <Trace d={overlay} base={B.ecg} color={phosphor.green} height={78} width={1.25} />}
-      {spikes && <Trace d={spikes} base={B.ecg} color={phosphor.white} height={78} width={1.5} />}
+      {overlay && <Trace d={overlay} base={B.ecg} color={phosphor.green} height={78} width={1.25} live={live} />}
+      {spikes && <Trace d={spikes} base={B.ecg} color={phosphor.white} height={78} width={1.5} live={live} />}
       {markers.map((mx, i) => {
         const x = TRACE_X + (mx / 300) * TRACE_W
         return <path key={i} d={`M${x - 5},${B.ecg - 42} L${x + 5},${B.ecg - 42} L${x},${B.ecg - 34} Z`} fill={phosphor.amber} />
@@ -294,7 +307,7 @@ export function mountWidgets(model = {}) {
   if (model.hr != null || model.lead != null) s.statusEcgHr = <EcgHrWidget hr={model.hr} lead={model.lead} gain={model.gain} alarm={model.hrAlarm} />
   if (model.waveform) {
     const w = model.waveform
-    s.waveformField = <WaveformFieldWidget traces={waveTraces(w)} spikes={w.spikes} overlay={w.overlay} markers={w.markers} leadsOffText={w.leadsOffText} alarms={model.alarms} recording={w.recording} />
+    s.waveformField = <WaveformFieldWidget traces={waveTraces(w)} spikes={w.spikes} overlay={w.overlay} markers={w.markers} leadsOffText={w.leadsOffText} alarms={model.alarms} recording={w.recording} live={w.live} />
   }
   if (model.message) s.messageArea = <MessageWidget {...model.message} />
   if (model.readout) s.readoutRow = <ReadoutRowWidget {...model.readout} />
