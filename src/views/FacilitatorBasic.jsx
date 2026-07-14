@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSimulator } from '../sync/SimulatorContext'
-import { DEFIB_SCENARIOS, getScenario } from '../sync/scenarios'
-import { unlockFacilitator } from '../config/access'
+import { SCENARIOS, DEFIB_SCENARIO_IDS, getScenario } from '../sync/scenarios'
+import { unlockFacilitator, getSmeScenarioIds } from '../config/access'
 import SafetyLabel from '../components/SafetyLabel'
 
 /**
@@ -14,8 +14,11 @@ import SafetyLabel from '../components/SafetyLabel'
 export default function FacilitatorBasic({ onUnlock }) {
   const sim = useSimulator()
   const { state } = sim
+  // Educator-configured allowlist (defaults to the built-in defib set).
+  const allowedIds = getSmeScenarioIds() || DEFIB_SCENARIO_IDS
+  const allowed = SCENARIOS.filter((s) => allowedIds.includes(s.id))
   const scenario = getScenario(state.scenarioId)
-  const running = scenario && DEFIB_SCENARIOS.some((s) => s.id === scenario.id)
+  const running = scenario && allowedIds.includes(scenario.id)
   const routeFor = (role) => `${import.meta.env.BASE_URL}${role}?session=${state.sessionId}`
 
   const [showUnlock, setShowUnlock] = useState(false)
@@ -45,7 +48,8 @@ export default function FacilitatorBasic({ onUnlock }) {
             Open the learner device (button above), then pick a scenario to run it. Use Next step / Reset to drive it.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 10 }}>
-            {DEFIB_SCENARIOS.map((s) => {
+            {allowed.length === 0 && <p className="muted">No scenarios enabled for SME access. Ask an educator to enable some.</p>}
+            {allowed.map((s) => {
               const active = state.scenarioId === s.id
               return (
                 <button

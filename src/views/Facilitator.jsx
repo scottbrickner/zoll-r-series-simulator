@@ -7,9 +7,9 @@ import {
   SHOCK_OUTCOMES,
   useSimulator,
 } from '../sync/SimulatorContext'
-import { SCENARIOS, getScenario } from '../sync/scenarios'
+import { SCENARIOS, DEFIB_SCENARIO_IDS, getScenario } from '../sync/scenarios'
 import { exportSessionJSON, exportEventCSV } from '../sync/report'
-import { getFacilitatorRole, lockFacilitator } from '../config/access'
+import { getFacilitatorRole, lockFacilitator, getSmeScenarioIds, setSmeScenarioIds } from '../config/access'
 import FacilitatorBasic from './FacilitatorBasic'
 import SafetyLabel from '../components/SafetyLabel'
 
@@ -24,6 +24,12 @@ export default function Facilitator() {
   const [pick, setPick] = useState(state.scenarioId || SCENARIOS[0].id)
   const [note, setNote] = useState('')
   const [logFilter, setLogFilter] = useState('all')
+  const [smeIds, setSmeIds] = useState(() => getSmeScenarioIds() || DEFIB_SCENARIO_IDS)
+  const toggleSme = (id) => {
+    const next = smeIds.includes(id) ? smeIds.filter((x) => x !== id) : [...smeIds, id]
+    setSmeIds(next)
+    setSmeScenarioIds(next)
+  }
 
   // Bedside SMEs get the locked basic view; NPD/NE unlock the full console.
   if (role !== 'educator') return <FacilitatorBasic onUnlock={() => setRole('educator')} />
@@ -99,6 +105,23 @@ export default function Facilitator() {
               {state.running ? 'Stop monitoring' : 'Start monitoring'}
             </button>
             <button className="btn btn--ghost" onClick={reset}>Full reset</button>
+          </div>
+        </Panel>
+
+        <Panel title="SME scenario access">
+          <p className="muted" style={{ marginTop: 0 }}>
+            Choose which scenarios bedside SMEs may run in the locked (basic) facilitator. Saved on this station.
+          </p>
+          <div style={{ display: 'grid', gap: 6 }}>
+            {SCENARIOS.map((s) => (
+              <label key={s.id} style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
+                <input type="checkbox" checked={smeIds.includes(s.id)} onChange={() => toggleSme(s.id)} />
+                <span>{s.name} <span className="muted">({s.level})</span></span>
+              </label>
+            ))}
+          </div>
+          <div className="row" style={{ marginTop: '0.6rem' }}>
+            <button className="btn btn--ghost" onClick={() => { setSmeIds(DEFIB_SCENARIO_IDS); setSmeScenarioIds(DEFIB_SCENARIO_IDS) }}>Reset to defib default</button>
           </div>
         </Panel>
 

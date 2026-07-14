@@ -47,7 +47,11 @@ facilitator console with a passcode.
 - `config/access.js` — passcode + role helpers (localStorage-persisted unlock).
 - `views/FacilitatorBasic.jsx` — the SME view + educator-access passcode prompt.
 - `Facilitator.jsx` — renders basic vs full by role; "Lock (SME)" to re-lock.
-- `scenarios.js` — `DEFIB_SCENARIOS` / `DEFIB_SCENARIO_IDS` (curatable list).
+- `scenarios.js` — `DEFIB_SCENARIOS` / `DEFIB_SCENARIO_IDS` (default set).
+- **Educator-configurable SME allowlist:** an "SME scenario access" checklist in
+  the full console lets NPD/NE pick exactly which scenarios SMEs may run (for new
+  scenarios / campaigns); persisted per station (`getSmeScenarioIds` /
+  `setSmeScenarioIds`), with a "Reset to defib default". The basic view reads it.
 
 NOTE: client-side deterrence only — the app is a static front-end with no backend,
 so the passcode ships in the bundle and can be bypassed by a determined user; it is

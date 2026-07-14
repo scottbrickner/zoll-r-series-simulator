@@ -45,3 +45,32 @@ export function lockFacilitator() {
     /* ignore */
   }
 }
+
+// ── SME scenario allowlist ────────────────────────────────────────────────
+// Which scenario ids the basic (SME) facilitator may run. Educators set this in
+// the full console; it persists per browser/station (same deterrence caveat — no
+// backend, so it's a per-device setting, not a synced/enforced policy).
+const ALLOWLIST_KEY = 'zoll-rs:sme-scenarios'
+
+/** Stored allowlist (array of scenario ids), or null to use the default. */
+export function getSmeScenarioIds() {
+  try {
+    const raw = localStorage.getItem(ALLOWLIST_KEY)
+    if (raw) {
+      const ids = JSON.parse(raw)
+      if (Array.isArray(ids)) return ids
+    }
+  } catch {
+    /* ignore */
+  }
+  return null
+}
+
+/** Persist the SME scenario allowlist for this browser/station. */
+export function setSmeScenarioIds(ids) {
+  try {
+    localStorage.setItem(ALLOWLIST_KEY, JSON.stringify(ids))
+  } catch {
+    /* ignore */
+  }
+}
