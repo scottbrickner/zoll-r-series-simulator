@@ -27,7 +27,7 @@ function therapyMessage(s, view) {
     if (s.shockReady) return { text: `${s.syncEnabled ? 'SYNC ' : ''}DEFIB ${s.energy}J READY`, tone: 'ready' }
     return { text: `DEFIB ${s.energy}J`, tone: 'status' }
   }
-  if (s.mode === 'Pacer') return { text: 'PACE', tone: 'status' }
+  if (s.mode === 'Pacer') return { text: s.asyncPacing ? 'ASYNC PACE' : 'PACE', tone: 'status' }
   return { text: 'MONITOR', tone: 'status' }
 }
 
@@ -64,8 +64,13 @@ export function displayModel(state, elapsed) {
   if (view.leadsOff) {
     ecgPath = FLAT
   } else if (pacing) {
-    if (captured) ecgPath = pacedPath({ rate: s.pacerRate, capture: true, fourToOne: s.fourToOne, intermittent: s.intermittentCapture })
-    else {
+    if (s.asyncPacing) {
+      // asynchronous (fixed-rate): spikes march through regardless of intrinsic beats
+      ecgPath = ecgFor(underlying)
+      spikes = pacerSpikes({ rate: s.pacerRate, fourToOne: s.fourToOne })
+    } else if (captured) {
+      ecgPath = pacedPath({ rate: s.pacerRate, capture: true, fourToOne: s.fourToOne, intermittent: s.intermittentCapture })
+    } else {
       ecgPath = ecgFor(underlying)
       spikes = pacerSpikes({ rate: s.pacerRate, fourToOne: s.fourToOne })
     }
@@ -114,6 +119,7 @@ export function displayModel(state, elapsed) {
       overlay,
       markers,
       leadsOffText: view.leadsOff ? view.status || 'CHECK ECG LEADS' : null,
+      recording: !!s.recording,
     },
     message: msgText ? { text: msgText, tone } : null,
     readout: buildReadout(s, elapsed),

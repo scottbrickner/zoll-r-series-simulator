@@ -164,10 +164,19 @@ export function waveTraces({ rhythm = 'Normal Sinus', ecgPath, filteredPath, pad
  *   markers      sync QRS marker x-positions (in 0..300 trace space)
  *   leadsOffText message shown across the ECG when leads are off
  *   alarms       active alarm messages → flashing banner at the top of the field
+ *   recording    strip-chart recorder running → blinking REC + scrolling strip
  */
-export function WaveformFieldWidget({ traces = [], spikes, overlay, markers = [], leadsOffText, alarms = [] } = {}) {
+export function WaveformFieldWidget({ traces = [], spikes, overlay, markers = [], leadsOffText, alarms = [], recording = false } = {}) {
   return (
     <g>
+      {recording && (
+        <g fontFamily={T}>
+          {/* running paper strip: dashes scroll to suggest the recorder feeding */}
+          <line x1={TRACE_X} y1="7" x2={FIELD.w - 96} y2="7" stroke={phosphor.red} strokeOpacity="0.55" strokeWidth="2" strokeDasharray="7 5" className="lcd-rec-strip" />
+          <circle cx={FIELD.w - 84} cy="12" r="5" fill={phosphor.red} className="lcd-rec-blink" />
+          <text x={FIELD.w - 74} y="17" fill={phosphor.red} fontSize="13" fontWeight="800">REC</text>
+        </g>
+      )}
       {traces.map((tr, i) => (
         <g key={i}>
           <text x={TRACE_X} y={tr.base - 30} fontFamily={T} fill={tr.color} fillOpacity="0.85" fontSize="13">{tr.label}</text>
@@ -285,7 +294,7 @@ export function mountWidgets(model = {}) {
   if (model.hr != null || model.lead != null) s.statusEcgHr = <EcgHrWidget hr={model.hr} lead={model.lead} gain={model.gain} alarm={model.hrAlarm} />
   if (model.waveform) {
     const w = model.waveform
-    s.waveformField = <WaveformFieldWidget traces={waveTraces(w)} spikes={w.spikes} overlay={w.overlay} markers={w.markers} leadsOffText={w.leadsOffText} alarms={model.alarms} />
+    s.waveformField = <WaveformFieldWidget traces={waveTraces(w)} spikes={w.spikes} overlay={w.overlay} markers={w.markers} leadsOffText={w.leadsOffText} alarms={model.alarms} recording={w.recording} />
   }
   if (model.message) s.messageArea = <MessageWidget {...model.message} />
   if (model.readout) s.readoutRow = <ReadoutRowWidget {...model.readout} />

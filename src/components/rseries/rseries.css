@@ -39,6 +39,21 @@
   fill: rgba(0, 0, 0, 0.14);
 }
 
+/* strip-chart recorder: blinking REC dot + scrolling paper strip */
+@keyframes lcd-rec-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.lcd-rec-blink {
+  animation: lcd-rec-blink 1s ease-in-out infinite;
+}
+@keyframes lcd-rec-scroll {
+  to { stroke-dashoffset: -24; }
+}
+.lcd-rec-strip {
+  animation: lcd-rec-scroll 0.7s linear infinite;
+}
+
 /* pacer-knob ghost up/down arrows: invisible until the knob half is hovered */
 .rs-ghost-chevron {
   fill: #dff3ef;
