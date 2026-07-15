@@ -48,8 +48,8 @@ export default function BlsSurvey({ done, onStep, onEvent }) {
         {done.map((id) => {
           const st = getBlsStep(id)
           return (
-            <li key={id} style={{ color: '#7ddc9b' }}>
-              <strong style={{ color: '#cfe9d8' }}>{st.label}</strong> — <span className="muted">{st.feedback}</span>
+            <li key={id} style={{ color: '#256b2a' }}>
+              <strong>{st.label}</strong> — <span className="muted">{st.feedback}</span>
             </li>
           )
         })}
@@ -72,21 +72,11 @@ export default function BlsSurvey({ done, onStep, onEvent }) {
       )}
 
       {flash && (
-        <p
-          role="status"
-          style={{
-            marginTop: '1rem', padding: '8px 12px', borderRadius: 8,
-            background: flash.tone === 'ok' ? '#1d3a28' : flash.tone === 'warn' ? '#3a3320' : '#3a2020',
-            color: flash.tone === 'ok' ? '#8fe3ab' : flash.tone === 'warn' ? '#e6d08a' : '#e79a9a',
-            border: `1px solid ${flash.tone === 'ok' ? '#2f6b45' : flash.tone === 'warn' ? '#6b5e2f' : '#6b2f2f'}`,
-          }}
-        >
-          {flash.text}
-        </p>
+        <p role="status" className={`g-flash g-flash--${flash.tone}`}>{flash.text}</p>
       )}
 
       {complete && (
-        <p role="status" style={{ marginTop: '1rem', color: '#8fe3ab' }}>
+        <p role="status" className="g-flash g-flash--ok">
           Primary survey complete — CPR is underway. The crash cart has arrived; move to pad placement.
         </p>
       )}

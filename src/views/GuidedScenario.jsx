@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { GUIDED_STAGES, SHOCK_CLOCK_STAGE, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
-import SafetyLabel from '../components/SafetyLabel'
+import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
 
@@ -53,35 +53,24 @@ export default function GuidedScenario() {
   const back = () => setStage((s) => Math.max(0, s - 1))
   const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPadIds([]); setPadPassed(false); setEvents([]) }
 
-  return (
-    <div className="facilitator">
-      <header className="facilitator__header">
-        <div>
-          <h1>{sc.title} — Guided Session</h1>
-          <p className="muted" style={{ margin: 0 }}>
-            Annual defib skill validation {level ? `· ${level}` : ''}
-          </p>
-        </div>
-        <div className="facilitator__header-actions">
-          {shockStart != null && (
-            <span className="btn" style={{ cursor: 'default', color: overTarget ? '#c0392b' : undefined }} title="Time since shockable rhythm identified">
-              ⏱ {clock(elapsed)} / {clock(SHOCK_TARGET_S)}
-            </span>
-          )}
-          <Link className="btn btn--ghost" to="/">Exit</Link>
-        </div>
-      </header>
+  const clockChip = shockStart != null && (
+    <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
+      ⏱ {clock(elapsed)} / {clock(SHOCK_TARGET_S)}
+    </span>
+  )
 
+  return (
+    <GuidedShell
+      title={`${sc.title} — Guided Session`}
+      subtitle={`Annual Defibrillation Skill Validation${level ? ` · ${level}` : ''}`}
+      clock={clockChip}
+    >
       {/* progress chips */}
-      <ol style={{ display: 'flex', gap: 6, listStyle: 'none', padding: 0, margin: '0 0 1rem', flexWrap: 'wrap' }}>
+      <ol className="guided-steps">
         {GUIDED_STAGES.map((st, i) => (
           <li
             key={st.id}
-            style={{
-              padding: '4px 10px', borderRadius: 14, fontSize: '0.8rem',
-              background: i === stage ? '#2a6df4' : i < stage ? '#274b32' : '#2a2f36',
-              color: i <= stage ? '#fff' : '#9aa',
-            }}
+            className={`guided-step ${i === stage ? 'guided-step--active' : i < stage ? 'guided-step--done' : ''}`}
           >
             {i + 1}. {st.short}
           </li>
@@ -169,11 +158,7 @@ export default function GuidedScenario() {
           </>
         )}
       </section>
-
-      <footer style={{ marginTop: '1.5rem' }}>
-        <SafetyLabel />
-      </footer>
-    </div>
+    </GuidedShell>
   )
 }
 

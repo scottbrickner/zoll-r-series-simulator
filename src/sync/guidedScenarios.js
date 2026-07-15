@@ -78,11 +78,11 @@ export const getBlsStep = (id) => BLS_SURVEY.find((a) => a.id === id) || null
  * PadFigure SVG space (front figure left, back figure right).
  */
 export const PAD_ZONES = [
-  { id: 'ra', n: 1, view: 'front', label: 'Right upper chest', sub: 'below the right clavicle', cx: 88, cy: 104 },
-  { id: 'sternum', n: 2, view: 'front', label: 'Center anterior', sub: 'mid-sternum', cx: 110, cy: 122 },
-  { id: 'precordium', n: 3, view: 'front', label: 'Left anterior', sub: 'left of the sternum', cx: 130, cy: 138 },
-  { id: 'apex', n: 4, view: 'front', label: 'Left lateral (apex)', sub: 'left mid-axillary line', cx: 152, cy: 162 },
-  { id: 'post', n: 5, view: 'back', label: 'Posterior', sub: 'left infrascapular (back)', cx: 320, cy: 126 },
+  { id: 'ra', n: 1, view: 'front', label: 'Right upper chest', sub: 'below the right clavicle', cx: 80, cy: 120 },
+  { id: 'sternum', n: 2, view: 'front', label: 'Center anterior', sub: 'mid-sternum', cx: 106, cy: 116 },
+  { id: 'precordium', n: 3, view: 'front', label: 'Left anterior', sub: 'left of the sternum', cx: 128, cy: 146 },
+  { id: 'apex', n: 4, view: 'front', label: 'Left lateral (apex)', sub: 'left mid-axillary line', cx: 152, cy: 178 },
+  { id: 'post', n: 5, view: 'back', label: 'Posterior', sub: 'left infrascapular (back)', cx: 330, cy: 150 },
 ]
 
 /** Valid two-pad configurations (order-independent). */
