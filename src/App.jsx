@@ -3,6 +3,7 @@ import { SimulatorProvider, DEFAULT_SESSION } from './sync/SimulatorContext'
 import Home from './views/Home'
 import Learner from './views/Learner'
 import Facilitator from './views/Facilitator'
+import GuidedScenario from './views/GuidedScenario'
 import Report from './views/Report'
 import ArtPreview from './views/ArtPreview'
 import ControlsReview from './views/ControlsReview'
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/learner" element={<Learner />} />
         <Route path="/facilitator" element={<Facilitator />} />
+        <Route path="/guided" element={<GuidedScenario />} />
         <Route path="/report" element={<Report />} />
         <Route path="/art-preview" element={<ArtPreview />} />
         <Route path="/controls-review" element={<ControlsReview />} />

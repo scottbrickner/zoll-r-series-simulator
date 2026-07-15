@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSimulator } from '../sync/SimulatorContext'
 import { SCENARIOS, DEFIB_SCENARIO_IDS, getScenario } from '../sync/scenarios'
+import { GUIDED_SCENARIO_IDS, getGuided } from '../sync/guidedScenarios'
 import { unlockFacilitator, getSmeScenarioIds } from '../config/access'
 import SafetyLabel from '../components/SafetyLabel'
 
@@ -43,6 +44,25 @@ export default function FacilitatorBasic({ onUnlock }) {
       </header>
 
       <div className="facilitator__grid">
+        {allowed.some((s) => GUIDED_SCENARIO_IDS.includes(s.id)) && (
+          <Panel title="Guided validation session">
+            <p className="muted" style={{ marginTop: 0 }}>
+              Step-gated arrest skill: BLS survey → pad placement → defibrillate (≤2 min) → next action → debrief. Opens in a new window for the learner.
+            </p>
+            <div className="row">
+              {allowed.filter((s) => GUIDED_SCENARIO_IDS.includes(s.id)).map((s) => (
+                <button
+                  key={s.id}
+                  className="btn btn--primary"
+                  onClick={() => window.open(`${import.meta.env.BASE_URL}guided?scenario=${s.id}&session=${state.sessionId}`, '_blank')}
+                >
+                  {getGuided(s.id).title} ▸
+                </button>
+              ))}
+            </div>
+          </Panel>
+        )}
+
         <Panel title="Choose a defib skill scenario">
           <p className="muted" style={{ marginTop: 0 }}>
             Open the learner device (button above), then pick a scenario to run it. Use Next step / Reset to drive it.
