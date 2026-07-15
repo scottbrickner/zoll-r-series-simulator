@@ -127,83 +127,98 @@ export function Torso({ x = 0, view }) {
 /* ---------------- pads ---------------- */
 
 /**
- * Triangular OneStep CPR-feedback pad — rounded "pick" shape with the raised
- * compression-sensor puck (target cross-hair) and a red connector tab.
- * Drawn centred on (0,0); ~46×44 in local units.
+ * Triangular ZOLL OneStep CPR-feedback pad ("2"): a white rounded-triangle body
+ * with the compression-sensor puck protruding at the top-left (target cross-hair),
+ * a blue placement triangle marked "2", and a red connector tab. Modeled on the
+ * real pad; drawn centred on (0,0), ~44 wide.
  */
 export function TrianglePadArt({ uid = 'tri' }) {
   return (
     <g>
       <defs>
-        <linearGradient id={`gel-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#eef1f4" />
-          <stop offset="1" stopColor="#c9ced5" />
-        </linearGradient>
-        <radialGradient id={`puck-${uid}`} cx="0.42" cy="0.34" r="0.8">
+        <linearGradient id={`shell-${uid}`} x1="0" y1="0" x2="0.3" y2="1">
           <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.7" stopColor="#e9edf1" />
-          <stop offset="1" stopColor="#cdd3da" />
+          <stop offset="0.6" stopColor="#f3f3f1" />
+          <stop offset="1" stopColor="#e2e2df" />
+        </linearGradient>
+        <radialGradient id={`puck-${uid}`} cx="0.4" cy="0.32" r="0.85">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.75" stopColor="#f0f1f3" />
+          <stop offset="1" stopColor="#d7dade" />
         </radialGradient>
         <filter id={`sh-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="0.6" stdDeviation="0.9" floodColor="#33404f" floodOpacity="0.35" />
+          <feDropShadow dx="0" dy="0.7" stdDeviation="1" floodColor="#2a2f36" floodOpacity="0.28" />
         </filter>
       </defs>
 
-      {/* connector tab (behind, at the apex) */}
-      <rect x={-4.5} y={15} width={9} height={8} rx={2.5} fill="#d64535" stroke="#ad3629" strokeWidth={0.8} />
+      {/* red connector tab (bottom) */}
+      <rect x={-4.5} y={14} width={9} height={9} rx={2} fill="#d5342b" stroke="#a82920" strokeWidth={0.8} />
 
-      {/* rounded-triangle gel body */}
-      <path
-        d="M-13,-16 L13,-16 Q20.5,-16 17,-8.5 L4,15 Q0,21 -4,15 L-17,-8.5 Q-20.5,-16 -13,-16 Z"
-        fill={`url(#gel-${uid})`} stroke="#8f97a1" strokeWidth={1.2} strokeLinejoin="round"
-      />
-      {/* inner bevel highlight */}
-      <path
-        d="M-11,-13 L11,-13 Q16,-13 13.5,-8 L3,11 Q0,15.5 -3,11 L-13.5,-8 Q-16,-13 -11,-13 Z"
-        fill="none" stroke="#ffffff" strokeWidth={0.9} strokeLinejoin="round" opacity="0.6"
-      />
-
-      {/* CPR compression-sensor puck (raised) */}
+      {/* rounded-triangle shell (apex up, wide base) */}
       <g filter={`url(#sh-${uid})`}>
-        <ellipse cx={0} cy={-3.5} rx={9.5} ry={8.8} fill={`url(#puck-${uid})`} stroke="#9aa2ac" strokeWidth={1.1} />
+        <path
+          d="M3,-17 C7,-17 10,-13 12,-7 L17,11 Q19,16 13,17 C6,18 -6,18 -13,17 Q-19,16 -17,11 L-12,-7 C-10,-13 -7,-17 3,-17 Z"
+          fill={`url(#shell-${uid})`} stroke="#c2c5c8" strokeWidth={1} strokeLinejoin="round"
+        />
       </g>
-      <ellipse cx={0} cy={-3.5} rx={6.4} ry={5.9} fill="none" stroke="#b9c0c9" strokeWidth={0.9} />
-      {/* target cross-hair */}
-      <g stroke="#c0453f" strokeWidth={1.5} strokeLinecap="round">
-        <line x1={-7.5} y1={-3.5} x2={7.5} y2={-3.5} />
-        <line x1={0} y1={-11.5} x2={0} y2={4.5} />
+
+      {/* blue placement triangle + "2" */}
+      <path d="M5,-2 L13,13 L-3,13 Z" fill="#43a0d6" opacity="0.92" />
+      <text x={5} y={11.5} textAnchor="middle" fontSize={7} fontWeight="800" fill="#ffffff">2</text>
+
+      {/* CPR compression-sensor puck (protrudes top-left) */}
+      <g transform="translate(-12,-12) rotate(-12)" filter={`url(#sh-${uid})`}>
+        <rect x={-10} y={-7.5} width={20} height={15} rx={7.5} fill={`url(#puck-${uid})`} stroke="#b7bcc1" strokeWidth={1} />
       </g>
-      <circle cx={0} cy={-3.5} r={1.5} fill="#c0453f" />
+      {/* target cross-hair (clean plus, screen-aligned) */}
+      <g stroke="#cf3b3b" strokeWidth={1.6} strokeLinecap="round">
+        <line x1={-19} y1={-12} x2={-5} y2={-12} />
+        <line x1={-12} y1={-19} x2={-12} y2={-5} />
+      </g>
     </g>
   )
 }
 
 /**
- * Rectangular standard defibrillation gel pad — gel body with perforation dots,
- * inner bevel and a red connector tab. Drawn centred on (0,0); ~28×36.
+ * Rectangular ZOLL OneStep standard pad ("1"): a white rounded-rectangle body
+ * with a red placement label (torso + "1") and a red connector tab. Modeled on
+ * the real pad; drawn centred on (0,0), ~28×36.
  */
 export function RectanglePadArt({ uid = 'rect' }) {
-  const W = 27, H = 35
-  const cols = [-7, 0, 7]
-  const rows = [-12, -6, 0, 6, 12]
+  const W = 28, H = 36
   return (
     <g>
       <defs>
-        <linearGradient id={`gelr-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#eef1f4" />
-          <stop offset="1" stopColor="#c9ced5" />
+        <linearGradient id={`shellr-${uid}`} x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.6" stopColor="#f3f3f1" />
+          <stop offset="1" stopColor="#e2e2df" />
         </linearGradient>
+        <filter id={`shr-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="0.7" stdDeviation="1" floodColor="#2a2f36" floodOpacity="0.28" />
+        </filter>
       </defs>
-      {/* connector tab */}
-      <rect x={-4.5} y={H / 2 - 2} width={9} height={8} rx={2.5} fill="#d64535" stroke="#ad3629" strokeWidth={0.8} />
-      {/* gel body */}
-      <rect x={-(W / 2)} y={-(H / 2)} width={W} height={H} rx={7.5} fill={`url(#gelr-${uid})`} stroke="#8f97a1" strokeWidth={1.2} />
-      {/* inner bevel */}
-      <rect x={-(W / 2) + 3} y={-(H / 2) + 3} width={W - 6} height={H - 6} rx={5.5} fill="none" stroke="#ffffff" strokeWidth={0.9} opacity="0.6" />
-      {/* perforation dots */}
-      {rows.map((ry) => cols.map((cx) => (
-        <circle key={`${ry}-${cx}`} cx={cx} cy={ry} r={1.25} fill="#aab0b8" opacity="0.75" />
-      )))}
+
+      {/* red connector tab */}
+      <rect x={-4.5} y={H / 2 - 3} width={9} height={9} rx={2} fill="#d5342b" stroke="#a82920" strokeWidth={0.8} />
+
+      {/* white shell */}
+      <g filter={`url(#shr-${uid})`}>
+        <rect x={-(W / 2)} y={-(H / 2)} width={W} height={H} rx={8} fill={`url(#shellr-${uid})`} stroke="#c2c5c8" strokeWidth={1} />
+      </g>
+
+      {/* red placement label with torso + "1" */}
+      <rect x={-9} y={-13} width={18} height={20} rx={2.5} fill="#cc2e2a" />
+      {/* torso silhouette (light) */}
+      <g fill="#f4dcd8">
+        <circle cx={0} cy={-9} r={2.6} />
+        <path d="M-6,-1 C-6,-5 -3,-6.5 0,-6.5 C3,-6.5 6,-5 6,-1 L6,3 L-6,3 Z" />
+      </g>
+      {/* pad on the torso */}
+      <rect x={-2.5} y={-3} width={5} height={5.5} rx={1} fill="#cc2e2a" />
+      {/* "1" badge */}
+      <circle cx={0} cy={9} r={4} fill="#cc2e2a" />
+      <text x={0} y={11.4} textAnchor="middle" fontSize={6.5} fontWeight="800" fill="#ffffff">1</text>
     </g>
   )
 }
