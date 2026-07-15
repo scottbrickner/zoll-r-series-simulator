@@ -28,20 +28,20 @@ export function Torso({ x = 0, view }) {
   const NIPPLE = '#a67f66'
   const SHADE = '#d8c7ac'
 
-  // One continuous silhouette (rounded bald head → short neck → broad deltoids →
+  // One continuous silhouette (oval bald head → longer neck → broad deltoids →
   // arms held at the sides → chest), shared by both views; interior anatomy
   // differs. Cropped flat across the lower chest (no abdomen / lower limbs).
   const body =
-    'M100,8 C120,8 132,22 132,40 C132,48 131,53 130,57 C136,56 139,61 136,65 ' +
-    'C133,68 130,66 129,64 C127,71 122,76 116,81 C113,85 113,89 114,93 ' +
-    'C117,100 125,103 134,106 C147,110 157,116 165,124 C173,131 176,141 175,152 ' +
-    'C174,165 173,178 171,191 L171,197 L155,197 C154,183 154,166 154,150 ' +
-    'C153,140 152,133 151,128 C149,144 146,169 145,183 L144,197 L56,197 L55,183 ' +
-    'C54,169 51,144 49,128 C48,133 47,140 46,150 C46,166 46,183 45,197 ' +
-    'L29,197 L29,191 C27,178 26,165 25,152 C24,141 27,131 35,124 ' +
-    'C43,116 53,110 66,106 C75,103 83,100 86,93 C87,89 87,85 84,81 ' +
-    'C78,76 73,71 71,64 C70,66 67,68 64,65 C61,61 64,56 70,57 ' +
-    'C69,53 68,48 68,40 C68,22 80,8 100,8 Z'
+    'M100,7 C119,7 130,21 130,39 C130,47 129,53 128,57 C134,56 137,61 134,66 ' +
+    'C131,69 128,67 127,65 C125,73 120,79 114,84 C111,90 111,96 112,102 ' +
+    'C115,110 124,114 134,117 C147,121 157,127 165,135 C173,142 176,152 175,163 ' +
+    'C174,175 173,186 171,197 L171,202 L155,202 C154,189 154,173 154,158 ' +
+    'C153,149 152,142 151,137 C149,152 146,176 145,189 L144,202 L56,202 L55,189 ' +
+    'C54,176 51,152 49,137 C48,142 47,149 46,158 C46,173 46,189 45,202 ' +
+    'L29,202 L29,197 C27,186 26,175 25,163 C24,152 27,142 35,135 ' +
+    'C43,127 53,121 66,117 C76,114 85,110 88,102 C89,96 89,90 86,84 ' +
+    'C80,79 75,73 73,65 C72,67 69,69 66,66 C63,61 66,56 72,57 ' +
+    'C71,53 70,47 70,39 C70,21 81,7 100,7 Z'
 
   return (
     <g transform={`translate(${x},18)`}>
@@ -68,56 +68,65 @@ export function Torso({ x = 0, view }) {
       {view === 'front' ? (
         <>
           {/* pectoral + deltoid volume shading */}
-          <ellipse cx={78} cy={130} rx={27} ry={14} fill={`url(#pec-${uid})`} />
-          <ellipse cx={122} cy={130} rx={27} ry={14} fill={`url(#pec-${uid})`} />
-          <ellipse cx={40} cy={135} rx={12} ry={20} fill={`url(#pec-${uid})`} />
-          <ellipse cx={160} cy={135} rx={12} ry={20} fill={`url(#pec-${uid})`} />
+          <ellipse cx={78} cy={140} rx={27} ry={15} fill={`url(#pec-${uid})`} />
+          <ellipse cx={122} cy={140} rx={27} ry={15} fill={`url(#pec-${uid})`} />
+          <ellipse cx={39} cy={146} rx={12} ry={22} fill={`url(#pec-${uid})`} />
+          <ellipse cx={161} cy={146} rx={12} ry={22} fill={`url(#pec-${uid})`} />
 
           <g fill="none" stroke={LINE} strokeLinecap="round">
-            {/* clavicles (gentle, slight dip at the sternal notch) */}
-            <path d="M100,111 C87,112 74,114 62,118" strokeWidth={1.7} />
-            <path d="M100,111 C113,112 126,114 138,118" strokeWidth={1.7} />
-            {/* deltoid separation */}
-            <path d="M47,122 C41,134 43,146 52,153" strokeWidth={1.5} />
-            <path d="M153,122 C159,134 157,146 148,153" strokeWidth={1.5} />
-            {/* pectoral lower borders (flat, athletic) */}
-            <path d="M60,124 C74,138 90,140 100,136" strokeWidth={1.7} />
-            <path d="M140,124 C126,138 110,140 100,136" strokeWidth={1.7} />
-            {/* sternum (between the pecs) */}
-            <path d="M100,112 L100,138" strokeWidth={1.8} />
+            {/* sternocleidomastoid (neck) — subtle, near-vertical */}
+            <path d="M93,96 C93,103 94,109 95,113" strokeWidth={1.1} opacity={0.42} />
+            <path d="M107,96 C107,103 106,109 105,113" strokeWidth={1.1} opacity={0.42} />
+            {/* sternal notch */}
+            <path d="M97,118 C98,121 102,121 103,118" strokeWidth={1.2} opacity={0.7} />
+            {/* clavicles (flat, small dip at the notch) */}
+            <path d="M99,122 C87,121 75,123 61,128" strokeWidth={1.8} />
+            <path d="M101,122 C113,121 125,123 139,128" strokeWidth={1.8} />
+            {/* deltoid separation + upper-arm contour */}
+            <path d="M46,133 C40,146 42,159 51,166" strokeWidth={1.5} />
+            <path d="M154,133 C160,146 158,159 149,166" strokeWidth={1.5} />
+            <path d="M43,150 C46,164 45,178 41,190" strokeWidth={1.2} opacity={0.7} />
+            <path d="M157,150 C154,164 155,178 159,190" strokeWidth={1.2} opacity={0.7} />
+            {/* pectoral lower borders */}
+            <path d="M59,134 C73,152 91,155 100,149" strokeWidth={1.7} />
+            <path d="M141,134 C127,152 109,155 100,149" strokeWidth={1.7} />
+            {/* sternum */}
+            <path d="M100,120 L100,150" strokeWidth={1.8} />
           </g>
           {/* sternum highlight */}
-          <path d="M102,114 L102,135" fill="none" stroke="#fffdf8" strokeWidth={1} strokeLinecap="round" opacity="0.8" />
+          <path d="M102,123 L102,147" fill="none" stroke="#fffdf8" strokeWidth={1} strokeLinecap="round" opacity="0.8" />
           {/* nipples + areola */}
           <g>
-            <circle cx={78} cy={132} r={5.5} fill={AREOLA} />
-            <circle cx={122} cy={132} r={5.5} fill={AREOLA} />
-            <circle cx={78} cy={132} r={2.3} fill={NIPPLE} />
-            <circle cx={122} cy={132} r={2.3} fill={NIPPLE} />
+            <circle cx={78} cy={142} r={5.5} fill={AREOLA} />
+            <circle cx={122} cy={142} r={5.5} fill={AREOLA} />
+            <circle cx={78} cy={142} r={2.3} fill={NIPPLE} />
+            <circle cx={122} cy={142} r={2.3} fill={NIPPLE} />
           </g>
         </>
       ) : (
         <>
           {/* trapezius + scapular volume shading */}
-          <ellipse cx={100} cy={118} rx={32} ry={26} fill={`url(#pec-${uid})`} />
-          <ellipse cx={40} cy={135} rx={12} ry={20} fill={`url(#pec-${uid})`} />
-          <ellipse cx={160} cy={135} rx={12} ry={20} fill={`url(#pec-${uid})`} />
+          <ellipse cx={100} cy={128} rx={32} ry={27} fill={`url(#pec-${uid})`} />
+          <ellipse cx={39} cy={146} rx={12} ry={22} fill={`url(#pec-${uid})`} />
+          <ellipse cx={161} cy={146} rx={12} ry={22} fill={`url(#pec-${uid})`} />
 
           <g fill="none" stroke={LINE} strokeLinecap="round">
-            {/* spine groove */}
-            <path d="M100,104 L100,190" strokeWidth={2} />
+            {/* nape + spine groove */}
+            <path d="M100,112 L100,196" strokeWidth={2} />
             {/* upper trapezius (nape → shoulders) */}
-            <path d="M100,105 C110,111 120,117 130,123" strokeWidth={1.5} />
-            <path d="M100,105 C90,111 80,117 70,123" strokeWidth={1.5} />
+            <path d="M100,113 C110,119 120,125 131,131" strokeWidth={1.5} />
+            <path d="M100,113 C90,119 80,125 69,131" strokeWidth={1.5} />
             {/* scapular (shoulder-blade) medial borders */}
-            <path d="M82,127 C76,141 80,159 94,155" strokeWidth={1.6} />
-            <path d="M118,127 C124,141 120,159 106,155" strokeWidth={1.6} />
-            {/* deltoid separation */}
-            <path d="M47,122 C41,134 43,146 52,153" strokeWidth={1.5} />
-            <path d="M153,122 C159,134 157,146 148,153" strokeWidth={1.5} />
+            <path d="M82,135 C76,149 80,167 94,163" strokeWidth={1.6} />
+            <path d="M118,135 C124,149 120,167 106,163" strokeWidth={1.6} />
+            {/* deltoid separation + upper-arm contour */}
+            <path d="M46,133 C40,146 42,159 51,166" strokeWidth={1.5} />
+            <path d="M154,133 C160,146 158,159 149,166" strokeWidth={1.5} />
+            <path d="M43,150 C46,164 45,178 41,190" strokeWidth={1.2} opacity={0.7} />
+            <path d="M157,150 C154,164 155,178 159,190" strokeWidth={1.2} opacity={0.7} />
           </g>
           {/* spine highlight */}
-          <path d="M102,108 L102,186" fill="none" stroke="#fffdf8" strokeWidth={1} strokeLinecap="round" opacity="0.6" />
+          <path d="M102,116 L102,192" fill="none" stroke="#fffdf8" strokeWidth={1} strokeLinecap="round" opacity="0.6" />
         </>
       )}
     </g>
