@@ -13,6 +13,7 @@ import SoftkeyReview from './views/SoftkeyReview'
 import TypographyReview from './views/TypographyReview'
 import DisplayFrameworkReview from './views/DisplayFrameworkReview'
 import DisplayWidgetsReview from './views/DisplayWidgetsReview'
+import PadArtReview from './views/PadArtReview'
 
 export default function App() {
   const [params] = useSearchParams()
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/typography-review" element={<TypographyReview />} />
         <Route path="/display-framework-review" element={<DisplayFrameworkReview />} />
         <Route path="/display-widgets-review" element={<DisplayWidgetsReview />} />
+        <Route path="/pad-art-review" element={<PadArtReview />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </SimulatorProvider>

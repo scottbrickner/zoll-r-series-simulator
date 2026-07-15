@@ -97,10 +97,10 @@ export const PAD_TYPES = [
 ]
 
 export const PAD_POSITIONS = [
-  { id: 'rua', n: 1, view: 'front', label: 'Right upper anterior', sub: 'below the right clavicle', cx: 84, cy: 128 },
-  { id: 'la', n: 2, view: 'front', label: 'Left anterior', sub: 'just below the left nipple', cx: 133, cy: 175 },
-  { id: 'll', n: 3, view: 'front', label: 'Left lateral', sub: 'left mid-axillary line', cx: 162, cy: 183 },
-  { id: 'lp', n: 4, view: 'back', label: 'Left posterior', sub: 'left infrascapular (back)', cx: 340, cy: 150 },
+  { id: 'rua', n: 1, view: 'front', label: 'Right upper anterior', sub: 'below the right clavicle', cx: 85, cy: 128 },
+  { id: 'la', n: 2, view: 'front', label: 'Left anterior', sub: 'just below the left nipple', cx: 133, cy: 168 },
+  { id: 'll', n: 3, view: 'front', label: 'Left lateral', sub: 'left mid-axillary line', cx: 152, cy: 190 },
+  { id: 'lp', n: 4, view: 'back', label: 'Left posterior', sub: 'left infrascapular (back)', cx: 340, cy: 146 },
 ]
 
 export const getPadType = (id) => PAD_TYPES.find((t) => t.id === id) || null
