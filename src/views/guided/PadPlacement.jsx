@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   PAD_TYPES, PAD_POSITIONS, getPadType, getPadPosition,
-  isPadAllowed, isPlacementComplete, placementConfigName, padRejectReason,
+  isPadAllowed, isPlacementComplete, placementConfigName, padRejectReason, pairingRejectReason,
 } from '../../sync/guidedScenarios'
 import { Torso, TrianglePadArt, RectanglePadArt } from './padArt'
 
@@ -42,11 +42,17 @@ export default function PadPlacement({ placement, passed, onPlace, onReset, onPa
     onPlace(next)
     onEvent?.({ type: 'pads_place', pad: selected, pos: posId })
     setSelected(null)
-    if (isPlacementComplete(next)) {
-      const config = placementConfigName(next)
-      setFlash({ tone: 'ok', text: `Correct — ${config} placement. Pads are on; the ZOLL can now see the rhythm.` })
-      onEvent?.({ type: 'pads_ok', config })
-      onPass()
+    if (next.triangle && next.rectangle) {
+      // both pads placed — check that they form a valid pairing
+      if (isPlacementComplete(next)) {
+        const config = placementConfigName(next)
+        setFlash({ tone: 'ok', text: `Correct — ${config} placement. Pads are on; the ZOLL can now see the rhythm.` })
+        onEvent?.({ type: 'pads_ok', config })
+        onPass()
+      } else {
+        setFlash({ tone: 'bad', text: pairingRejectReason() })
+        onEvent?.({ type: 'pads_wrong', pad: selected, pos: posId, pairing: `${next.triangle}+${next.rectangle}` })
+      }
     } else {
       setFlash(null)
     }

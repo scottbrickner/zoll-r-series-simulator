@@ -110,21 +110,39 @@ export const isPadAllowed = (typeId, posId) => {
   return !!t && t.allowed.includes(posId)
 }
 
-/** placement = { triangle: posId|null, rectangle: posId|null } */
-export const isPlacementComplete = (pl) =>
-  !!pl.triangle && !!pl.rectangle && isPadAllowed('triangle', pl.triangle) && isPadAllowed('rectangle', pl.rectangle)
+/**
+ * Valid pad PAIRINGS (the graded skill check). Only two combinations form a
+ * defibrillation vector across the heart:
+ *   triangle @ right-upper-anterior (1) + rectangle @ left-lateral (3) → anterolateral
+ *   triangle @ left-anterior (2)        + rectangle @ left-posterior (4) → anterior–posterior
+ * Any other pairing (1+4, 2+3) is incorrect.
+ */
+export const PAD_PAIRS = [
+  { triangle: 'rua', rectangle: 'll', name: 'Anterolateral' },
+  { triangle: 'la', rectangle: 'lp', name: 'Anterior–posterior' },
+]
 
-/** Name the resulting configuration (by where the standard pad sits). */
+/** placement = { triangle: posId|null, rectangle: posId|null } */
+export function matchedPair(pl) {
+  return PAD_PAIRS.find((p) => p.triangle === pl.triangle && p.rectangle === pl.rectangle) || null
+}
+export const isPlacementComplete = (pl) => !!matchedPair(pl)
+
+/** Name the resulting configuration, or null if the pairing isn't valid. */
 export function placementConfigName(pl) {
-  if (!isPlacementComplete(pl)) return null
-  return pl.rectangle === 'lp' ? 'Anterior–posterior' : 'Anterolateral'
+  return matchedPair(pl)?.name || null
 }
 
-/** Why a pad type can't go on a position (used for rejection feedback). */
+/** Why a pad type can't go on a position (rejected at placement time). */
 export function padRejectReason(typeId) {
   return typeId === 'triangle'
     ? 'The CPR-feedback (triangle) pad must go on the anterior chest — right upper anterior or left anterior. The lateral and posterior sites are for the standard pad.'
     : 'The standard (rectangle) pad goes on the left lateral or left posterior site. The anterior chest is reserved for the CPR-feedback pad.'
+}
+
+/** Why two placed pads don't pair (both are in allowed sites but the vector is wrong). */
+export function pairingRejectReason() {
+  return 'Those two pads don’t make a valid vector across the heart. Pair the CPR pad on the right upper anterior with the standard pad on the left lateral (anterolateral), or the CPR pad on the left anterior with the standard pad on the left posterior (anterior–posterior).'
 }
 
 export const GUIDED_SCENARIOS = {
