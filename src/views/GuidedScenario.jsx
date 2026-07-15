@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { GUIDED_STAGES, SHOCK_CLOCK_STAGE, SHOCK_TARGET_S, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
+import { GUIDED_STAGES, SHOCK_CLOCK_STAGE, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
 import SafetyLabel from '../components/SafetyLabel'
+import BlsSurvey from './guided/BlsSurvey'
 
 /**
  * GuidedScenario — the step-gated arrest validation runner (Phase 2 shell).
@@ -22,9 +23,13 @@ export default function GuidedScenario() {
   const [level, setLevel] = useState(null) // 'BLS' | 'ACLS'
   const [shockStart, setShockStart] = useState(null)
   const [now, setNow] = useState(Date.now())
+  const [blsDone, setBlsDone] = useState([]) // ordered ids completed in the BLS survey
+  const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
   const stageId = GUIDED_STAGES[stage].id
+  const logEvent = (e) => setEvents((v) => [...v, e])
+  const blsComplete = blsDone.length === BLS_SEQUENCE.length
 
   // Start the time-to-shock clock when we reach the device stage (rhythm ID).
   useEffect(() => {
@@ -43,7 +48,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setEvents([]) }
 
   return (
     <div className="facilitator">
@@ -99,10 +104,32 @@ export default function GuidedScenario() {
           <>
             <h2>Debrief</h2>
             <p><strong>Level:</strong> {level} · <strong>Time to shock:</strong> {clock(elapsed)} {overTarget ? '(over 2:00 target)' : '(within target ✓)'}</p>
+            {(() => {
+              const missteps = events.filter((e) => e.type === 'bls_wrong' || e.type === 'bls_out_of_order').length
+              return (
+                <p><strong>BLS primary survey:</strong> {blsComplete ? 'completed' : 'incomplete'} · {missteps === 0
+                  ? 'correct sequence on the first pass ✓'
+                  : `${missteps} misstep${missteps === 1 ? '' : 's'} (wrong or out-of-order selection)`}</p>
+              )
+            })()}
             <p className="muted">{STUBS.debrief}</p>
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn" onClick={restart}>Restart</button>
               <Link className="btn btn--ghost" to="/">Exit</Link>
+            </div>
+          </>
+        ) : stageId === 'bls' ? (
+          <>
+            <BlsSurvey
+              done={blsDone}
+              onStep={(id) => setBlsDone((d) => [...d, id])}
+              onEvent={logEvent}
+            />
+            <div className="row" style={{ marginTop: '1rem' }}>
+              <button className="btn btn--ghost" onClick={back}>◂ Back</button>
+              <button className="btn btn--primary" disabled={!blsComplete} onClick={next}>
+                Crash cart is here — place pads ▸
+              </button>
             </div>
           </>
         ) : (
