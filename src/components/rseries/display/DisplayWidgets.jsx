@@ -39,7 +39,7 @@ const COLS = anchors.softkeyColumns
  * When `live`, the trace scrolls left continuously (two tiled copies + a SMIL
  * translate) so the rhythm reads as a live monitor sweep; else it's static.
  */
-function Trace({ d, base, color, height = 78, width = 2, live = false, dur = 3 }) {
+function Trace({ d, base, color, height = 78, width = 2, live = false, dur = 6 }) {
   const strokeProps = { fill: 'none', stroke: color, strokeWidth: width, strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }
   return (
     <svg x={TRACE_X} y={base - height / 2} width={TRACE_W} height={height} viewBox="0 0 300 80" preserveAspectRatio="none" overflow={live ? 'hidden' : 'visible'}>

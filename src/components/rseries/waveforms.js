@@ -15,6 +15,11 @@ const BASE = 40
 const W = 300
 export const FLAT = `M0,${BASE} L${W},${BASE}`
 
+// Angular frequency for exactly k whole cycles across the width W. Using integer
+// cycle counts makes a sampled waveform PERIODIC over [0, W] — value(0) === value(W)
+// — so the scrolling live trace tiles seamlessly with no visible seam / cutoff.
+const cyc = (k) => (2 * Math.PI * k) / W
+
 // ---- low-level builders -------------------------------------------------
 const r1 = (n) => Math.round(n * 10) / 10
 function path(pts) {
@@ -40,17 +45,22 @@ function complex(x, w, m) {
   const { p = 6, q = 4, r = 30, s = 14, t = 8, hasP = true, wide = false } = m
   const y = BASE
   const pts = [[x, y]]
+  // P wave — rounded bump
   if (hasP && p > 0) {
-    pts.push([x + 0.06 * w, y], [x + 0.12 * w, y - p], [x + 0.18 * w, y], [x + 0.26 * w, y])
+    pts.push([x + 0.06 * w, y], [x + 0.10 * w, y - 0.6 * p], [x + 0.13 * w, y - p], [x + 0.16 * w, y - 0.6 * p], [x + 0.20 * w, y], [x + 0.26 * w, y])
   } else {
     pts.push([x + 0.26 * w, y])
   }
   if (wide) {
-    pts.push([x + 0.30 * w, y + q], [x + 0.42 * w, y - r], [x + 0.56 * w, y + s], [x + 0.64 * w, y])
-    pts.push([x + 0.78 * w, y - t], [x + 1.0 * w, y])
+    // wide/ventricular QRS + broad, oppositely-directed T
+    pts.push([x + 0.30 * w, y + q], [x + 0.42 * w, y - r], [x + 0.56 * w, y + s], [x + 0.66 * w, y])
+    pts.push([x + 0.74 * w, y - 0.55 * t], [x + 0.82 * w, y - t], [x + 0.90 * w, y - 0.5 * t], [x + 1.0 * w, y])
   } else {
-    pts.push([x + 0.30 * w, y + q], [x + 0.34 * w, y - r], [x + 0.38 * w, y + s], [x + 0.44 * w, y])
-    pts.push([x + 0.56 * w, y], [x + 0.66 * w, y - t], [x + 0.78 * w, y], [x + 1.0 * w, y])
+    // narrow QRS (sharp), a short ST segment, then a rounded T wave
+    pts.push([x + 0.30 * w, y + q], [x + 0.33 * w, y - r], [x + 0.37 * w, y + s], [x + 0.42 * w, y])
+    pts.push([x + 0.52 * w, y])
+    pts.push([x + 0.58 * w, y - 0.5 * t], [x + 0.64 * w, y - t], [x + 0.70 * w, y - 0.5 * t], [x + 0.76 * w, y])
+    pts.push([x + 1.0 * w, y])
   }
   return pts
 }
@@ -68,7 +78,7 @@ function regular(nBeats, m) {
 function afib() {
   // irregular RR, no P waves, fibrillatory baseline between narrow QRS
   const qrs = [24, 70, 132, 176, 208, 262]
-  const fib = (x) => BASE + 2.4 * Math.sin(x * 0.7) + 1.6 * Math.sin(x * 1.27 + 0.8)
+  const fib = (x) => BASE + 2.6 * Math.sin(cyc(9) * x) + 1.6 * Math.sin(cyc(17) * x + 0.8)
   const pts = []
   let x = 0
   while (x <= W) {
@@ -183,15 +193,24 @@ const WAVEFORMS = {
   SVT: () => regular(10, { hasP: false, p: 0, q: 2, r: 24, s: 9, t: 4 }),
   'Atrial Fibrillation': () => afib(),
   'Ventricular Tachycardia': () => regular(6, { hasP: false, p: 0, q: 0, r: 26, s: 24, t: 0, wide: true }),
+  // Coarse VF — chaotic but periodic over W (integer cycles → seamless scroll).
   'Ventricular Fibrillation': () =>
-    sampled((x) => BASE + 16 * Math.sin(x * 0.55) + 9 * Math.sin(x * 0.91 + 1.3) + 5 * Math.sin(x * 1.7 + 0.5)),
+    sampled(
+      (x) =>
+        BASE +
+        (0.8 + 0.2 * Math.sin(cyc(3) * x)) * // slow amplitude wander for a chaotic look
+          (20 * Math.sin(cyc(21) * x) + 12 * Math.sin(cyc(34) * x + 1.3) + 7 * Math.sin(cyc(55) * x + 0.5) + 4 * Math.sin(cyc(13) * x + 2.1)),
+      1,
+    ),
+  // Torsades — twisting spindle: an integer-cycle envelope modulating the carrier.
   'Torsades de Pointes': () =>
-    sampled((x) => BASE + (7 + 17 * Math.abs(Math.sin(x * 0.045))) * Math.sin(x * 0.52)),
-  Asystole: () => sampled((x) => BASE + 0.6 * Math.sin(x * 0.12)),
+    sampled((x) => BASE + (6 + 22 * Math.abs(Math.sin(cyc(2) * x))) * Math.sin(cyc(25) * x), 1),
+  Asystole: () => sampled((x) => BASE + 0.7 * Math.sin(cyc(5) * x) + 0.4 * Math.sin(cyc(11) * x + 0.6)),
   PEA: () => regular(4, { p: 5, q: 4, r: 16, s: 9, t: 6, wide: true }),
   'Paced (Capture)': () => pacedCapture(),
   'Paced (Non-Capture)': () => pacedNonCapture(),
-  'CPR Artifact': () => sampled((x) => BASE + 18 * Math.sin(x * 0.13) + 2.5 * Math.sin(x * 0.95 + 0.4)),
+  // CPR compression artifact — ~7 broad compressions across the width.
+  'CPR Artifact': () => sampled((x) => BASE + 16 * Math.sin(cyc(7) * x) + 3 * Math.sin(cyc(43) * x + 0.4)),
   'Post-Shock Artifact': () => postShock(),
 }
 
