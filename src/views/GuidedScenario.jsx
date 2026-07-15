@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { GUIDED_STAGES, SHOCK_CLOCK_STAGE, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
 import SafetyLabel from '../components/SafetyLabel'
 import BlsSurvey from './guided/BlsSurvey'
+import PadPlacement from './guided/PadPlacement'
 
 /**
  * GuidedScenario — the step-gated arrest validation runner (Phase 2 shell).
@@ -24,6 +25,8 @@ export default function GuidedScenario() {
   const [shockStart, setShockStart] = useState(null)
   const [now, setNow] = useState(Date.now())
   const [blsDone, setBlsDone] = useState([]) // ordered ids completed in the BLS survey
+  const [padIds, setPadIds] = useState([]) // pad zones currently placed
+  const [padPassed, setPadPassed] = useState(false) // valid placement confirmed
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
@@ -48,7 +51,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPadIds([]); setPadPassed(false); setEvents([]) }
 
   return (
     <div className="facilitator">
@@ -112,6 +115,13 @@ export default function GuidedScenario() {
                   : `${missteps} misstep${missteps === 1 ? '' : 's'} (wrong or out-of-order selection)`}</p>
               )
             })()}
+            {(() => {
+              const pass = events.find((e) => e.type === 'pads_ok')
+              const wrong = events.filter((e) => e.type === 'pads_wrong').length
+              return (
+                <p><strong>Pad placement:</strong> {padPassed ? `valid (${pass?.config || '—'})` : 'not confirmed'}{wrong > 0 ? ` · ${wrong} rejected attempt${wrong === 1 ? '' : 's'}` : padPassed ? ' — first attempt ✓' : ''}</p>
+              )
+            })()}
             <p className="muted">{STUBS.debrief}</p>
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn" onClick={restart}>Restart</button>
@@ -129,6 +139,22 @@ export default function GuidedScenario() {
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
               <button className="btn btn--primary" disabled={!blsComplete} onClick={next}>
                 Crash cart is here — place pads ▸
+              </button>
+            </div>
+          </>
+        ) : stageId === 'pads' ? (
+          <>
+            <PadPlacement
+              ids={padIds}
+              passed={padPassed}
+              onToggle={(id) => setPadIds((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))}
+              onPass={() => setPadPassed(true)}
+              onEvent={logEvent}
+            />
+            <div className="row" style={{ marginTop: '1rem' }}>
+              <button className="btn btn--ghost" onClick={back}>◂ Back</button>
+              <button className="btn btn--primary" disabled={!padPassed} onClick={next}>
+                Pads on — go to the ZOLL ▸
               </button>
             </div>
           </>

@@ -72,6 +72,51 @@ export const BLS_SEQUENCE = BLS_SURVEY.filter((a) => a.kind === 'correct').map((
 export const BLS_OPTIONS = [...BLS_SURVEY].sort((a, b) => a.slot - b.slot)
 export const getBlsStep = (id) => BLS_SURVEY.find((a) => a.id === id) || null
 
+/**
+ * Pad placement (Phase 4). Placement zones on a two-view mannequin (front /
+ * back); the learner places exactly two pads. `cx/cy` are coordinates in the
+ * PadFigure SVG space (front figure left, back figure right).
+ */
+export const PAD_ZONES = [
+  { id: 'ra', n: 1, view: 'front', label: 'Right upper chest', sub: 'below the right clavicle', cx: 88, cy: 104 },
+  { id: 'sternum', n: 2, view: 'front', label: 'Center anterior', sub: 'mid-sternum', cx: 110, cy: 122 },
+  { id: 'precordium', n: 3, view: 'front', label: 'Left anterior', sub: 'left of the sternum', cx: 130, cy: 138 },
+  { id: 'apex', n: 4, view: 'front', label: 'Left lateral (apex)', sub: 'left mid-axillary line', cx: 152, cy: 162 },
+  { id: 'post', n: 5, view: 'back', label: 'Posterior', sub: 'left infrascapular (back)', cx: 320, cy: 126 },
+]
+
+/** Valid two-pad configurations (order-independent). */
+export const PAD_CONFIGS = [
+  { name: 'Anterolateral', pads: ['ra', 'apex'] },
+  { name: 'Anterior–posterior', pads: ['precordium', 'post'] },
+  { name: 'Anterior–posterior', pads: ['sternum', 'post'] },
+]
+
+export const getPadZone = (id) => PAD_ZONES.find((z) => z.id === id) || null
+
+/** Validate a two-pad selection → {ok, config} or {ok:false, reason}. */
+export function validatePads(ids) {
+  if (ids.length !== 2) return { ok: false, reason: 'Place exactly two pads before confirming.' }
+  const key = [...ids].sort().join('+')
+  const match = PAD_CONFIGS.find((c) => [...c.pads].sort().join('+') === key)
+  if (match) return { ok: true, config: match.name }
+  const zones = ids.map(getPadZone)
+  if (zones.every((z) => z.view === 'front')) {
+    return {
+      ok: false,
+      reason:
+        'Both pads are on the anterior chest and too close — the shock vector won’t cross the heart. ' +
+        'Use anterolateral (right upper chest + left apex), or move one pad to the back (anterior–posterior).',
+    }
+  }
+  return {
+    ok: false,
+    reason:
+      'Not a standard configuration. Valid options are anterolateral (right upper chest + left apex) ' +
+      'or anterior–posterior (an anterior pad + the posterior/back pad).',
+  }
+}
+
 export const GUIDED_SCENARIOS = {
   'vf-arrest': {
     id: 'vf-arrest',
