@@ -1,82 +1,120 @@
 import { useState } from 'react'
-import { PAD_ZONES, PAD_CONFIGS, getPadZone, validatePads } from '../../sync/guidedScenarios'
+import {
+  PAD_TYPES, PAD_POSITIONS, getPadType, getPadPosition,
+  isPadAllowed, isPlacementComplete, placementConfigName, padRejectReason,
+} from '../../sync/guidedScenarios'
 
 /**
  * PadPlacement — Phase 4 of the guided arrest module.
  *
- * The learner places exactly two defib pads on a two-view mannequin (front /
- * back) by clicking placement zones (or the legend rows). Confirm validates the
- * pair: a valid anterolateral or anterior–posterior configuration passes and
- * unlocks the stage; anything else is rejected with feedback. State (`ids`,
- * `passed`) is lifted to the runner so it survives back/next navigation.
+ * The learner (1) picks a pad TYPE — the triangular OneStep CPR-feedback pad or
+ * the rectangular standard pad — then (2) taps a body position. The CPR pad may
+ * only go on the anterior chest (right upper / left anterior); the standard pad
+ * only on the left lateral / posterior. Placing both types in an allowed
+ * position completes the stage. `placement` ({triangle,rectangle}) and `passed`
+ * are lifted to the runner so they survive back/next navigation.
  */
-export default function PadPlacement({ ids, passed, onToggle, onPass, onEvent }) {
+export default function PadPlacement({ placement, passed, onPlace, onReset, onPass, onEvent }) {
+  const [selected, setSelected] = useState(null) // pad type "in hand"
   const [flash, setFlash] = useState(null) // { tone, text }
 
-  const toggle = (id) => {
+  const posOfType = (typeId) => placement[typeId]
+  const typeAtPos = (posId) => PAD_TYPES.find((t) => placement[t.id] === posId)?.id || null
+
+  const pickUp = (typeId) => {
     if (passed) return
-    if (ids.includes(id)) { onToggle(id); setFlash(null); return }
-    if (ids.length >= 2) { setFlash({ tone: 'warn', text: 'Only two pads — remove one first.' }); return }
-    onToggle(id)
+    setSelected((s) => (s === typeId ? null : typeId))
     setFlash(null)
   }
 
-  const confirm = () => {
-    const res = validatePads(ids)
-    if (res.ok) {
-      setFlash({ tone: 'ok', text: `Correct — ${res.config} placement. Pads are on; the ZOLL can now see the rhythm.` })
-      onEvent?.({ type: 'pads_ok', ids: [...ids], config: res.config })
+  const place = (posId) => {
+    if (passed) return
+    if (!selected) { setFlash({ tone: 'warn', text: 'Pick up a pad first — choose the CPR-feedback or the standard pad.' }); return }
+    const occupant = typeAtPos(posId)
+    if (occupant && occupant !== selected) { setFlash({ tone: 'warn', text: 'That site is taken by the other pad — remove it or choose another site.' }); return }
+    if (!isPadAllowed(selected, posId)) {
+      setFlash({ tone: 'bad', text: padRejectReason(selected) })
+      onEvent?.({ type: 'pads_wrong', pad: selected, pos: posId })
+      return
+    }
+    const next = { ...placement, [selected]: posId }
+    onPlace(next)
+    onEvent?.({ type: 'pads_place', pad: selected, pos: posId })
+    setSelected(null)
+    if (isPlacementComplete(next)) {
+      const config = placementConfigName(next)
+      setFlash({ tone: 'ok', text: `Correct — ${config} placement. Pads are on; the ZOLL can now see the rhythm.` })
+      onEvent?.({ type: 'pads_ok', config })
       onPass()
     } else {
-      setFlash({ tone: 'bad', text: res.reason })
-      onEvent?.({ type: 'pads_wrong', ids: [...ids] })
+      setFlash(null)
     }
   }
+
+  const reset = () => { onReset(); setSelected(null); setFlash(null) }
 
   return (
     <>
       <h2>Pad placement</h2>
       <p className="muted" style={{ lineHeight: 1.6, marginTop: 0 }}>
-        The crash cart is here. Apply the OneStep defibrillation pads — place <strong>two</strong> pads in a valid
-        configuration, then confirm.
+        The crash cart is here. <strong>Pick up a pad</strong>, then tap where it goes on the patient. Place both pads correctly to continue.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 1fr) minmax(230px, 300px)', gap: 20, alignItems: 'start' }}>
-        <PadFigure ids={ids} passed={passed} onToggle={toggle} />
+      {/* pad tray */}
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+        {PAD_TYPES.map((t) => {
+          const at = posOfType(t.id)
+          const isSel = selected === t.id
+          return (
+            <button
+              key={t.id}
+              className={`pad-tray-card ${isSel ? 'is-selected' : ''} ${at ? 'is-placed' : ''}`}
+              disabled={passed}
+              onClick={() => pickUp(t.id)}
+            >
+              <svg viewBox="-24 -24 48 48" width="46" height="46" aria-hidden="true">
+                {t.id === 'triangle' ? <TrianglePadArt /> : <RectanglePadArt />}
+              </svg>
+              <span className="pad-tray-card__text">
+                <strong>{t.label}</strong>
+                <span className="muted" style={{ display: 'block', fontSize: '0.76rem' }}>
+                  {at ? `Placed: ${getPadPosition(at).label}` : isSel ? 'In hand — tap a position' : `Allowed: ${t.allowed.map((p) => getPadPosition(p).label).join(' / ')}`}
+                </span>
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 1fr) minmax(210px, 280px)', gap: 20, alignItems: 'start' }}>
+        <PadFigure placement={placement} selected={selected} passed={passed} onPlace={place} />
 
         <div>
-          <p className="muted" style={{ margin: '0 0 0.35rem', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Placement zones</p>
+          <p className="muted" style={{ margin: '0 0 0.35rem', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Positions</p>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 6 }}>
-            {PAD_ZONES.map((z) => {
-              const on = ids.includes(z.id)
+            {PAD_POSITIONS.map((p) => {
+              const occ = typeAtPos(p.id)
               return (
-                <li key={z.id}>
+                <li key={p.id}>
                   <button
-                    className={`btn ${on ? 'btn--primary' : ''}`}
+                    className={`btn ${occ ? 'btn--primary' : ''}`}
                     disabled={passed}
                     style={{ width: '100%', textAlign: 'left', padding: '7px 10px', height: 'auto', whiteSpace: 'normal', lineHeight: 1.35 }}
-                    onClick={() => toggle(z.id)}
+                    onClick={() => place(p.id)}
                   >
-                    <strong>{z.n}. {z.label}</strong>
-                    <span className="muted" style={{ display: 'block', fontSize: '0.78rem' }}>{z.sub}</span>
+                    <strong>{p.n}. {p.label}</strong>
+                    <span className="muted" style={{ display: 'block', fontSize: '0.78rem' }}>
+                      {occ ? `${getPadType(occ).short} placed` : p.sub}
+                    </span>
                   </button>
                 </li>
               )
             })}
           </ul>
-
-          <p className="muted" style={{ margin: '0.9rem 0 0.3rem', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Valid configurations</p>
-          <ul className="muted" style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.82rem', lineHeight: 1.55 }}>
-            {PAD_CONFIGS.map((c, i) => (
-              <li key={i}>{c.name}: {c.pads.map((p) => getPadZone(p).label).join(' + ')}</li>
-            ))}
-          </ul>
+          {(placement.triangle || placement.rectangle) && !passed && (
+            <button className="btn btn--ghost" style={{ marginTop: 8, fontSize: '0.82rem' }} onClick={reset}>Reset pads</button>
+          )}
         </div>
-      </div>
-
-      <div className="row" style={{ marginTop: '1rem' }}>
-        <button className="btn btn--primary" disabled={ids.length !== 2 || passed} onClick={confirm}>Confirm placement</button>
-        <span className="muted" style={{ alignSelf: 'center' }}>{ids.length}/2 pads placed</span>
       </div>
 
       {flash && <p role="status" className={`g-flash g-flash--${flash.tone}`}>{flash.text}</p>}
@@ -86,136 +124,174 @@ export default function PadPlacement({ ids, passed, onToggle, onPass, onEvent })
 
 /* ---------------- figure ---------------- */
 
-/** Two anatomical torsos (anterior + posterior) with clickable pad zones. */
-function PadFigure({ ids, passed, onToggle }) {
+function PadFigure({ placement, selected, passed, onPlace }) {
+  const typeAtPos = (posId) => PAD_TYPES.find((t) => placement[t.id] === posId)?.id || null
   return (
-    <svg viewBox="0 0 460 340" width="100%" style={{ maxWidth: 480, background: '#fffdfa', borderRadius: 14, border: '1px solid #e7e2da' }} role="group" aria-label="Mannequin pad placement">
-      <Torso x={10} view="front" />
-      <Torso x={250} view="back" />
+    <svg viewBox="0 0 500 350" width="100%" style={{ maxWidth: 500, background: '#fffdfa', borderRadius: 14, border: '1px solid #e7e2da' }} role="group" aria-label="Mannequin pad placement">
+      <Torso x={12} view="front" />
+      <Torso x={262} view="back" />
 
-      {PAD_ZONES.map((z) => (
+      {PAD_POSITIONS.map((p) => (
         <PadZone
-          key={z.id}
-          zone={z}
-          placed={ids.includes(z.id)}
+          key={p.id}
+          pos={p}
+          placedType={typeAtPos(p.id)}
+          armed={!!selected && !passed}
           passed={passed}
-          onToggle={onToggle}
+          onPlace={onPlace}
         />
       ))}
     </svg>
   )
 }
 
-/** One anatomical upper-body silhouette with light interior detail lines. */
+/**
+ * Anatomical upper-body illustration with sternal delineation and nipple/areola
+ * detail (so the anterior placement sites read clearly).
+ */
 function Torso({ x, view }) {
-  const OUTLINE = '#a89e8f'
-  const DETAIL = '#d3ccbf'
-  const FILL = '#fdfcfa'
-  const silhouette =
-    'M81,60 C78,72 66,74 52,86 C39,97 30,107 28,126 L25,206 C24,220 32,226 43,224 ' +
-    'C53,222 57,212 58,196 C60,178 63,166 68,150 C72,180 76,224 80,258 C83,270 107,270 110,258 ' +
-    'C114,224 118,180 122,150 C127,166 130,178 132,196 C133,212 137,222 147,224 C158,226 166,220 165,206 ' +
-    'L162,126 C160,107 151,97 138,86 C124,74 112,72 109,60 Z'
+  const OUTLINE = '#8a7f6d' // body outline
+  const LINE = '#b3a794' // primary anatomical detail (clavicle, sternum, pecs)
+  const FAINT = '#ccc3b2' // secondary shading
+  const FILL = '#fdfbf7'
+  const HAIR = '#b09a7d'
+  const AREOLA = '#d7b9a3'
+  const NIPPLE = '#a07f68'
+
+  // Upper-body silhouette (neck → sloped shoulders → arms → tapered torso).
+  const body =
+    'M86,58 C83,69 80,74 73,80 C62,87 50,91 41,101 C33,110 30,120 30,132 L31,208 ' +
+    'C31,219 40,225 51,220 C59,216 61,206 62,193 C63,177 64,165 66,153 ' +
+    'C68,183 74,221 82,253 C86,266 114,266 118,253 C126,221 132,183 134,153 ' +
+    'C136,165 137,177 138,193 C139,206 141,216 149,220 C160,225 169,219 169,208 ' +
+    'L170,132 C170,120 167,110 159,101 C150,91 138,87 127,80 C120,74 117,69 114,58 Z'
+
   return (
-    <g transform={`translate(${x},20)`}>
-      <text x={95} y={-2} textAnchor="middle" fill="#5b5750" fontSize="12.5" fontWeight="700">
+    <g transform={`translate(${x},22)`}>
+      <text x={100} y={-4} textAnchor="middle" fill="#5b5750" fontSize="13" fontWeight="700">
         {view === 'front' ? 'Anterior (front)' : 'Posterior (back)'}
       </text>
 
-      {/* hair cap: fuller on the back of the head */}
+      {/* hair */}
       {view === 'back'
-        ? <path d="M70,34 C70,16 120,16 120,34 C120,46 116,52 110,56 L80,56 C74,52 70,46 70,34 Z" fill="#cbb89c" />
-        : <path d="M72,30 C74,16 116,16 118,30 C110,22 80,22 72,30 Z" fill="#cbb89c" />}
-      <circle cx={95} cy={36} r={25} fill={FILL} stroke={OUTLINE} strokeWidth={1.6} />
-
+        ? <path d="M70,33 C70,12 130,12 130,33 C130,49 124,57 115,60 L85,60 C76,57 70,49 70,33 Z" fill={HAIR} />
+        : <path d="M73,29 C76,11 124,11 127,29 C117,19 83,19 73,29 Z" fill={HAIR} />}
+      {/* neck (with trapezius sweep into shoulders) */}
+      <path d="M87,53 C87,64 85,72 82,79 L118,79 C115,72 113,64 113,53 Z" fill={FILL} stroke={OUTLINE} strokeWidth={1.5} />
+      {/* head */}
+      <circle cx={100} cy={34} r={24} fill={FILL} stroke={OUTLINE} strokeWidth={1.7} />
       {/* body */}
-      <path d={silhouette} fill={FILL} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+      <path d={body} fill={FILL} stroke={OUTLINE} strokeWidth={1.9} strokeLinejoin="round" />
 
-      {/* interior detail */}
-      <g fill="none" stroke={DETAIL} strokeWidth={1.2} strokeLinecap="round">
-        {view === 'front' ? (
-          <>
-            {/* clavicles */}
-            <path d="M95,68 C82,72 72,78 62,86" />
-            <path d="M95,68 C108,72 118,78 128,86" />
-            {/* sternum */}
-            <path d="M95,70 L95,150" />
-            {/* pectoral folds */}
-            <path d="M63,112 C74,132 86,134 95,128" />
-            <path d="M127,112 C116,132 104,134 95,128" />
-            {/* nipples */}
-            <circle cx={75} cy={128} r={2.1} fill={DETAIL} stroke="none" />
-            <circle cx={115} cy={128} r={2.1} fill={DETAIL} stroke="none" />
-          </>
-        ) : (
-          <>
-            {/* spine */}
-            <path d="M95,66 L95,252" />
-            {/* scapular borders */}
-            <path d="M72,92 C66,112 72,132 86,126" />
-            <path d="M118,92 C124,112 118,132 104,126" />
-            {/* neck / trapezius */}
-            <path d="M82,62 C86,76 90,84 95,86" />
-            <path d="M108,62 C104,76 100,84 95,86" />
-          </>
-        )}
-      </g>
-
-      {/* heart guide (front): shows why the shock vector must cross it */}
-      {view === 'front' && (
-        <path
-          d="M104,150 C104,150 78,131 78,112 C78,102 86,96 94,96 C100,96 104,101 104,104 C104,101 108,96 114,96 C122,96 130,102 130,112 C130,131 104,150 104,150 Z"
-          fill="rgba(198,40,40,0.10)"
-          stroke="rgba(178,45,45,0.4)"
-          strokeWidth={1.2}
-        />
+      {view === 'front' ? (
+        <>
+          {/* clavicles */}
+          <g fill="none" stroke={LINE} strokeWidth={1.7} strokeLinecap="round">
+            <path d="M99,71 C89,72 79,77 67,86" />
+            <path d="M101,71 C111,72 121,77 133,86" />
+          </g>
+          {/* sternum delineation (manubrium notch → xiphoid) */}
+          <path d="M100,73 L100,151" fill="none" stroke={LINE} strokeWidth={2} strokeLinecap="round" />
+          {/* pectoral lower borders (define the two pec masses) */}
+          <g fill="none" stroke={LINE} strokeWidth={1.6} strokeLinecap="round">
+            <path d="M60,116 C70,146 88,150 99,143" />
+            <path d="M140,116 C130,146 112,150 101,143" />
+          </g>
+          {/* costal margin + linea alba (below the sternum) */}
+          <g fill="none" stroke={FAINT} strokeWidth={1.4} strokeLinecap="round">
+            <path d="M100,151 C92,161 85,165 78,167" />
+            <path d="M100,151 C108,161 115,165 122,167" />
+            <path d="M100,151 L100,190" />
+          </g>
+          {/* nipples + areola (placement landmarks) */}
+          <g>
+            <circle cx={74} cy={130} r={6} fill={AREOLA} />
+            <circle cx={126} cy={130} r={6} fill={AREOLA} />
+            <circle cx={74} cy={130} r={2.4} fill={NIPPLE} />
+            <circle cx={126} cy={130} r={2.4} fill={NIPPLE} />
+          </g>
+        </>
+      ) : (
+        <>
+          {/* spine groove */}
+          <path d="M100,66 L100,250" fill="none" stroke={LINE} strokeWidth={2} strokeLinecap="round" />
+          <g fill="none" stroke={LINE} strokeWidth={1.6} strokeLinecap="round">
+            {/* scapular (shoulder-blade) borders */}
+            <path d="M73,90 C66,113 73,135 91,128" />
+            <path d="M127,90 C134,113 127,135 109,128" />
+            {/* trapezius sweep from the neck */}
+            <path d="M83,61 C88,77 92,85 100,87" />
+            <path d="M117,61 C112,77 108,85 100,87" />
+          </g>
+          {/* lower-back crease */}
+          <path d="M79,235 C89,245 111,245 121,235" fill="none" stroke={FAINT} strokeWidth={1.4} strokeLinecap="round" />
+        </>
       )}
     </g>
   )
 }
 
-/** A pad zone: a small dashed target when empty, a realistic gel pad when placed. */
-function PadZone({ zone, placed, passed, onToggle }) {
+/** A body position: dashed numbered target when empty, the pad art when filled. */
+function PadZone({ pos, placedType, armed, passed, onPlace }) {
   return (
     <g
-      className="pad-zone"
-      transform={`translate(${zone.cx},${zone.cy})`}
-      onClick={() => onToggle(zone.id)}
+      className={`pad-zone ${armed ? 'is-armed' : ''}`}
+      transform={`translate(${pos.cx},${pos.cy})`}
+      onClick={() => onPlace(pos.id)}
       style={{ cursor: passed ? 'default' : 'pointer' }}
       role="button"
-      aria-label={`${zone.label}${placed ? ' (pad placed)' : ''}`}
+      aria-label={`${pos.label}${placedType ? ' (pad placed)' : ''}`}
     >
-      {placed ? <GelPad n={zone.n} /> : (
+      {placedType ? (
+        <g>
+          <circle r={24} fill="none" stroke="rgba(153,0,0,0.4)" strokeWidth={2} />
+          {placedType === 'triangle' ? <TrianglePadArt /> : <RectanglePadArt />}
+        </g>
+      ) : (
         <g className="pad-target">
-          <circle r={11} fill="rgba(153,0,0,0.05)" stroke="#b9723f" strokeWidth={1.5} strokeDasharray="3 3" />
-          <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fontSize="12" fill="#a2622f" fontWeight="700">{zone.n}</text>
+          <circle r={12} fill="rgba(153,0,0,0.05)" stroke="#b9723f" strokeWidth={1.5} strokeDasharray="3 3" />
+          <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fontSize="12" fill="#a2622f" fontWeight="700">{pos.n}</text>
         </g>
       )}
     </g>
   )
 }
 
-/** A realistic OneStep gel electrode (dotted gel, red connector tab, numbered). */
-function GelPad({ n }) {
-  const W = 30, H = 40
-  const cols = [-8, 0, 8]
-  const rows = [-13, -6.5, 0, 6.5, 13]
+/* ---------------- pad artwork (shared by tray + figure) ---------------- */
+
+/** Triangular OneStep CPR-feedback pad with the compression-sensor puck. */
+function TrianglePadArt() {
   return (
     <g>
-      {/* selected glow */}
-      <rect x={-(W / 2) - 3} y={-(H / 2) - 3} width={W + 6} height={H + 6} rx={11} fill="none" stroke="rgba(153,0,0,0.45)" strokeWidth={2} />
+      <path
+        d="M-11,-15 L11,-15 Q18,-15 15,-8 L4,15 Q0,21 -4,15 L-15,-8 Q-18,-15 -11,-15 Z"
+        fill="#c6cad0" stroke="#8f97a1" strokeWidth={1.2} strokeLinejoin="round"
+      />
       {/* connector tab */}
-      <rect x={-5} y={H / 2 - 2} width={10} height={9} rx={2.5} fill="#d64535" stroke="#b23a2c" strokeWidth={0.8} />
-      {/* gel body */}
-      <rect x={-(W / 2)} y={-(H / 2)} width={W} height={H} rx={8} fill="#c6cad0" stroke="#8f97a1" strokeWidth={1.2} />
-      <rect x={-(W / 2) + 3} y={-(H / 2) + 3} width={W - 6} height={H - 6} rx={6} fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth={1} />
-      {/* perforated gel dots */}
+      <rect x={-4} y={16} width={8} height={7} rx={2} fill="#d64535" stroke="#b23a2c" strokeWidth={0.7} />
+      {/* CPR compression sensor puck */}
+      <ellipse cx={0} cy={-3} rx={8.5} ry={9.5} fill="#eef1f4" stroke="#9aa2ac" strokeWidth={1.1} />
+      <g stroke="#d64535" strokeWidth={1.4} strokeLinecap="round">
+        <line x1={-6} y1={-3} x2={6} y2={-3} />
+        <line x1={0} y1={-11} x2={0} y2={5} />
+      </g>
+    </g>
+  )
+}
+
+/** Rectangular standard defibrillation gel pad. */
+function RectanglePadArt() {
+  const W = 26, H = 34
+  const cols = [-7, 0, 7]
+  const rows = [-11, -5.5, 0, 5.5, 11]
+  return (
+    <g>
+      <rect x={-4} y={H / 2 - 2} width={8} height={7} rx={2} fill="#d64535" stroke="#b23a2c" strokeWidth={0.7} />
+      <rect x={-(W / 2)} y={-(H / 2)} width={W} height={H} rx={7} fill="#c6cad0" stroke="#8f97a1" strokeWidth={1.2} />
+      <rect x={-(W / 2) + 3} y={-(H / 2) + 3} width={W - 6} height={H - 6} rx={5} fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth={1} />
       {rows.map((ry) => cols.map((cx) => (
-        <circle key={`${ry}-${cx}`} cx={cx} cy={ry} r={1.35} fill="rgba(255,255,255,0.7)" />
+        <circle key={`${ry}-${cx}`} cx={cx} cy={ry} r={1.2} fill="rgba(255,255,255,0.7)" />
       )))}
-      {/* number badge */}
-      <circle cx={-(W / 2) + 6} cy={-(H / 2) + 6} r={7} fill="#990000" />
-      <text x={-(W / 2) + 6} y={-(H / 2) + 6.5} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill="#fff" fontWeight="800">{n}</text>
     </g>
   )
 }

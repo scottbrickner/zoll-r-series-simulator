@@ -25,7 +25,7 @@ export default function GuidedScenario() {
   const [shockStart, setShockStart] = useState(null)
   const [now, setNow] = useState(Date.now())
   const [blsDone, setBlsDone] = useState([]) // ordered ids completed in the BLS survey
-  const [padIds, setPadIds] = useState([]) // pad zones currently placed
+  const [placement, setPlacement] = useState({ triangle: null, rectangle: null }) // pad type → position
   const [padPassed, setPadPassed] = useState(false) // valid placement confirmed
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
@@ -51,7 +51,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPadIds([]); setPadPassed(false); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -134,9 +134,10 @@ export default function GuidedScenario() {
         ) : stageId === 'pads' ? (
           <>
             <PadPlacement
-              ids={padIds}
+              placement={placement}
               passed={padPassed}
-              onToggle={(id) => setPadIds((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))}
+              onPlace={setPlacement}
+              onReset={() => { setPlacement({ triangle: null, rectangle: null }); setPadPassed(false) }}
               onPass={() => setPadPassed(true)}
               onEvent={logEvent}
             />

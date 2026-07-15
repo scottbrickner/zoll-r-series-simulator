@@ -217,11 +217,47 @@
   opacity: 0.45;
 }
 
+/* ---- pad tray (pick-a-pad) ---- */
+.pad-tray-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 8px 12px 8px 8px;
+  border: 1.5px solid var(--g-border);
+  border-radius: 12px;
+  background: var(--g-surface);
+  cursor: pointer;
+  min-width: 240px;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+.pad-tray-card:hover:not(:disabled) {
+  border-color: var(--gold-dark);
+  background: #fffdf5;
+}
+.pad-tray-card.is-selected {
+  border-color: var(--cardinal);
+  background: #fff6f4;
+  box-shadow: 0 0 0 3px rgba(153, 0, 0, 0.12);
+}
+.pad-tray-card.is-placed {
+  border-color: var(--g-success);
+  background: #f2f9f3;
+}
+.pad-tray-card:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.pad-tray-card__text strong {
+  color: var(--g-ink);
+}
+
 /* ---- pad-placement zone hover ---- */
 .guided-shell .pad-zone .pad-target circle {
   transition: stroke 0.12s, fill 0.12s;
 }
-.guided-shell .pad-zone:hover .pad-target circle {
+.guided-shell .pad-zone:hover .pad-target circle,
+.guided-shell .pad-zone.is-armed .pad-target circle {
   stroke: var(--cardinal);
   fill: rgba(153, 0, 0, 0.12);
 }

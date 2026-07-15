@@ -73,48 +73,58 @@ export const BLS_OPTIONS = [...BLS_SURVEY].sort((a, b) => a.slot - b.slot)
 export const getBlsStep = (id) => BLS_SURVEY.find((a) => a.id === id) || null
 
 /**
- * Pad placement (Phase 4). Placement zones on a two-view mannequin (front /
- * back); the learner places exactly two pads. `cx/cy` are coordinates in the
- * PadFigure SVG space (front figure left, back figure right).
+ * Pad placement (Phase 4). The learner picks a pad TYPE, then a position.
+ * The OneStep CPR pad (triangle, with the compression-sensor puck) only goes on
+ * the anterior chest; the standard rectangular pad only goes on the left lateral
+ * or posterior site. Placing both types in an allowed position completes the
+ * stage. `cx/cy` are coordinates in the PadFigure SVG space.
  */
-export const PAD_ZONES = [
-  { id: 'ra', n: 1, view: 'front', label: 'Right upper chest', sub: 'below the right clavicle', cx: 80, cy: 120 },
-  { id: 'sternum', n: 2, view: 'front', label: 'Center anterior', sub: 'mid-sternum', cx: 106, cy: 116 },
-  { id: 'precordium', n: 3, view: 'front', label: 'Left anterior', sub: 'left of the sternum', cx: 128, cy: 146 },
-  { id: 'apex', n: 4, view: 'front', label: 'Left lateral (apex)', sub: 'left mid-axillary line', cx: 152, cy: 178 },
-  { id: 'post', n: 5, view: 'back', label: 'Posterior', sub: 'left infrascapular (back)', cx: 330, cy: 150 },
+export const PAD_TYPES = [
+  {
+    id: 'triangle',
+    label: 'CPR-feedback pad',
+    short: 'Triangle · CPR sensor',
+    desc: 'Triangular OneStep pad with the CPR compression sensor — goes on the anterior chest.',
+    allowed: ['rua', 'la'],
+  },
+  {
+    id: 'rectangle',
+    label: 'Standard pad',
+    short: 'Rectangle',
+    desc: 'Rectangular defibrillation pad — goes on the left lateral or posterior site.',
+    allowed: ['ll', 'lp'],
+  },
 ]
 
-/** Valid two-pad configurations (order-independent). */
-export const PAD_CONFIGS = [
-  { name: 'Anterolateral', pads: ['ra', 'apex'] },
-  { name: 'Anterior–posterior', pads: ['precordium', 'post'] },
-  { name: 'Anterior–posterior', pads: ['sternum', 'post'] },
+export const PAD_POSITIONS = [
+  { id: 'rua', n: 1, view: 'front', label: 'Right upper anterior', sub: 'below the right clavicle', cx: 84, cy: 128 },
+  { id: 'la', n: 2, view: 'front', label: 'Left anterior', sub: 'just below the left nipple', cx: 133, cy: 175 },
+  { id: 'll', n: 3, view: 'front', label: 'Left lateral', sub: 'left mid-axillary line', cx: 162, cy: 183 },
+  { id: 'lp', n: 4, view: 'back', label: 'Left posterior', sub: 'left infrascapular (back)', cx: 340, cy: 150 },
 ]
 
-export const getPadZone = (id) => PAD_ZONES.find((z) => z.id === id) || null
+export const getPadType = (id) => PAD_TYPES.find((t) => t.id === id) || null
+export const getPadPosition = (id) => PAD_POSITIONS.find((p) => p.id === id) || null
+export const isPadAllowed = (typeId, posId) => {
+  const t = getPadType(typeId)
+  return !!t && t.allowed.includes(posId)
+}
 
-/** Validate a two-pad selection → {ok, config} or {ok:false, reason}. */
-export function validatePads(ids) {
-  if (ids.length !== 2) return { ok: false, reason: 'Place exactly two pads before confirming.' }
-  const key = [...ids].sort().join('+')
-  const match = PAD_CONFIGS.find((c) => [...c.pads].sort().join('+') === key)
-  if (match) return { ok: true, config: match.name }
-  const zones = ids.map(getPadZone)
-  if (zones.every((z) => z.view === 'front')) {
-    return {
-      ok: false,
-      reason:
-        'Both pads are on the anterior chest and too close — the shock vector won’t cross the heart. ' +
-        'Use anterolateral (right upper chest + left apex), or move one pad to the back (anterior–posterior).',
-    }
-  }
-  return {
-    ok: false,
-    reason:
-      'Not a standard configuration. Valid options are anterolateral (right upper chest + left apex) ' +
-      'or anterior–posterior (an anterior pad + the posterior/back pad).',
-  }
+/** placement = { triangle: posId|null, rectangle: posId|null } */
+export const isPlacementComplete = (pl) =>
+  !!pl.triangle && !!pl.rectangle && isPadAllowed('triangle', pl.triangle) && isPadAllowed('rectangle', pl.rectangle)
+
+/** Name the resulting configuration (by where the standard pad sits). */
+export function placementConfigName(pl) {
+  if (!isPlacementComplete(pl)) return null
+  return pl.rectangle === 'lp' ? 'Anterior–posterior' : 'Anterolateral'
+}
+
+/** Why a pad type can't go on a position (used for rejection feedback). */
+export function padRejectReason(typeId) {
+  return typeId === 'triangle'
+    ? 'The CPR-feedback (triangle) pad must go on the anterior chest — right upper anterior or left anterior. The lateral and posterior sites are for the standard pad.'
+    : 'The standard (rectangle) pad goes on the left lateral or left posterior site. The anterior chest is reserved for the CPR-feedback pad.'
 }
 
 export const GUIDED_SCENARIOS = {
