@@ -5,6 +5,8 @@ import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
 import DeviceStage from './guided/DeviceStage'
+import DecisionStage from './guided/DecisionStage'
+import SelfTestWalkthrough from './guided/SelfTestWalkthrough'
 
 const DEVICE0 = { powered: false, identified: false, branch: false, charged: false, cleared: false, shocked: false }
 
@@ -32,6 +34,7 @@ export default function GuidedScenario() {
   const [padPassed, setPadPassed] = useState(false) // valid placement confirmed
   const [device, setDevice] = useState(DEVICE0) // Phase 5 device flags
   const [shockElapsed, setShockElapsed] = useState(null) // frozen time-to-shock at delivery
+  const [decisionOk, setDecisionOk] = useState(false) // Phase 6 post-shock decision
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
@@ -58,7 +61,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDevice(DEVICE0); setShockElapsed(null); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDevice(DEVICE0); setShockElapsed(null); setDecisionOk(false); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -124,7 +127,13 @@ export default function GuidedScenario() {
                 <p><strong>Defibrillation:</strong> {device.shocked ? `shock delivered (${level === 'BLS' ? 'ANALYZE → advisory' : `${sc.energy} J`})` : 'no shock delivered'}{device.shocked ? ` · CLEAR ${cleared ? 'stated ✓' : 'not stated'}` : ''}</p>
               )
             })()}
-            <p className="muted">{STUBS.debrief}</p>
+            {(() => {
+              const wrong = events.filter((e) => e.type === 'decision_wrong').length
+              return (
+                <p><strong>Post-shock action:</strong> {decisionOk ? 'resumed CPR immediately' : 'not completed'}{wrong > 0 ? ` · ${wrong} incorrect attempt${wrong === 1 ? '' : 's'}` : decisionOk ? ' — first attempt ✓' : ''}</p>
+              )
+            })()}
+            <SelfTestWalkthrough />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn" onClick={restart}>Restart</button>
               <Link className="btn btn--ghost" to="/">Exit</Link>
@@ -178,26 +187,18 @@ export default function GuidedScenario() {
               </button>
             </div>
           </>
-        ) : (
+        ) : stageId === 'decision' ? (
           <>
-            <h2>{GUIDED_STAGES[stage].title}</h2>
-            <p className="muted" style={{ lineHeight: 1.6 }}>{STUBS[stageId]}</p>
+            <DecisionStage done={decisionOk} onCorrect={() => setDecisionOk(true)} onEvent={logEvent} />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
-              <button className="btn btn--primary" onClick={next}>Continue ▸</button>
+              <button className="btn btn--primary" disabled={!decisionOk} onClick={next}>
+                Continue to debrief ▸
+              </button>
             </div>
           </>
-        )}
+        ) : null}
       </section>
     </GuidedShell>
   )
-}
-
-// Placeholder descriptions of what each stage WILL do (filled in Phases 3–6).
-const STUBS = {
-  bls: 'BLS primary survey (Phase 3): check responsiveness → check a central (carotid) pulse → activate the emergency response (Code Blue) → start CPR while awaiting the code team / crash cart.',
-  pads: 'Pad placement (Phase 4): place the defib pads on the mannequin in a correct configuration — anterolateral (RUA / left-lateral) or anterior–posterior — before the ZOLL is used.',
-  device: 'Defibrillate (Phase 5): turn on the monitor, identify the shockable rhythm, then — BLS: press ANALYZE for the shock advisory; ACLS: confirm the 120 J preset — charge, announce "CLEAR!", and shock. Time-to-shock target is 2:00.',
-  decision: 'Immediately after the shock (Phase 6): what is your next action? Resume CPR (correct) vs. rhythm/pulse check — with feedback on the FIL lead and EtCO₂ monitoring.',
-  debrief: 'Performance summary plus an educational walkthrough of the manual crash-cart self-test (defib cable → side port, DEFIB, 30 J, charge/shock, confirm self-test OK).',
 }
