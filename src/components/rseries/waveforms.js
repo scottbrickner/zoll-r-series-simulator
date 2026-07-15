@@ -172,6 +172,24 @@ export function cprArtifactPath({ rate = 110, intensity = 0.7 } = {}) {
   return sampled((x) => BASE + amp * Math.sin(x * k) + intensity * 3 * Math.sin(x * 0.9 + 0.5), 1.2)
 }
 
+/**
+ * Raw ECG during CPR — a SINGLE trace: the chest-compression artifact with the
+ * underlying rhythm buried in it. This is what the PADS (raw) lead shows; See-Thru
+ * CPR filters it to reveal the clean rhythm on the FIL lead. Seamless (integer cycles).
+ */
+export function cprContaminatedEcg({ rate = 110 } = {}) {
+  const n = Math.min(11, Math.max(5, Math.round((rate * 4) / 60))) // compressions across the window
+  return sampled(
+    (x) =>
+      BASE +
+      18 * Math.sin(cyc(n) * x) + // dominant compression artifact
+      6 * Math.sin(cyc(n * 2) * x + 0.7) + // compression harmonic (shape)
+      5 * Math.sin(cyc(29) * x + 1.1) + // buried cardiac-ish activity
+      3 * Math.sin(cyc(53) * x + 0.4),
+    1,
+  )
+}
+
 /** Bare pacer spikes only (overlaid on the underlying rhythm when not captured). */
 export function pacerSpikes({ rate = 70, fourToOne = false } = {}) {
   const n = paceBeats(rate, fourToOne)

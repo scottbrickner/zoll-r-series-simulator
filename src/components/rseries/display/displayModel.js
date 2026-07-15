@@ -12,7 +12,7 @@
  *
  * Pure function — no React, no side effects.
  */
-import { ecgFor, pacedPath, pacerSpikes, cprArtifactPath, qrsMarkers, FLAT } from '../waveforms'
+import { ecgFor, pacedPath, pacerSpikes, cprContaminatedEcg, qrsMarkers, FLAT } from '../waveforms'
 import { pacingCaptured, cprAssess, monitorView, activeAlarms } from '../../../sync/SimulatorContext'
 import { softkeysForMode } from './DisplayWidgets'
 
@@ -74,13 +74,18 @@ export function displayModel(state, elapsed) {
       ecgPath = ecgFor(underlying)
       spikes = pacerSpikes({ rate: s.pacerRate, fourToOne: s.fourToOne })
     }
+  } else if (s.cprActive) {
+    // See-Thru CPR: the raw PADS lead is ONE trace — the rhythm buried in the
+    // chest-compression artifact (not a superimposed overlay).
+    ecgPath = cprContaminatedEcg({ rate: s.cprRate })
   } else {
     ecgPath = ecgFor(s.rhythm)
   }
 
-  // See-Thru CPR: with CPR active, show PADS (raw + artifact) + FIL (filtered).
+  // See-Thru CPR: PADS = raw contaminated trace (above); FIL = the clean,
+  // artifact-filtered rhythm revealed underneath. No superimposed overlay.
   const pads = s.cprActive
-  const overlay = s.cprActive ? cprArtifactPath({ rate: s.cprRate, intensity: s.cprArtifactIntensity }) : null
+  const overlay = null
   const filteredPath = s.cprActive ? ecgFor(s.rhythm) : null
 
   const syncing = s.mode === 'Defib' && s.syncEnabled
