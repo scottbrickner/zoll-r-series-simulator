@@ -4,6 +4,9 @@ import { GUIDED_STAGES, SHOCK_CLOCK_STAGE, SHOCK_TARGET_S, BLS_SEQUENCE, getGuid
 import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
+import DeviceStage from './guided/DeviceStage'
+
+const DEVICE0 = { powered: false, identified: false, branch: false, charged: false, cleared: false, shocked: false }
 
 /**
  * GuidedScenario — the step-gated arrest validation runner (Phase 2 shell).
@@ -27,6 +30,8 @@ export default function GuidedScenario() {
   const [blsDone, setBlsDone] = useState([]) // ordered ids completed in the BLS survey
   const [placement, setPlacement] = useState({ triangle: null, rectangle: null }) // pad type → position
   const [padPassed, setPadPassed] = useState(false) // valid placement confirmed
+  const [device, setDevice] = useState(DEVICE0) // Phase 5 device flags
+  const [shockElapsed, setShockElapsed] = useState(null) // frozen time-to-shock at delivery
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
@@ -39,19 +44,21 @@ export default function GuidedScenario() {
     if (stageId === SHOCK_CLOCK_STAGE && shockStart == null) setShockStart(Date.now())
   }, [stageId, shockStart])
 
-  // Tick the clock display once the clock is running (and not yet at debrief).
+  // Tick the clock display while running — until the shock is delivered (frozen)
+  // or the debrief is reached.
   useEffect(() => {
-    if (shockStart == null || stageId === 'debrief') return
+    if (shockStart == null || shockElapsed != null || stageId === 'debrief') return
     tick.current = setInterval(() => setNow(Date.now()), 500)
     return () => clearInterval(tick.current)
-  }, [shockStart, stageId])
+  }, [shockStart, shockElapsed, stageId])
 
-  const elapsed = shockStart == null ? 0 : Math.max(0, (now - shockStart) / 1000)
+  const liveElapsed = shockStart == null ? 0 : Math.max(0, (now - shockStart) / 1000)
+  const elapsed = shockElapsed != null ? shockElapsed : liveElapsed // freeze at shock
   const overTarget = elapsed > SHOCK_TARGET_S
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDevice(DEVICE0); setShockElapsed(null); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -111,6 +118,12 @@ export default function GuidedScenario() {
                 <p><strong>Pad placement:</strong> {padPassed ? `valid (${pass?.config || '—'})` : 'not confirmed'}{wrong > 0 ? ` · ${wrong} rejected attempt${wrong === 1 ? '' : 's'}` : padPassed ? ' — first attempt ✓' : ''}</p>
               )
             })()}
+            {(() => {
+              const cleared = events.some((e) => e.type === 'dev_clear')
+              return (
+                <p><strong>Defibrillation:</strong> {device.shocked ? `shock delivered (${level === 'BLS' ? 'ANALYZE → advisory' : `${sc.energy} J`})` : 'no shock delivered'}{device.shocked ? ` · CLEAR ${cleared ? 'stated ✓' : 'not stated'}` : ''}</p>
+              )
+            })()}
             <p className="muted">{STUBS.debrief}</p>
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn" onClick={restart}>Restart</button>
@@ -145,6 +158,23 @@ export default function GuidedScenario() {
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
               <button className="btn btn--primary" disabled={!padPassed} onClick={next}>
                 Pads on — go to the ZOLL ▸
+              </button>
+            </div>
+          </>
+        ) : stageId === 'device' ? (
+          <>
+            <DeviceStage
+              level={level}
+              scenario={sc}
+              device={device}
+              onDevice={setDevice}
+              onShock={() => setShockElapsed(liveElapsed)}
+              onEvent={logEvent}
+            />
+            <div className="row" style={{ marginTop: '1rem' }}>
+              <button className="btn btn--ghost" onClick={back}>◂ Back</button>
+              <button className="btn btn--primary" disabled={!device.shocked} onClick={next}>
+                Shock delivered — next action ▸
               </button>
             </div>
           </>
