@@ -111,7 +111,7 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
   }
 
   return (
-    <div style={{ maxWidth: 780, margin: '0 auto' }}>
+    <div className="guided-device-wrap">
       <RSeriesPanel state={viewState} elapsed={elapsed} flash={flash} actions={actions} />
     </div>
   )

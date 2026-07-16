@@ -217,6 +217,22 @@
   opacity: 0.45;
 }
 
+/* ---- embedded hi-fi device (Phase 5 device stage) ----
+ * .rs-panel-wrap normally sizes itself with `98vw` (viewport-relative), which
+ * is correct full-page on /learner but overflows the guided panel here since
+ * vw ignores the parent container's actual width. Override to fill the
+ * container instead so the whole device — including the SHOCK button and
+ * energy knob on the right edge — stays inside the panel.
+ */
+.guided-device-wrap {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.guided-device-wrap .rs-panel-wrap {
+  width: 100%;
+}
+
 /* ---- pad tray (pick-a-pad) ---- */
 .pad-tray-card {
   display: flex;
