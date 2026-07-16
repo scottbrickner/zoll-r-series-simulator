@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { GUIDED_STAGES, SHOCK_CLOCK_STAGE, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
+import { GUIDED_STAGES, SHOCK_TARGET_S, BLS_SEQUENCE, matchedPair, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
 import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
-import DeviceStage from './guided/DeviceStage'
+import GuidedDeviceHiFi from './guided/GuidedDeviceHiFi'
 import DecisionStage from './guided/DecisionStage'
 import SelfTestWalkthrough from './guided/SelfTestWalkthrough'
-
-const DEVICE0 = { powered: false, identified: false, branch: false, charged: false, cleared: false, shocked: false }
 
 /**
  * GuidedScenario — the step-gated arrest validation runner (Phase 2 shell).
@@ -32,20 +30,29 @@ export default function GuidedScenario() {
   const [blsDone, setBlsDone] = useState([]) // ordered ids completed in the BLS survey
   const [placement, setPlacement] = useState({ triangle: null, rectangle: null }) // pad type → position
   const [padPassed, setPadPassed] = useState(false) // valid placement confirmed
-  const [device, setDevice] = useState(DEVICE0) // Phase 5 device flags
+  const [deviceShocked, setDeviceShocked] = useState(false) // first shock delivered on the hi-fi device
+  const [shockEnergy, setShockEnergy] = useState(null) // energy at first shock
   const [shockElapsed, setShockElapsed] = useState(null) // frozen time-to-shock at delivery
   const [decisionOk, setDecisionOk] = useState(false) // Phase 6 post-shock decision
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
   const stageId = GUIDED_STAGES[stage].id
-  const logEvent = (e) => setEvents((v) => [...v, e])
   const blsComplete = blsDone.length === BLS_SEQUENCE.length
+  const padsPlaced = !!placement.triangle && !!placement.rectangle
 
-  // Start the time-to-shock clock when we reach the device stage (rhythm ID).
-  useEffect(() => {
-    if (stageId === SHOCK_CLOCK_STAGE && shockStart == null) setShockStart(Date.now())
-  }, [stageId, shockStart])
+  // Log events; the time-to-shock clock starts the instant the learner confirms
+  // pulselessness (the carotid-pulse step of the BLS survey).
+  const logEvent = (e) => {
+    setEvents((v) => [...v, e])
+    if (e.type === 'bls_correct' && e.id === 'pulse' && shockStart == null) setShockStart(Date.now())
+  }
+
+  const onDeviceShock = useCallback((energy) => {
+    setDeviceShocked(true)
+    setShockEnergy(energy)
+    setShockElapsed((prev) => (prev != null ? prev : Math.max(0, (Date.now() - shockStart) / 1000)))
+  }, [shockStart])
 
   // Tick the clock display while running — until the shock is delivered (frozen)
   // or the debrief is reached.
@@ -61,7 +68,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDevice(DEVICE0); setShockElapsed(null); setDecisionOk(false); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockElapsed(null); setDecisionOk(false); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -115,18 +122,14 @@ export default function GuidedScenario() {
               )
             })()}
             {(() => {
-              const pass = events.find((e) => e.type === 'pads_ok')
-              const wrong = events.filter((e) => e.type === 'pads_wrong').length
+              // Placement is graded silently in validation mode (no in-task feedback).
+              const pair = matchedPair(placement)
+              const placed = !!placement.triangle && !!placement.rectangle
               return (
-                <p><strong>Pad placement:</strong> {padPassed ? `valid (${pass?.config || '—'})` : 'not confirmed'}{wrong > 0 ? ` · ${wrong} rejected attempt${wrong === 1 ? '' : 's'}` : padPassed ? ' — first attempt ✓' : ''}</p>
+                <p><strong>Pad placement:</strong> {!placed ? 'not placed' : pair ? `correct (${pair.name}) ✓` : 'placed — configuration incorrect'}</p>
               )
             })()}
-            {(() => {
-              const cleared = events.some((e) => e.type === 'dev_clear')
-              return (
-                <p><strong>Defibrillation:</strong> {device.shocked ? `shock delivered (${level === 'BLS' ? 'ANALYZE → advisory' : `${sc.energy} J`})` : 'no shock delivered'}{device.shocked ? ` · CLEAR ${cleared ? 'stated ✓' : 'not stated'}` : ''}</p>
-              )
-            })()}
+            <p><strong>Defibrillation:</strong> {deviceShocked ? `shock delivered${shockEnergy != null ? ` (${shockEnergy} J)` : ''}` : 'no shock delivered'}</p>
             {(() => {
               const wrong = events.filter((e) => e.type === 'decision_wrong').length
               return (
@@ -158,6 +161,7 @@ export default function GuidedScenario() {
             <PadPlacement
               placement={placement}
               passed={padPassed}
+              feedback={false}
               onPlace={setPlacement}
               onReset={() => { setPlacement({ triangle: null, rectangle: null }); setPadPassed(false) }}
               onPass={() => setPadPassed(true)}
@@ -165,24 +169,21 @@ export default function GuidedScenario() {
             />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
-              <button className="btn btn--primary" disabled={!padPassed} onClick={next}>
+              <button className="btn btn--primary" disabled={!padsPlaced} onClick={next}>
                 Pads on — go to the ZOLL ▸
               </button>
             </div>
           </>
         ) : stageId === 'device' ? (
           <>
-            <DeviceStage
-              level={level}
-              scenario={sc}
-              device={device}
-              onDevice={setDevice}
-              onShock={() => setShockElapsed(liveElapsed)}
-              onEvent={logEvent}
-            />
+            <h2>Defibrillate</h2>
+            <p className="muted" style={{ lineHeight: 1.6, marginTop: 0 }}>
+              {sc.title} — the patient is pulseless. <strong>Turn on the monitor</strong>, identify the rhythm, and deliver the first shock on the ZOLL. Target: within <strong>{clock(SHOCK_TARGET_S)}</strong> of recognizing pulselessness.
+            </p>
+            <GuidedDeviceHiFi scenario={sc} onShock={onDeviceShock} />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
-              <button className="btn btn--primary" disabled={!device.shocked} onClick={next}>
+              <button className="btn btn--primary" disabled={!deviceShocked} onClick={next}>
                 Shock delivered — next action ▸
               </button>
             </div>

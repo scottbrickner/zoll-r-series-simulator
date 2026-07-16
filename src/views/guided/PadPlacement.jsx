@@ -15,7 +15,7 @@ import { Torso, TrianglePadArt, RectanglePadArt } from './padArt'
  * position completes the stage. `placement` ({triangle,rectangle}) and `passed`
  * are lifted to the runner so they survive back/next navigation.
  */
-export default function PadPlacement({ placement, passed, onPlace, onReset, onPass, onEvent }) {
+export default function PadPlacement({ placement, passed, feedback = true, onPlace, onReset, onPass, onEvent }) {
   const [selected, setSelected] = useState(null) // pad type "in hand"
   const [flash, setFlash] = useState(null) // { tone, text }
 
@@ -30,10 +30,17 @@ export default function PadPlacement({ placement, passed, onPlace, onReset, onPa
 
   const place = (posId) => {
     if (passed) return
-    if (!selected) { setFlash({ tone: 'warn', text: 'Pick up a pad first — choose the CPR-feedback or the standard pad.' }); return }
+    if (!selected) {
+      if (feedback) setFlash({ tone: 'warn', text: 'Pick up a pad first — choose the CPR-feedback or the standard pad.' })
+      return
+    }
     const occupant = typeAtPos(posId)
-    if (occupant && occupant !== selected) { setFlash({ tone: 'warn', text: 'That site is taken by the other pad — remove it or choose another site.' }); return }
-    if (!isPadAllowed(selected, posId)) {
+    if (occupant && occupant !== selected) {
+      if (feedback) setFlash({ tone: 'warn', text: 'That site is taken by the other pad — remove it or choose another site.' })
+      return
+    }
+    // Validation mode (feedback=false): place anywhere, no rejection, no coaching.
+    if (feedback && !isPadAllowed(selected, posId)) {
       setFlash({ tone: 'bad', text: padRejectReason(selected) })
       onEvent?.({ type: 'pads_wrong', pad: selected, pos: posId })
       return
@@ -42,6 +49,7 @@ export default function PadPlacement({ placement, passed, onPlace, onReset, onPa
     onPlace(next)
     onEvent?.({ type: 'pads_place', pad: selected, pos: posId })
     setSelected(null)
+    if (!feedback) { setFlash(null); return } // no in-task feedback during validation
     if (next.triangle && next.rectangle) {
       // both pads placed — check that they form a valid pairing
       if (isPlacementComplete(next)) {
@@ -64,7 +72,7 @@ export default function PadPlacement({ placement, passed, onPlace, onReset, onPa
     <>
       <h2>Pad placement</h2>
       <p className="muted" style={{ lineHeight: 1.6, marginTop: 0 }}>
-        The crash cart is here. <strong>Pick up a pad</strong>, then tap where it goes on the patient. Place both pads correctly to continue.
+        The crash cart is here. <strong>Pick up a pad</strong>, then tap where it goes on the patient{feedback ? '. Place both pads correctly to continue.' : ' — place both pads, then continue.'}
       </p>
 
       {/* pad tray */}
