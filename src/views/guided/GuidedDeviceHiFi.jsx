@@ -12,7 +12,7 @@ import { softkeysForMode } from '../../components/rseries/display/DisplayWidgets
  * The device is fully interactive (rhythm identification + shock administration
  * happen on the high-fidelity simulator, not a simplified panel).
  */
-export default function GuidedDeviceHiFi({ scenario, onShock }) {
+export default function GuidedDeviceHiFi({ scenario, clearAnnounced, onShock, onBlockedShock }) {
   const sim = useSimulator()
   const { state } = sim
   const [flash, setFlash] = useState(false)
@@ -102,8 +102,25 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
 
   const viewState = blanking ? { ...state, rhythm: 'Post-Shock Artifact', running: true } : state
 
+  // Both BLS and ACLS must announce "Clear" before SHOCK does anything — the
+  // real button stays live, but a press without the callout is blocked (and
+  // reported) rather than silently doing nothing.
+  const [blockedFlash, setBlockedFlash] = useState(false)
+  const blockedTo = useRef(null)
+  const onShockGated = () => {
+    if (!clearAnnounced) {
+      onBlockedShock?.()
+      setBlockedFlash(true)
+      clearTimeout(blockedTo.current)
+      blockedTo.current = setTimeout(() => setBlockedFlash(false), 2400)
+      return
+    }
+    sim.deliverShock()
+  }
+  useEffect(() => () => clearTimeout(blockedTo.current), [])
+
   const actions = {
-    onShock: sim.deliverShock,
+    onShock: onShockGated,
     onCharge: sim.charge,
     onAnalyze: sim.analyze,
     onEnergyUp: () => sim.cycleEnergy(1),
@@ -135,8 +152,15 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
   }
 
   return (
-    <div className="guided-device-wrap">
-      <RSeriesPanel state={viewState} elapsed={elapsed} flash={flash} actions={actions} />
-    </div>
+    <>
+      {blockedFlash && (
+        <p role="status" className="g-flash g-flash--bad" style={{ marginBottom: 10 }}>
+          Announce <strong>“Clear”</strong> before pressing SHOCK — the code team must be clear of the patient first.
+        </p>
+      )}
+      <div className="guided-device-wrap">
+        <RSeriesPanel state={viewState} elapsed={elapsed} flash={flash} actions={actions} />
+      </div>
+    </>
   )
 }

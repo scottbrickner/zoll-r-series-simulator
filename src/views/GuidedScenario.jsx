@@ -37,6 +37,7 @@ export default function GuidedScenario() {
   const [shockUsedAnalyze, setShockUsedAnalyze] = useState(false) // ANALYZE pressed before first shock
   const [shockElapsed, setShockElapsed] = useState(null) // frozen time-to-shock at delivery
   const [decisionOk, setDecisionOk] = useState(false) // Phase 6 post-shock decision
+  const [clearSaid, setClearSaid] = useState(false) // "Clear" callout announced — required before SHOCK works
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
@@ -83,7 +84,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setClearSaid(false); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -245,8 +246,13 @@ export default function GuidedScenario() {
             <p className="muted" style={{ lineHeight: 1.6, marginTop: 0 }}>
               {sc.title} — the patient is pulseless. <strong>Turn on the monitor</strong>, identify the rhythm, and deliver the first shock on the ZOLL. Target: within <strong>{clock(SHOCK_TARGET_S)}</strong> of recognizing pulselessness.
             </p>
-            <NurseCallouts onSay={(id) => logEvent({ type: 'callout', id })} />
-            <GuidedDeviceHiFi scenario={sc} onShock={onDeviceShock} />
+            <NurseCallouts onSay={(id) => { logEvent({ type: 'callout', id }); if (id === 'clear') setClearSaid(true) }} />
+            <GuidedDeviceHiFi
+              scenario={sc}
+              clearAnnounced={clearSaid}
+              onShock={onDeviceShock}
+              onBlockedShock={() => logEvent({ type: 'shock_blocked' })}
+            />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
               <button className="btn btn--primary" disabled={!deviceShocked} onClick={next}>

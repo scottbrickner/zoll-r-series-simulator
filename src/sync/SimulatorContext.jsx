@@ -648,9 +648,13 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       setEnergy(ENERGIES[ni])
     }
 
-    const charge = () => {
-      const s = stateRef.current
-      if (s.mode !== 'Defib' || s.charging || s.shockReady || s.analyzing) return
+    // Shared charge-start body. `s` is a known-good state snapshot — callers
+    // are responsible for their own preconditions (see `charge()` below for
+    // the human-triggered CHARGE button; analyze()'s auto-charge passes a
+    // snapshot it just validated itself, since stateRef only syncs on the
+    // next render and would still read stale `analyzing:true` if re-checked
+    // synchronously right after analyze's own update() call in the same tick).
+    const beginCharge = (s) => {
       log({ type: 'charge_attempt', energy: s.energy })
       update({ charging: true, chargeProgress: 0, shockReady: false })
       clearInterval(chargeIvl.current)
@@ -665,6 +669,12 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
           update({ chargeProgress: p })
         }
       }, 100)
+    }
+
+    const charge = () => {
+      const s = stateRef.current
+      if (s.mode !== 'Defib' || s.charging || s.shockReady || s.analyzing) return
+      beginCharge(s)
     }
 
     const disarm = () => {
@@ -682,13 +692,19 @@ export function SimulatorProvider({ children, sessionId = DEFAULT_SESSION }) {
       update({ analyzing: true, analyzeResult: null })
       clearTimeout(analyzeTo.current)
       analyzeTo.current = setTimeout(() => {
-        const advised = stateRef.current.shockable
+        const s = stateRef.current
+        const advised = s.shockable
         update({ analyzing: false, analyzeResult: advised ? 'shock' : 'noshock' })
         log({
           type: 'analyze_result',
           result: advised ? 'shock_advised' : 'no_shock_advised',
-          rhythm: stateRef.current.rhythm,
+          rhythm: s.rhythm,
         })
+        // Real-device behavior: a shock-advised analysis begins charging
+        // automatically — the operator doesn't need a separate CHARGE press.
+        if (advised && s.mode === 'Defib' && !s.charging && !s.shockReady) {
+          beginCharge(s)
+        }
       }, ANALYZE_MS)
     }
 
