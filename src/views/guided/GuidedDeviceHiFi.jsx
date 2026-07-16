@@ -40,6 +40,13 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
     })
   }, [sim, scenario.rhythm])
 
+  // Track whether ANALYZE was ever pressed (role-appropriate feedback: BLS
+  // should use it for the shock advisory, ACLS shouldn't need it).
+  const usedAnalyze = useRef(false)
+  useEffect(() => {
+    if (state.analyzing) usedAnalyze.current = true
+  }, [state.analyzing])
+
   // Watch for the first shock: arm once shockCount reads 0 (post-setup), then
   // fire onShock on the next increment.
   const armed = useRef(false)
@@ -48,7 +55,7 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
     if (!armed.current) { if (state.shockCount === 0) armed.current = true; return }
     if (!shocked.current && state.shockCount >= 1) {
       shocked.current = true
-      onShock(state.energy)
+      onShock({ energy: state.energy, usedAnalyze: usedAnalyze.current })
     }
   }, [state.shockCount, state.energy, onShock])
 

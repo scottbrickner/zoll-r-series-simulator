@@ -33,6 +33,7 @@ export default function GuidedScenario() {
   const [padPassed, setPadPassed] = useState(false) // valid placement confirmed
   const [deviceShocked, setDeviceShocked] = useState(false) // first shock delivered on the hi-fi device
   const [shockEnergy, setShockEnergy] = useState(null) // energy at first shock
+  const [shockUsedAnalyze, setShockUsedAnalyze] = useState(false) // ANALYZE pressed before first shock
   const [shockElapsed, setShockElapsed] = useState(null) // frozen time-to-shock at delivery
   const [decisionOk, setDecisionOk] = useState(false) // Phase 6 post-shock decision
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
@@ -49,11 +50,12 @@ export default function GuidedScenario() {
     if (e.type === 'bls_correct' && e.id === 'pulse' && shockStart == null) setShockStart(Date.now())
   }
 
-  const onDeviceShock = useCallback((energy) => {
+  const onDeviceShock = useCallback(({ energy, usedAnalyze }) => {
     setDeviceShocked(true)
     setShockEnergy(energy)
+    setShockUsedAnalyze(usedAnalyze)
     setShockElapsed((prev) => (prev != null ? prev : Math.max(0, (Date.now() - shockStart) / 1000)))
-    logEvent({ type: 'dev_shock', energy })
+    logEvent({ type: 'dev_shock', energy, usedAnalyze })
   }, [shockStart])
 
   // Tick the clock display while running — until the shock is delivered (frozen)
@@ -79,7 +81,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockElapsed(null); setDecisionOk(false); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -141,6 +143,21 @@ export default function GuidedScenario() {
               )
             })()}
             <p><strong>Defibrillation:</strong> {deviceShocked ? `shock delivered${shockEnergy != null ? ` (${shockEnergy} J)` : ''}` : 'no shock delivered'}</p>
+            {deviceShocked && level === 'BLS' && !shockUsedAnalyze && (
+              <p role="status" className="g-flash g-flash--warn">
+                As a <strong>BLS</strong> provider, use <strong>ANALYZE</strong> before charging — it's how you get the shock advisory rather than reading the rhythm yourself.
+              </p>
+            )}
+            {deviceShocked && level === 'ACLS' && shockUsedAnalyze && (
+              <p role="status" className="g-flash g-flash--warn">
+                As an <strong>ACLS</strong> provider, you can identify a shockable rhythm yourself and charge directly — ANALYZE isn't necessary at your level of training.
+              </p>
+            )}
+            {deviceShocked && shockEnergy != null && shockEnergy !== 120 && (
+              <p role="status" className="g-flash g-flash--warn">
+                First shock was <strong>{shockEnergy} J</strong>. The recommended initial biphasic energy for VF / pulseless VT is <strong>120 J</strong> — {shockEnergy} J isn't unsafe, just above the standard starting dose.
+              </p>
+            )}
             {(() => {
               const shockIdx = events.findIndex((e) => e.type === 'dev_shock')
               const clearIdx = events.findIndex((e) => e.type === 'callout' && e.id === 'clear')
