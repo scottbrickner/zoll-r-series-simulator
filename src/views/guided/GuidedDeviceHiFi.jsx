@@ -32,7 +32,12 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
       hr: 0, spo2: 0, nibp: { sys: 0, dia: 0, mean: 0 },
       energy: 120,
       shockable: true, autoConvert: true, shockOutcome: 'convert', postShockRhythm: 'Normal Sinus',
-      cprActive: false, syncEnabled: false,
+      // CPR is still running while the monitor comes on and the rhythm is
+      // identified (compressions don't stop for that) — See-Thru CPR shows
+      // the raw compression-artifact trace on PADS and the clean filtered
+      // rhythm on FIL, same as the real device.
+      cprActive: true, cprRate: 110, cprDepth: 50, cprReleaseQuality: 'full',
+      syncEnabled: false,
       charging: false, chargeProgress: 0, shockReady: false, shockCount: 0,
       analyzing: false, analyzeResult: null,
       lead: 'PADS',

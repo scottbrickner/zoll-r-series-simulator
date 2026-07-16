@@ -8,6 +8,7 @@ import GuidedDeviceHiFi from './guided/GuidedDeviceHiFi'
 import NurseCallouts from './guided/NurseCallouts'
 import DecisionStage from './guided/DecisionStage'
 import SelfTestWalkthrough from './guided/SelfTestWalkthrough'
+import ScoreRow from './guided/ScoreRow'
 
 /**
  * GuidedScenario — the step-gated arrest validation runner (Phase 2 shell).
@@ -66,11 +67,12 @@ export default function GuidedScenario() {
     return () => clearInterval(tick.current)
   }, [shockStart, shockElapsed, stageId])
 
-  // The first shock should immediately move the learner on to the post-shock
-  // decision — give the shock flash/artifact a moment to register, then advance.
+  // The first shock should move the learner on to the post-shock decision
+  // right away — they need to choose to check rhythm/pulse or resume CPR
+  // immediately, so linger only long enough to register the shock flash.
   useEffect(() => {
     if (!deviceShocked) return
-    const t = setTimeout(() => next(), 1200)
+    const t = setTimeout(() => next(), 350)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deviceShocked])
@@ -125,55 +127,80 @@ export default function GuidedScenario() {
         ) : stageId === 'debrief' ? (
           <>
             <h2>Debrief</h2>
-            <p><strong>Level:</strong> {level} · <strong>Time to shock:</strong> {clock(elapsed)} {overTarget ? '(over 2:00 target)' : '(within target ✓)'}</p>
-            {(() => {
-              const missteps = events.filter((e) => e.type === 'bls_wrong' || e.type === 'bls_out_of_order').length
-              return (
-                <p><strong>BLS primary survey:</strong> {blsComplete ? 'completed' : 'incomplete'} · {missteps === 0
-                  ? 'correct sequence on the first pass ✓'
-                  : `${missteps} misstep${missteps === 1 ? '' : 's'} (wrong or out-of-order selection)`}</p>
-              )
-            })()}
-            {(() => {
-              // Placement is graded silently in validation mode (no in-task feedback).
-              const pair = matchedPair(placement)
-              const placed = !!placement.triangle && !!placement.rectangle
-              return (
-                <p><strong>Pad placement:</strong> {!placed ? 'not placed' : pair ? `correct (${pair.name}) ✓` : 'placed — configuration incorrect'}</p>
-              )
-            })()}
-            <p><strong>Defibrillation:</strong> {deviceShocked ? `shock delivered${shockEnergy != null ? ` (${shockEnergy} J)` : ''}` : 'no shock delivered'}</p>
-            {deviceShocked && level === 'BLS' && !shockUsedAnalyze && (
-              <p role="status" className="g-flash g-flash--warn">
-                As a <strong>BLS</strong> provider, use <strong>ANALYZE</strong> before charging — it's how you get the shock advisory rather than reading the rhythm yourself.
-              </p>
-            )}
-            {deviceShocked && level === 'ACLS' && shockUsedAnalyze && (
-              <p role="status" className="g-flash g-flash--warn">
-                As an <strong>ACLS</strong> provider, you can identify a shockable rhythm yourself and charge directly — ANALYZE isn't necessary at your level of training.
-              </p>
-            )}
-            {deviceShocked && shockEnergy != null && shockEnergy !== 120 && (
-              <p role="status" className="g-flash g-flash--warn">
-                First shock was <strong>{shockEnergy} J</strong>. The recommended initial biphasic energy for VF / pulseless VT is <strong>120 J</strong> — {shockEnergy} J isn't unsafe, just above the standard starting dose.
-              </p>
-            )}
-            {(() => {
-              const shockIdx = events.findIndex((e) => e.type === 'dev_shock')
-              const clearIdx = events.findIndex((e) => e.type === 'callout' && e.id === 'clear')
-              const clearedFirst = shockIdx !== -1 && clearIdx !== -1 && clearIdx < shockIdx
-              return (
-                <p><strong>Callouts:</strong> {clearIdx === -1
-                  ? '“Clear” was not announced'
-                  : clearedFirst ? '“Clear” announced before the shock ✓' : '“Clear” announced after the shock'}</p>
-              )
-            })()}
-            {(() => {
-              const wrong = events.filter((e) => e.type === 'decision_wrong').length
-              return (
-                <p><strong>Post-shock action:</strong> {decisionOk ? 'resumed CPR immediately' : 'not completed'}{wrong > 0 ? ` · ${wrong} incorrect attempt${wrong === 1 ? '' : 's'}` : decisionOk ? ' — first attempt ✓' : ''}</p>
-              )
-            })()}
+            <p className="muted" style={{ marginTop: 0 }}>{level} provider</p>
+            <div className="score-list">
+              <ScoreRow tone={overTarget ? 'bad' : 'good'} title={`Time to shock: ${clock(elapsed)}`}>
+                {overTarget ? `over the ${clock(SHOCK_TARGET_S)} target` : `within the ${clock(SHOCK_TARGET_S)} target`}
+              </ScoreRow>
+
+              {(() => {
+                const missteps = events.filter((e) => e.type === 'bls_wrong' || e.type === 'bls_out_of_order').length
+                return (
+                  <ScoreRow tone={!blsComplete ? 'bad' : missteps === 0 ? 'good' : 'coach'} title="BLS primary survey">
+                    {!blsComplete ? 'not completed' : missteps === 0
+                      ? 'correct sequence, first attempt'
+                      : `completed with ${missteps} misstep${missteps === 1 ? '' : 's'} (wrong or out-of-order selection)`}
+                  </ScoreRow>
+                )
+              })()}
+
+              {(() => {
+                const pair = matchedPair(placement)
+                const placed = !!placement.triangle && !!placement.rectangle
+                return (
+                  <ScoreRow tone={!placed ? 'bad' : pair ? 'good' : 'bad'} title="Pad placement">
+                    {!placed ? 'not placed' : pair ? `correct — ${pair.name}` : 'placed, but the configuration was incorrect'}
+                  </ScoreRow>
+                )
+              })()}
+
+              <ScoreRow tone={deviceShocked ? 'good' : 'bad'} title="Defibrillation">
+                {deviceShocked ? `shock delivered${shockEnergy != null ? ` at ${shockEnergy} J` : ''}` : 'no shock delivered'}
+              </ScoreRow>
+
+              {deviceShocked && shockEnergy != null && (
+                <ScoreRow tone={shockEnergy === 120 ? 'good' : 'coach'} title="Initial energy selection">
+                  {shockEnergy === 120
+                    ? '120 J — the recommended initial biphasic dose'
+                    : `${shockEnergy} J — 120 J is the recommended initial dose for VF / pulseless VT (not unsafe, just above standard)`}
+                </ScoreRow>
+              )}
+
+              {deviceShocked && (() => {
+                const mismatch = (level === 'BLS' && !shockUsedAnalyze) || (level === 'ACLS' && shockUsedAnalyze)
+                return (
+                  <ScoreRow tone={mismatch ? 'coach' : 'good'} title="Device workflow">
+                    {level === 'BLS'
+                      ? (shockUsedAnalyze ? 'used ANALYZE for the shock advisory' : 'charged directly — as a BLS provider, press ANALYZE first for the shock advisory')
+                      : (shockUsedAnalyze ? 'used ANALYZE — as an ACLS provider you can identify the rhythm and charge directly' : 'identified the rhythm and charged directly')}
+                  </ScoreRow>
+                )
+              })()}
+
+              {(() => {
+                const shockIdx = events.findIndex((e) => e.type === 'dev_shock')
+                const clearIdx = events.findIndex((e) => e.type === 'callout' && e.id === 'clear')
+                const clearedFirst = shockIdx !== -1 && clearIdx !== -1 && clearIdx < shockIdx
+                return (
+                  <ScoreRow tone={clearIdx === -1 ? 'bad' : clearedFirst ? 'good' : 'coach'} title="Verbal callouts">
+                    {clearIdx === -1
+                      ? '“Clear” was not announced'
+                      : clearedFirst ? '“Clear” announced before the shock' : '“Clear” announced, but after the shock'}
+                  </ScoreRow>
+                )
+              })()}
+
+              {(() => {
+                const wrong = events.filter((e) => e.type === 'decision_wrong').length
+                return (
+                  <ScoreRow tone={!decisionOk ? 'bad' : wrong === 0 ? 'good' : 'coach'} title="Post-shock decision">
+                    {!decisionOk ? 'not completed' : wrong === 0
+                      ? 'resumed CPR immediately, first attempt'
+                      : `resumed CPR immediately, after ${wrong} incorrect attempt${wrong === 1 ? '' : 's'}`}
+                  </ScoreRow>
+                )
+              })()}
+            </div>
             <SelfTestWalkthrough />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn" onClick={restart}>Restart</button>
