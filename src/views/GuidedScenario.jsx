@@ -5,6 +5,7 @@ import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
 import GuidedDeviceHiFi from './guided/GuidedDeviceHiFi'
+import NurseCallouts from './guided/NurseCallouts'
 import DecisionStage from './guided/DecisionStage'
 import SelfTestWalkthrough from './guided/SelfTestWalkthrough'
 
@@ -52,6 +53,7 @@ export default function GuidedScenario() {
     setDeviceShocked(true)
     setShockEnergy(energy)
     setShockElapsed((prev) => (prev != null ? prev : Math.max(0, (Date.now() - shockStart) / 1000)))
+    logEvent({ type: 'dev_shock', energy })
   }, [shockStart])
 
   // Tick the clock display while running — until the shock is delivered (frozen)
@@ -61,6 +63,15 @@ export default function GuidedScenario() {
     tick.current = setInterval(() => setNow(Date.now()), 500)
     return () => clearInterval(tick.current)
   }, [shockStart, shockElapsed, stageId])
+
+  // The first shock should immediately move the learner on to the post-shock
+  // decision — give the shock flash/artifact a moment to register, then advance.
+  useEffect(() => {
+    if (!deviceShocked) return
+    const t = setTimeout(() => next(), 1200)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deviceShocked])
 
   const liveElapsed = shockStart == null ? 0 : Math.max(0, (now - shockStart) / 1000)
   const elapsed = shockElapsed != null ? shockElapsed : liveElapsed // freeze at shock
@@ -131,6 +142,16 @@ export default function GuidedScenario() {
             })()}
             <p><strong>Defibrillation:</strong> {deviceShocked ? `shock delivered${shockEnergy != null ? ` (${shockEnergy} J)` : ''}` : 'no shock delivered'}</p>
             {(() => {
+              const shockIdx = events.findIndex((e) => e.type === 'dev_shock')
+              const clearIdx = events.findIndex((e) => e.type === 'callout' && e.id === 'clear')
+              const clearedFirst = shockIdx !== -1 && clearIdx !== -1 && clearIdx < shockIdx
+              return (
+                <p><strong>Callouts:</strong> {clearIdx === -1
+                  ? '“Clear” was not announced'
+                  : clearedFirst ? '“Clear” announced before the shock ✓' : '“Clear” announced after the shock'}</p>
+              )
+            })()}
+            {(() => {
               const wrong = events.filter((e) => e.type === 'decision_wrong').length
               return (
                 <p><strong>Post-shock action:</strong> {decisionOk ? 'resumed CPR immediately' : 'not completed'}{wrong > 0 ? ` · ${wrong} incorrect attempt${wrong === 1 ? '' : 's'}` : decisionOk ? ' — first attempt ✓' : ''}</p>
@@ -180,11 +201,12 @@ export default function GuidedScenario() {
             <p className="muted" style={{ lineHeight: 1.6, marginTop: 0 }}>
               {sc.title} — the patient is pulseless. <strong>Turn on the monitor</strong>, identify the rhythm, and deliver the first shock on the ZOLL. Target: within <strong>{clock(SHOCK_TARGET_S)}</strong> of recognizing pulselessness.
             </p>
+            <NurseCallouts onSay={(id) => logEvent({ type: 'callout', id })} />
             <GuidedDeviceHiFi scenario={sc} onShock={onDeviceShock} />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
               <button className="btn btn--primary" disabled={!deviceShocked} onClick={next}>
-                Shock delivered — next action ▸
+                {deviceShocked ? 'Advancing…' : 'Shock delivered — next action ▸'}
               </button>
             </div>
           </>
