@@ -18,7 +18,10 @@ export default function Learner() {
   const [flash, setFlash] = useState(false)
   const [blanking, setBlanking] = useState(false)
   const [elapsed, setElapsed] = useState('0:00')
-  const lastEventAt = useRef(null)
+  // Seed with whatever event is already on the (possibly reloaded/reused)
+  // session state at mount, so a leftover shock from earlier isn't replayed
+  // as new the moment this view opens.
+  const lastEventAt = useRef(state.lastEvent?.at ?? null)
   const startRef = useRef(Date.now())
 
   useEffect(() => {
@@ -37,11 +40,18 @@ export default function Learner() {
   }, [state.mode])
 
   // React to a shock: flash + blank/disrupt the ECG (post-shock artifact).
+  // Depend on the event's timestamp (a stable primitive), not the event
+  // object reference — `state` is rebuilt on every unrelated update (CPR
+  // ticks, clock ticks, …), so depending on object identity re-ran this
+  // effect constantly; each re-run's cleanup cancelled the pending
+  // "clear blanking" timer before it fired, leaving the display stuck on
+  // the post-shock artifact forever.
+  const lastEventType = state.lastEvent?.type
+  const lastEventTs = state.lastEvent?.at
   useEffect(() => {
-    const evt = state.lastEvent
-    if (!evt || evt.at === lastEventAt.current) return
-    lastEventAt.current = evt.at
-    if (evt.type === 'shock') {
+    if (lastEventTs == null || lastEventTs === lastEventAt.current) return
+    lastEventAt.current = lastEventTs
+    if (lastEventType === 'shock') {
       setFlash(true)
       setBlanking(true)
       const tf = setTimeout(() => setFlash(false), 250)
@@ -51,7 +61,7 @@ export default function Learner() {
         clearTimeout(tb)
       }
     }
-  }, [state.lastEvent])
+  }, [lastEventTs, lastEventType])
 
   // During the post-shock window, force the disrupted artifact trace.
   const viewState = blanking ? { ...state, rhythm: 'Post-Shock Artifact', running: true } : state

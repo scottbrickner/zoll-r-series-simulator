@@ -210,7 +210,14 @@ const WAVEFORMS = {
   'Sinus Tachycardia': () => regular(8, { p: 4, q: 3, r: 28, s: 12, t: 6 }),
   SVT: () => regular(10, { hasP: false, p: 0, q: 2, r: 24, s: 9, t: 4 }),
   'Atrial Fibrillation': () => afib(),
-  'Ventricular Tachycardia': () => regular(6, { hasP: false, p: 0, q: 0, r: 26, s: 24, t: 0, wide: true }),
+  // Monomorphic VT — a smooth, continuous, regular wide-complex undulation
+  // (beats run together, no isoelectric baseline between them, unlike a
+  // narrow-complex rhythm). A small second harmonic keeps it from reading as
+  // a perfect sine wave (that's the classic hyperkalemic "sine wave" look);
+  // still fully periodic/monomorphic (single dominant rate, no beat-to-beat
+  // chaos — that's what distinguishes it from VF/torsades below).
+  'Ventricular Tachycardia': () =>
+    sampled((x) => BASE + 24 * Math.sin(cyc(6) * x) - 6 * Math.sin(cyc(12) * x + 1.0), 1),
   // Coarse VF — chaotic but periodic over W (integer cycles → seamless scroll).
   'Ventricular Fibrillation': () =>
     sampled(
@@ -269,7 +276,7 @@ const MARKERS = {
   'Sinus Tachycardia': beats(8, 0.34),
   SVT: beats(10, 0.34),
   'Atrial Fibrillation': [24, 70, 132, 176, 208, 262],
-  'Ventricular Tachycardia': beats(6, 0.42),
+  'Ventricular Tachycardia': beats(6, 0.25),
   PEA: beats(4, 0.42),
   'Paced (Capture)': beats(5, 0.36),
 }

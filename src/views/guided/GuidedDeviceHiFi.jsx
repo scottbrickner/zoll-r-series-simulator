@@ -18,7 +18,10 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
   const [flash, setFlash] = useState(false)
   const [blanking, setBlanking] = useState(false)
   const [elapsed, setElapsed] = useState('0:00')
-  const lastEventAt = useRef(null)
+  // Seed with whatever event is ALREADY on the (possibly reused) session state
+  // at mount, so a leftover shock from a previous attempt (Restart, or even a
+  // page reload) is treated as already-seen, not replayed as new.
+  const lastEventAt = useRef(state.lastEvent?.at ?? null)
   const startRef = useRef(Date.now())
 
   // Load the shockable arrest onto the device, powered OFF, exactly once.
@@ -42,6 +45,9 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
       analyzing: false, analyzeResult: null,
       lead: 'PADS',
       learnerMode: 'validation', notesPanelOn: false,
+      // Clear any leftover shock event from a prior attempt in this session so
+      // it can't be replayed as "new" (by this view or any other open window).
+      lastEvent: null,
     })
   }, [sim, scenario.rhythm])
 
@@ -75,18 +81,24 @@ export default function GuidedDeviceHiFi({ scenario, onShock }) {
     return () => clearInterval(id)
   }, [state.mode])
 
-  // Post-shock flash + artifact blank.
+  // Post-shock flash + artifact blank. Depend on the event's timestamp (a
+  // stable primitive), not the event object reference — `state` is rebuilt on
+  // every unrelated update (CPR ticks, clock ticks, …), so depending on the
+  // object identity re-ran this effect constantly; each re-run's cleanup
+  // cancelled the pending "clear blanking" timer before it could fire,
+  // leaving the display stuck on the post-shock artifact forever.
+  const lastEventType = state.lastEvent?.type
+  const lastEventTs = state.lastEvent?.at
   useEffect(() => {
-    const evt = state.lastEvent
-    if (!evt || evt.at === lastEventAt.current) return
-    lastEventAt.current = evt.at
-    if (evt.type === 'shock') {
+    if (lastEventTs == null || lastEventTs === lastEventAt.current) return
+    lastEventAt.current = lastEventTs
+    if (lastEventType === 'shock') {
       setFlash(true); setBlanking(true)
       const tf = setTimeout(() => setFlash(false), 250)
       const tb = setTimeout(() => setBlanking(false), 1500)
       return () => { clearTimeout(tf); clearTimeout(tb) }
     }
-  }, [state.lastEvent])
+  }, [lastEventTs, lastEventType])
 
   const viewState = blanking ? { ...state, rhythm: 'Post-Shock Artifact', running: true } : state
 
