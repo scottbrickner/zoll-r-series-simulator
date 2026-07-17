@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { GUIDED_STAGES, SHOCK_TARGET_S, BLS_SEQUENCE, matchedPair, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
+import { GUIDED_STAGES, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
+import { buildCriteria, suggestOutcome, buildSignoffRecord, exportSignoffJSON, exportSignoffCSV } from '../sync/guidedSignoff'
 import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
@@ -9,6 +10,7 @@ import NurseCallouts from './guided/NurseCallouts'
 import DecisionStage from './guided/DecisionStage'
 import SelfTestWalkthrough from './guided/SelfTestWalkthrough'
 import ScoreRow from './guided/ScoreRow'
+import SignoffPanel from './guided/SignoffPanel'
 
 /**
  * GuidedScenario — the step-gated arrest validation runner (Phase 2 shell).
@@ -27,6 +29,8 @@ export default function GuidedScenario() {
 
   const [stage, setStage] = useState(0)
   const [level, setLevel] = useState(null) // 'BLS' | 'ACLS'
+  const [learnerName, setLearnerName] = useState('')
+  const [signoff, setSignoff] = useState(null) // signed record { evaluatorName, evaluatorTitle, finalOutcome, signedAt }
   const [shockStart, setShockStart] = useState(null)
   const [now, setNow] = useState(Date.now())
   const [blsDone, setBlsDone] = useState([]) // ordered ids completed in the BLS survey
@@ -84,7 +88,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setClearSaid(false); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setLearnerName(''); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setClearSaid(false); setSignoff(null); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -115,6 +119,16 @@ export default function GuidedScenario() {
           <>
             <h2>Case</h2>
             <p style={{ lineHeight: 1.6 }}>{sc.case}</p>
+            <label style={{ display: 'block', maxWidth: 320, marginBottom: '0.9rem' }}>
+              <span style={{ display: 'block', fontSize: '0.78rem', color: '#5b5750', marginBottom: 4, fontWeight: 600 }}>Learner (nurse) name</span>
+              <input
+                type="text"
+                value={learnerName}
+                onChange={(e) => setLearnerName(e.target.value)}
+                placeholder="Full name"
+                style={{ width: '100%', background: '#fff', color: '#1a1a1a', border: '1px solid #e7e2da', borderRadius: 8, padding: '0.5rem 0.6rem', fontSize: '0.92rem' }}
+              />
+            </label>
             <p className="muted">Choose your provider level for this session:</p>
             <div className="row">
               {['BLS', 'ACLS'].map((lv) => (
@@ -122,86 +136,44 @@ export default function GuidedScenario() {
               ))}
             </div>
             <div className="row" style={{ marginTop: '1rem' }}>
-              <button className="btn btn--primary" disabled={!level} onClick={next}>Begin — go to the patient ▸</button>
+              <button className="btn btn--primary" disabled={!level || !learnerName.trim()} onClick={next}>Begin — go to the patient ▸</button>
             </div>
           </>
         ) : stageId === 'debrief' ? (
           <>
             <h2>Debrief</h2>
-            <p className="muted" style={{ marginTop: 0 }}>{level} provider</p>
-            <div className="score-list">
-              <ScoreRow tone={overTarget ? 'bad' : 'good'} title={`Time to shock: ${clock(elapsed)}`}>
-                {overTarget ? `over the ${clock(SHOCK_TARGET_S)} target` : `within the ${clock(SHOCK_TARGET_S)} target`}
-              </ScoreRow>
-
-              {(() => {
-                const missteps = events.filter((e) => e.type === 'bls_wrong' || e.type === 'bls_out_of_order').length
-                return (
-                  <ScoreRow tone={!blsComplete ? 'bad' : missteps === 0 ? 'good' : 'coach'} title="BLS primary survey">
-                    {!blsComplete ? 'not completed' : missteps === 0
-                      ? 'correct sequence, first attempt'
-                      : `completed with ${missteps} misstep${missteps === 1 ? '' : 's'} (wrong or out-of-order selection)`}
-                  </ScoreRow>
-                )
-              })()}
-
-              {(() => {
-                const pair = matchedPair(placement)
-                const placed = !!placement.triangle && !!placement.rectangle
-                return (
-                  <ScoreRow tone={!placed ? 'bad' : pair ? 'good' : 'bad'} title="Pad placement">
-                    {!placed ? 'not placed' : pair ? `correct — ${pair.name}` : 'placed, but the configuration was incorrect'}
-                  </ScoreRow>
-                )
-              })()}
-
-              <ScoreRow tone={deviceShocked ? 'good' : 'bad'} title="Defibrillation">
-                {deviceShocked ? `shock delivered${shockEnergy != null ? ` at ${shockEnergy} J` : ''}` : 'no shock delivered'}
-              </ScoreRow>
-
-              {deviceShocked && shockEnergy != null && (
-                <ScoreRow tone={shockEnergy === 120 ? 'good' : 'coach'} title="Initial energy selection">
-                  {shockEnergy === 120
-                    ? '120 J — the recommended initial biphasic dose'
-                    : `${shockEnergy} J — 120 J is the recommended initial dose for VF / pulseless VT (not unsafe, just above standard)`}
-                </ScoreRow>
-              )}
-
-              {deviceShocked && (() => {
-                const mismatch = (level === 'BLS' && !shockUsedAnalyze) || (level === 'ACLS' && shockUsedAnalyze)
-                return (
-                  <ScoreRow tone={mismatch ? 'coach' : 'good'} title="Device workflow">
-                    {level === 'BLS'
-                      ? (shockUsedAnalyze ? 'used ANALYZE for the shock advisory' : 'charged directly — as a BLS provider, press ANALYZE first for the shock advisory')
-                      : (shockUsedAnalyze ? 'used ANALYZE — as an ACLS provider you can identify the rhythm and charge directly' : 'identified the rhythm and charged directly')}
-                  </ScoreRow>
-                )
-              })()}
-
-              {(() => {
-                const shockIdx = events.findIndex((e) => e.type === 'dev_shock')
-                const clearIdx = events.findIndex((e) => e.type === 'callout' && e.id === 'clear')
-                const clearedFirst = shockIdx !== -1 && clearIdx !== -1 && clearIdx < shockIdx
-                return (
-                  <ScoreRow tone={clearIdx === -1 ? 'bad' : clearedFirst ? 'good' : 'coach'} title="Verbal callouts">
-                    {clearIdx === -1
-                      ? '“Clear” was not announced'
-                      : clearedFirst ? '“Clear” announced before the shock' : '“Clear” announced, but after the shock'}
-                  </ScoreRow>
-                )
-              })()}
-
-              {(() => {
-                const wrong = events.filter((e) => e.type === 'decision_wrong').length
-                return (
-                  <ScoreRow tone={!decisionOk ? 'bad' : wrong === 0 ? 'good' : 'coach'} title="Post-shock decision">
-                    {!decisionOk ? 'not completed' : wrong === 0
-                      ? 'resumed CPR immediately, first attempt'
-                      : `resumed CPR immediately, after ${wrong} incorrect attempt${wrong === 1 ? '' : 's'}`}
-                  </ScoreRow>
-                )
-              })()}
-            </div>
+            <p className="muted" style={{ marginTop: 0 }}>{learnerName} · {level} provider</p>
+            {(() => {
+              const criteria = buildCriteria({
+                elapsedLabel: clock(elapsed), targetLabel: clock(SHOCK_TARGET_S), overTarget,
+                blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk,
+              })
+              const autoSuggested = suggestOutcome(criteria)
+              const sign = ({ evaluatorName, evaluatorTitle, outcome }) => {
+                const record = buildSignoffRecord({
+                  scenario: sc, level, learnerName, criteria, autoSuggested, finalOutcome: outcome,
+                  evaluatorName, evaluatorTitle, signedAt: Date.now(), timeToShockSeconds: elapsed, shockEnergy,
+                })
+                setSignoff(record)
+              }
+              return (
+                <>
+                  <div className="score-list">
+                    {criteria.map((c) => (
+                      <ScoreRow key={c.key} tone={c.tone} title={c.title}>{c.detail}</ScoreRow>
+                    ))}
+                  </div>
+                  <SignoffPanel
+                    autoSuggested={autoSuggested}
+                    signed={signoff}
+                    onSign={sign}
+                    onRevise={() => setSignoff(null)}
+                    onExportJSON={() => exportSignoffJSON(signoff)}
+                    onExportCSV={() => exportSignoffCSV(signoff)}
+                  />
+                </>
+              )
+            })()}
             <SelfTestWalkthrough />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn" onClick={restart}>Restart</button>

@@ -69,7 +69,7 @@ function alarmState(e) {
   return e.ctx && e.ctx.alarmsSuspended ? 'suspended' : ''
 }
 
-function csvCell(v) {
+export function csvCell(v) {
   if (v == null) return ''
   const s = String(v)
   return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
