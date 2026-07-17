@@ -16,6 +16,11 @@
 import { matchedPair } from './guidedScenarios'
 import { download, csvCell, iso } from './report'
 
+/** Institutional email check — Keck/USC med.usc.edu addresses only. */
+export function isKeckEmail(s) {
+  return /^[^\s@]+@med\.usc\.edu$/i.test(String(s || '').trim())
+}
+
 /**
  * @param {object} ctx
  * @param {string} ctx.elapsedLabel - formatted time-to-shock (e.g. "1:24")
@@ -107,13 +112,13 @@ export function buildCriteria(ctx) {
   return criteria
 }
 
-/** PASS unless any criterion needs review (red) — the SME can still override. */
+/** COMPETENT unless any criterion needs review (red) — the SME can still override. */
 export function suggestOutcome(criteria) {
-  return criteria.some((c) => c.tone === 'bad') ? 'FAIL' : 'PASS'
+  return criteria.some((c) => c.tone === 'bad') ? 'NYDC' : 'COMPETENT'
 }
 
 /** Build the exportable sign-off record from the runner's state + SME attestation. */
-export function buildSignoffRecord({ scenario, level, learnerName, criteria, autoSuggested, finalOutcome, evaluatorName, evaluatorTitle, signedAt, timeToShockSeconds, shockEnergy }) {
+export function buildSignoffRecord({ scenario, level, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome, evaluatorName, evaluatorEmail, evaluatorTitle, signedAt, timeToShockSeconds, shockEnergy }) {
   return {
     recordType: 'guided-defib-signoff',
     scenarioId: scenario.id,
@@ -121,20 +126,22 @@ export function buildSignoffRecord({ scenario, level, learnerName, criteria, aut
     rhythm: scenario.rhythm,
     level,
     learnerName,
+    learnerEmail,
     timeToShockSeconds: timeToShockSeconds != null ? Math.round(timeToShockSeconds) : null,
     shockEnergyJ: shockEnergy,
     criteria: criteria.map(({ key, title, tone, detail }) => ({ key, title, tone, detail })),
     autoSuggestedOutcome: autoSuggested,
     finalOutcome,
     evaluatorName,
+    evaluatorEmail,
     evaluatorTitle,
     signedAt: iso(signedAt),
   }
 }
 
 const SIGNOFF_CSV_COLUMNS = [
-  'scenarioTitle', 'level', 'learnerName', 'timeToShockSeconds', 'shockEnergyJ',
-  'evaluatorName', 'evaluatorTitle', 'signedAt', 'autoSuggestedOutcome', 'finalOutcome',
+  'scenarioTitle', 'level', 'learnerName', 'learnerEmail', 'timeToShockSeconds', 'shockEnergyJ',
+  'evaluatorName', 'evaluatorEmail', 'evaluatorTitle', 'signedAt', 'autoSuggestedOutcome', 'finalOutcome',
   'criterionKey', 'criterionTitle', 'tone', 'detail',
 ]
 
@@ -143,9 +150,9 @@ export function signoffToCSV(record) {
   const rows = [SIGNOFF_CSV_COLUMNS.join(',')]
   for (const c of record.criteria) {
     const row = {
-      scenarioTitle: record.scenarioTitle, level: record.level, learnerName: record.learnerName,
+      scenarioTitle: record.scenarioTitle, level: record.level, learnerName: record.learnerName, learnerEmail: record.learnerEmail,
       timeToShockSeconds: record.timeToShockSeconds, shockEnergyJ: record.shockEnergyJ,
-      evaluatorName: record.evaluatorName, evaluatorTitle: record.evaluatorTitle, signedAt: record.signedAt,
+      evaluatorName: record.evaluatorName, evaluatorEmail: record.evaluatorEmail, evaluatorTitle: record.evaluatorTitle, signedAt: record.signedAt,
       autoSuggestedOutcome: record.autoSuggestedOutcome, finalOutcome: record.finalOutcome,
       criterionKey: c.key, criterionTitle: c.title, tone: c.tone, detail: c.detail,
     }

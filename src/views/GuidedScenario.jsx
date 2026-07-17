@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { GUIDED_STAGES, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
-import { buildCriteria, suggestOutcome, buildSignoffRecord, exportSignoffJSON, exportSignoffCSV } from '../sync/guidedSignoff'
+import { buildCriteria, suggestOutcome, buildSignoffRecord, exportSignoffJSON, exportSignoffCSV, isKeckEmail } from '../sync/guidedSignoff'
 import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
@@ -30,6 +30,7 @@ export default function GuidedScenario() {
   const [stage, setStage] = useState(0)
   const [level, setLevel] = useState(null) // 'BLS' | 'ACLS'
   const [learnerName, setLearnerName] = useState('')
+  const [learnerEmail, setLearnerEmail] = useState('')
   const [signoff, setSignoff] = useState(null) // signed record { evaluatorName, evaluatorTitle, finalOutcome, signedAt }
   const [shockStart, setShockStart] = useState(null)
   const [now, setNow] = useState(Date.now())
@@ -88,7 +89,7 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setLearnerName(''); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setClearSaid(false); setSignoff(null); setEvents([]) }
+  const restart = () => { setStage(0); setLevel(null); setLearnerName(''); setLearnerEmail(''); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setClearSaid(false); setSignoff(null); setEvents([]) }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -117,18 +118,62 @@ export default function GuidedScenario() {
       <section className="panel">
         {stageId === 'intro' ? (
           <>
-            <h2>Case</h2>
+            <h2>Annual Defibrillation Skill Validation</h2>
+
+            <section style={{ border: '1px solid #e7e2da', borderRadius: 12, padding: '1rem 1.1rem', background: '#fffdf7', marginBottom: '1rem' }}>
+              <h3 style={{ margin: '0 0 6px' }}>What this validates</h3>
+              <ul className="muted" style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.6 }}>
+                <li>Recognizing and confirming a shockable rhythm (VF / pulseless VT) through the BLS primary survey</li>
+                <li>Activating the emergency response system promptly</li>
+                <li>Applying defibrillation pads in a correct configuration (anterolateral or anterior–posterior)</li>
+                <li>Operating the ZOLL R Series appropriately for your provider level — BLS: ANALYZE for the shock advisory; ACLS: identify the rhythm and select the correct initial energy</li>
+                <li>Delivering the first shock within <strong>2 minutes</strong> of identifying pulselessness</li>
+                <li>Communicating safety callouts — including stating <strong>“Clear”</strong> before defibrillating</li>
+                <li>Taking the correct action immediately after the shock</li>
+              </ul>
+            </section>
+
+            <section style={{ border: '1px solid #e7e2da', borderRadius: 12, padding: '1rem 1.1rem', background: '#fffdf7', marginBottom: '1rem' }}>
+              <h3 style={{ margin: '0 0 6px' }}>How to use this simulation</h3>
+              <ul className="muted" style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.6 }}>
+                <li>Work through the steps in order, shown as chips at the top (Case → BLS → Pads → Shock → Next → Debrief)</li>
+                <li>Some steps require a specific action before you can continue (e.g. the BLS survey, in order); others — like pad placement — let you proceed and are scored afterward</li>
+                <li>Use <strong>◂ Back</strong> if you need to review a previous step</li>
+                <li>On the ZOLL device, operate the controls exactly as you would on the real unit</li>
+                <li>Say the callout phrases out loud as you would in a real code — “Clear” is required before SHOCK will work</li>
+                <li>At the end, an SME reviews your performance and signs off on this session</li>
+              </ul>
+            </section>
+
+            <h3 style={{ margin: '0 0 4px' }}>Case</h3>
             <p style={{ lineHeight: 1.6 }}>{sc.case}</p>
-            <label style={{ display: 'block', maxWidth: 320, marginBottom: '0.9rem' }}>
-              <span style={{ display: 'block', fontSize: '0.78rem', color: '#5b5750', marginBottom: 4, fontWeight: 600 }}>Learner (nurse) name</span>
-              <input
-                type="text"
-                value={learnerName}
-                onChange={(e) => setLearnerName(e.target.value)}
-                placeholder="Full name"
-                style={{ width: '100%', background: '#fff', color: '#1a1a1a', border: '1px solid #e7e2da', borderRadius: 8, padding: '0.5rem 0.6rem', fontSize: '0.92rem' }}
-              />
-            </label>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) minmax(220px, 1fr)', gap: 10, maxWidth: 560, marginBottom: '0.9rem' }}>
+              <label>
+                <span style={{ display: 'block', fontSize: '0.78rem', color: '#5b5750', marginBottom: 4, fontWeight: 600 }}>Learner (nurse) name</span>
+                <input
+                  type="text"
+                  value={learnerName}
+                  onChange={(e) => setLearnerName(e.target.value)}
+                  placeholder="Full name"
+                  style={{ width: '100%', background: '#fff', color: '#1a1a1a', border: '1px solid #e7e2da', borderRadius: 8, padding: '0.5rem 0.6rem', fontSize: '0.92rem' }}
+                />
+              </label>
+              <label>
+                <span style={{ display: 'block', fontSize: '0.78rem', color: '#5b5750', marginBottom: 4, fontWeight: 600 }}>Learner email</span>
+                <input
+                  type="email"
+                  value={learnerEmail}
+                  onChange={(e) => setLearnerEmail(e.target.value)}
+                  placeholder="you@med.usc.edu"
+                  style={{ width: '100%', background: '#fff', color: '#1a1a1a', border: `1px solid ${learnerEmail && !isKeckEmail(learnerEmail) ? '#c62828' : '#e7e2da'}`, borderRadius: 8, padding: '0.5rem 0.6rem', fontSize: '0.92rem' }}
+                />
+              </label>
+            </div>
+            {learnerEmail && !isKeckEmail(learnerEmail) && (
+              <p style={{ margin: '-4px 0 10px', fontSize: '0.78rem', color: '#c62828' }}>Must be a Keck email address (ends in @med.usc.edu).</p>
+            )}
+
             <p className="muted">Choose your provider level for this session:</p>
             <div className="row">
               {['BLS', 'ACLS'].map((lv) => (
@@ -136,23 +181,23 @@ export default function GuidedScenario() {
               ))}
             </div>
             <div className="row" style={{ marginTop: '1rem' }}>
-              <button className="btn btn--primary" disabled={!level || !learnerName.trim()} onClick={next}>Begin — go to the patient ▸</button>
+              <button className="btn btn--primary" disabled={!level || !learnerName.trim() || !isKeckEmail(learnerEmail)} onClick={next}>Begin — go to the patient ▸</button>
             </div>
           </>
         ) : stageId === 'debrief' ? (
           <>
             <h2>Debrief</h2>
-            <p className="muted" style={{ marginTop: 0 }}>{learnerName} · {level} provider</p>
+            <p className="muted" style={{ marginTop: 0 }}>{learnerName} · {learnerEmail} · {level} provider</p>
             {(() => {
               const criteria = buildCriteria({
                 elapsedLabel: clock(elapsed), targetLabel: clock(SHOCK_TARGET_S), overTarget,
                 blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk,
               })
               const autoSuggested = suggestOutcome(criteria)
-              const sign = ({ evaluatorName, evaluatorTitle, outcome }) => {
+              const sign = ({ evaluatorName, evaluatorEmail, evaluatorTitle, outcome }) => {
                 const record = buildSignoffRecord({
-                  scenario: sc, level, learnerName, criteria, autoSuggested, finalOutcome: outcome,
-                  evaluatorName, evaluatorTitle, signedAt: Date.now(), timeToShockSeconds: elapsed, shockEnergy,
+                  scenario: sc, level, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome: outcome,
+                  evaluatorName, evaluatorEmail, evaluatorTitle, signedAt: Date.now(), timeToShockSeconds: elapsed, shockEnergy,
                 })
                 setSignoff(record)
               }
