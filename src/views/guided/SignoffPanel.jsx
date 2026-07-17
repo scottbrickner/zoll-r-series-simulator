@@ -22,7 +22,7 @@ const OUTCOME_LABEL = { COMPETENT: 'Competent', NYDC: 'NYDC (Not Yet Deemed Comp
  * sign-off on a given browser prompts for the folder once, then later ones
  * save silently); browsers without that API fall back to a download.
  */
-export default function SignoffPanel({ autoSuggested, signed, onSign, onRevise }) {
+export default function SignoffPanel({ sessionType, autoSuggested, signed, onSign, onRevise }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [title, setTitle] = useState('')
@@ -77,6 +77,12 @@ export default function SignoffPanel({ autoSuggested, signed, onSign, onRevise }
         <p className="muted" style={{ margin: 0 }}>
           {signed.evaluatorName}{signed.evaluatorTitle ? `, ${signed.evaluatorTitle}` : ''} · {signed.evaluatorEmail} · {new Date(signed.signedAt).toLocaleString()}
         </p>
+
+        {sessionType === 'validation' && signed.finalOutcome === 'NYDC' && (
+          <p style={{ margin: '0.6rem 0 0', fontSize: '0.88rem', color: '#8a2c26' }}>
+            Recommend one or more Practice (Guided) sessions before the next Validation attempt.
+          </p>
+        )}
 
         {isFolderSaveSupported() ? (
           <div style={{ marginTop: '0.8rem' }}>

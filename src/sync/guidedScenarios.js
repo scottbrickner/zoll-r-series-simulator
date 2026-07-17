@@ -19,8 +19,12 @@ export const GUIDED_STAGES = [
 
 /** The stage where the time-to-shock clock starts (rhythm identification). */
 export const SHOCK_CLOCK_STAGE = 'device'
-/** Target time-to-shock (seconds). */
+/** Target time-to-shock (seconds) — the clock actually starts at BLS pulselessness confirmation. */
 export const SHOCK_TARGET_S = 120
+/** Extra seconds beyond the target that are still a coaching opportunity, not a hard miss. */
+export const SHOCK_FAIL_CUSHION_S = 30
+/** Simulated crash-cart-arrival delay (ms) added to the clock when leaving the BLS survey for pad placement. */
+export const CRASH_CART_DELAY_MS = [15000, 25000]
 
 /**
  * BLS primary survey — the ordered set of actions the learner must select IN

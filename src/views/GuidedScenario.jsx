@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { GUIDED_STAGES, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
+import { GUIDED_STAGES, SHOCK_TARGET_S, CRASH_CART_DELAY_MS, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
 import { buildCriteria, suggestOutcome, buildSignoffRecord, isKeckEmail } from '../sync/guidedSignoff'
 import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
@@ -29,6 +29,7 @@ export default function GuidedScenario() {
 
   const [stage, setStage] = useState(0)
   const [level, setLevel] = useState(null) // 'BLS' | 'ACLS'
+  const [sessionType, setSessionType] = useState('practice') // 'practice' (Guided) | 'validation' (SME-graded)
   const [learnerName, setLearnerName] = useState('')
   const [learnerEmail, setLearnerEmail] = useState('')
   const [signoff, setSignoff] = useState(null) // signed record { evaluatorName, evaluatorTitle, finalOutcome, signedAt }
@@ -37,16 +38,19 @@ export default function GuidedScenario() {
   const [blsDone, setBlsDone] = useState([]) // ordered ids completed in the BLS survey
   const [placement, setPlacement] = useState({ triangle: null, rectangle: null }) // pad type → position
   const [padPassed, setPadPassed] = useState(false) // valid placement confirmed
+  const [crashCartDelayApplied, setCrashCartDelayApplied] = useState(false) // one-time clock skip, BLS → pads
   const [deviceShocked, setDeviceShocked] = useState(false) // first shock delivered on the hi-fi device
   const [shockEnergy, setShockEnergy] = useState(null) // energy at first shock
   const [shockUsedAnalyze, setShockUsedAnalyze] = useState(false) // ANALYZE pressed before first shock
   const [shockElapsed, setShockElapsed] = useState(null) // frozen time-to-shock at delivery
-  const [decisionOk, setDecisionOk] = useState(false) // Phase 6 post-shock decision
+  const [decisionAnswered, setDecisionAnswered] = useState(false) // a post-shock pick was made (any outcome)
+  const [decisionOk, setDecisionOk] = useState(false) // whether that pick was correct
   const [clearSaid, setClearSaid] = useState(false) // "Clear" callout announced — required before SHOCK works
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
   const stageId = GUIDED_STAGES[stage].id
+  const isValidation = sessionType === 'validation'
   const blsComplete = blsDone.length === BLS_SEQUENCE.length
   const padsPlaced = !!placement.triangle && !!placement.rectangle
 
@@ -89,7 +93,24 @@ export default function GuidedScenario() {
 
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
-  const restart = () => { setStage(0); setLevel(null); setLearnerName(''); setLearnerEmail(''); setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null); setDecisionOk(false); setClearSaid(false); setSignoff(null); setEvents([]) }
+  const restart = () => {
+    setStage(0); setLevel(null); setSessionType('practice'); setLearnerName(''); setLearnerEmail('')
+    setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false)
+    setCrashCartDelayApplied(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null)
+    setDecisionAnswered(false); setDecisionOk(false); setClearSaid(false); setSignoff(null); setEvents([])
+  }
+
+  // The crash cart doesn't teleport in — add a one-time, randomized 15–25s to the
+  // clock when leaving the BLS survey for pad placement, so the timer reflects
+  // real-world time to get it to the bedside (both session types).
+  const toPads = () => {
+    if (!crashCartDelayApplied && shockStart != null) {
+      const [min, max] = CRASH_CART_DELAY_MS
+      setShockStart((t) => t - (min + Math.random() * (max - min)))
+      setCrashCartDelayApplied(true)
+    }
+    next()
+  }
 
   const clockChip = shockStart != null && (
     <span className={`guided-clock ${overTarget ? 'guided-clock--over' : ''}`} title="Time since shockable rhythm identified">
@@ -100,7 +121,7 @@ export default function GuidedScenario() {
   return (
     <GuidedShell
       title={`${sc.title} — Guided Session`}
-      subtitle={`Annual Defibrillation Skill Validation${level ? ` · ${level}` : ''}`}
+      subtitle={`Annual Defibrillation Skill Validation${level ? ` · ${level}` : ''}${stage > 0 ? ` · ${isValidation ? 'Validation (graded)' : 'Practice'}` : ''}`}
       clock={clockChip}
     >
       {/* progress chips */}
@@ -137,11 +158,15 @@ export default function GuidedScenario() {
               <h3 style={{ margin: '0 0 6px' }}>How to use this simulation</h3>
               <ul className="muted" style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.6 }}>
                 <li>Work through the steps in order, shown as chips at the top (Case → BLS → Pads → Shock → Next → Debrief)</li>
-                <li>Some steps require a specific action before you can continue (e.g. the BLS survey, in order); others — like pad placement — let you proceed and are scored afterward</li>
+                <li>{isValidation
+                  ? 'This is a Validation session — every step is scored silently; no in-task feedback is given, only at the debrief'
+                  : 'This is a Practice session — wrong or out-of-order picks are corrected right away so you can learn; get each step right before moving on'}</li>
                 <li>Use <strong>◂ Back</strong> if you need to review a previous step</li>
                 <li>On the ZOLL device, operate the controls exactly as you would on the real unit</li>
                 <li>Say the callout phrases out loud as you would in a real code — “Clear” is required before SHOCK will work</li>
-                <li>At the end, an SME reviews your performance and signs off on this session</li>
+                <li>{isValidation
+                  ? 'At the end, an SME reviews your performance and signs off on this session'
+                  : 'At the end, you’ll see the same scored debrief — no SME sign-off, since this is just practice'}</li>
               </ul>
             </section>
 
@@ -174,6 +199,17 @@ export default function GuidedScenario() {
               <p style={{ margin: '-4px 0 10px', fontSize: '0.78rem', color: '#c62828' }}>Must be a Keck email address (ends in @med.usc.edu).</p>
             )}
 
+            <p className="muted">Choose how this session should run:</p>
+            <div className="row">
+              <button className={`btn ${!isValidation ? 'btn--primary' : ''}`} onClick={() => setSessionType('practice')}>Practice (Guided)</button>
+              <button className={`btn ${isValidation ? 'btn--primary' : ''}`} onClick={() => setSessionType('validation')}>Validation (Graded)</button>
+            </div>
+            <p className="muted" style={{ fontSize: '0.82rem', marginTop: 4, marginBottom: '0.9rem' }}>
+              {isValidation
+                ? 'An SME reviews this attempt and signs off at the debrief — no in-task feedback. If you’re not yet ready, tell your SME and switch to Practice first.'
+                : 'Learn at your own pace — wrong steps are corrected as you go. When you’re ready for your SME-graded attempt, tell your SME and switch to Validation.'}
+            </p>
+
             <p className="muted">Choose your provider level for this session:</p>
             <div className="row">
               {['BLS', 'ACLS'].map((lv) => (
@@ -187,16 +223,18 @@ export default function GuidedScenario() {
         ) : stageId === 'debrief' ? (
           <>
             <h2>Debrief</h2>
-            <p className="muted" style={{ marginTop: 0 }}>{learnerName} · {learnerEmail} · {level} provider</p>
+            <p className="muted" style={{ marginTop: 0 }}>
+              {learnerName} · {learnerEmail} · {level} provider · {isValidation ? 'Validation session' : 'Practice session'}
+            </p>
             {(() => {
               const criteria = buildCriteria({
-                elapsedLabel: clock(elapsed), targetLabel: clock(SHOCK_TARGET_S), overTarget,
+                elapsedLabel: clock(elapsed), targetLabel: clock(SHOCK_TARGET_S), elapsedSeconds: elapsed,
                 blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk,
               })
               const autoSuggested = suggestOutcome(criteria)
               const sign = ({ evaluatorName, evaluatorEmail, evaluatorTitle, outcome }) => {
                 const record = buildSignoffRecord({
-                  scenario: sc, level, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome: outcome,
+                  scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome: outcome,
                   evaluatorName, evaluatorEmail, evaluatorTitle, signedAt: Date.now(), timeToShockSeconds: elapsed, shockEnergy,
                 })
                 setSignoff(record)
@@ -208,12 +246,19 @@ export default function GuidedScenario() {
                       <ScoreRow key={c.key} tone={c.tone} title={c.title}>{c.detail}</ScoreRow>
                     ))}
                   </div>
-                  <SignoffPanel
-                    autoSuggested={autoSuggested}
-                    signed={signoff}
-                    onSign={sign}
-                    onRevise={() => setSignoff(null)}
-                  />
+                  {isValidation ? (
+                    <SignoffPanel
+                      sessionType={sessionType}
+                      autoSuggested={autoSuggested}
+                      signed={signoff}
+                      onSign={sign}
+                      onRevise={() => setSignoff(null)}
+                    />
+                  ) : (
+                    <p className="muted" style={{ marginTop: '0.8rem' }}>
+                      This was a practice session — no SME sign-off is recorded. When you’re ready, restart and choose Validation for your graded attempt.
+                    </p>
+                  )}
                 </>
               )
             })()}
@@ -227,12 +272,13 @@ export default function GuidedScenario() {
           <>
             <BlsSurvey
               done={blsDone}
+              feedback={!isValidation}
               onStep={(id) => setBlsDone((d) => [...d, id])}
               onEvent={logEvent}
             />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
-              <button className="btn btn--primary" disabled={!blsComplete} onClick={next}>
+              <button className="btn btn--primary" disabled={!blsComplete} onClick={toPads}>
                 Crash cart is here — place pads ▸
               </button>
             </div>
@@ -242,7 +288,7 @@ export default function GuidedScenario() {
             <PadPlacement
               placement={placement}
               passed={padPassed}
-              feedback={false}
+              feedback={!isValidation}
               onPlace={setPlacement}
               onReset={() => { setPlacement({ triangle: null, rectangle: null }); setPadPassed(false) }}
               onPass={() => setPadPassed(true)}
@@ -250,7 +296,7 @@ export default function GuidedScenario() {
             />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
-              <button className="btn btn--primary" disabled={!padsPlaced} onClick={next}>
+              <button className="btn btn--primary" disabled={isValidation ? !padsPlaced : !padPassed} onClick={next}>
                 Pads on — go to the ZOLL ▸
               </button>
             </div>
@@ -277,10 +323,15 @@ export default function GuidedScenario() {
           </>
         ) : stageId === 'decision' ? (
           <>
-            <DecisionStage done={decisionOk} onCorrect={() => setDecisionOk(true)} onEvent={logEvent} />
+            <DecisionStage
+              answered={decisionAnswered}
+              feedback={!isValidation}
+              onAnswer={(correct) => { setDecisionAnswered(true); setDecisionOk(correct) }}
+              onEvent={logEvent}
+            />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn btn--ghost" onClick={back}>◂ Back</button>
-              <button className="btn btn--primary" disabled={!decisionOk} onClick={next}>
+              <button className="btn btn--primary" disabled={!decisionAnswered} onClick={next}>
                 Continue to debrief ▸
               </button>
             </div>

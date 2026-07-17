@@ -13,7 +13,7 @@
  * list into `suggestOutcome` for the sign-off's auto-suggested Competent/NYDC
  * outcome, so the on-screen checklist and the suggestion can never drift apart.
  */
-import { matchedPair } from './guidedScenarios'
+import { matchedPair, SHOCK_TARGET_S, SHOCK_FAIL_CUSHION_S } from './guidedScenarios'
 import { download, csvCell, iso } from './report'
 
 /** Institutional email check — Keck/USC med.usc.edu addresses only. */
@@ -25,7 +25,7 @@ export function isKeckEmail(s) {
  * @param {object} ctx
  * @param {string} ctx.elapsedLabel - formatted time-to-shock (e.g. "1:24")
  * @param {string} ctx.targetLabel - formatted target (e.g. "2:00")
- * @param {boolean} ctx.overTarget
+ * @param {number} ctx.elapsedSeconds - raw time-to-shock, for the fail-cushion tiering
  * @param {boolean} ctx.blsComplete
  * @param {Array} ctx.events - the attempt/event log
  * @param {{triangle: string|null, rectangle: string|null}} ctx.placement
@@ -37,8 +37,10 @@ export function isKeckEmail(s) {
  * @returns {Array<{key:string, title:string, tone:'good'|'coach'|'bad', detail:string}>}
  */
 export function buildCriteria(ctx) {
-  const { elapsedLabel, targetLabel, overTarget, blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk } = ctx
+  const { elapsedLabel, targetLabel, elapsedSeconds, blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk } = ctx
 
+  const overTarget = elapsedSeconds > SHOCK_TARGET_S
+  const overCushion = elapsedSeconds > SHOCK_TARGET_S + SHOCK_FAIL_CUSHION_S
   const missteps = events.filter((e) => e.type === 'bls_wrong' || e.type === 'bls_out_of_order').length
   const pair = matchedPair(placement)
   const placed = !!placement.triangle && !!placement.rectangle
@@ -51,8 +53,12 @@ export function buildCriteria(ctx) {
   const criteria = [
     {
       key: 'time_to_shock', title: `Time to shock: ${elapsedLabel}`,
-      tone: overTarget ? 'bad' : 'good',
-      detail: overTarget ? `over the ${targetLabel} target` : `within the ${targetLabel} target`,
+      tone: overCushion ? 'bad' : overTarget ? 'coach' : 'good',
+      detail: overCushion
+        ? `over the ${targetLabel} target by more than the ${SHOCK_FAIL_CUSHION_S}s cushion`
+        : overTarget
+          ? `over the ${targetLabel} target, within the ${SHOCK_FAIL_CUSHION_S}s cushion`
+          : `within the ${targetLabel} target`,
     },
     {
       key: 'bls_survey', title: 'BLS primary survey',
@@ -104,9 +110,14 @@ export function buildCriteria(ctx) {
   criteria.push({
     key: 'post_shock_decision', title: 'Post-shock decision',
     tone: !decisionOk ? 'bad' : wrongDecision === 0 ? 'good' : 'coach',
-    detail: !decisionOk ? 'not completed' : wrongDecision === 0
-      ? 'resumed CPR immediately, first attempt'
-      : `resumed CPR immediately, after ${wrongDecision} incorrect attempt${wrongDecision === 1 ? '' : 's'}`,
+    // In Practice, a wrong pick is rejected and retried, so decisionOk is only ever false if the
+    // stage was skipped entirely; in Validation, a single wrong pick also leaves decisionOk false
+    // but the stage WAS completed — "not completed" would misdescribe that case, so branch on it.
+    detail: decisionOk
+      ? (wrongDecision === 0
+        ? 'resumed CPR immediately, first attempt'
+        : `resumed CPR immediately, after ${wrongDecision} incorrect attempt${wrongDecision === 1 ? '' : 's'}`)
+      : (wrongDecision === 0 ? 'not completed' : 'did not choose to resume CPR immediately'),
   })
 
   return criteria
@@ -118,13 +129,14 @@ export function suggestOutcome(criteria) {
 }
 
 /** Build the exportable sign-off record from the runner's state + SME attestation. */
-export function buildSignoffRecord({ scenario, level, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome, evaluatorName, evaluatorEmail, evaluatorTitle, signedAt, timeToShockSeconds, shockEnergy }) {
+export function buildSignoffRecord({ scenario, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome, evaluatorName, evaluatorEmail, evaluatorTitle, signedAt, timeToShockSeconds, shockEnergy }) {
   return {
     recordType: 'guided-defib-signoff',
     scenarioId: scenario.id,
     scenarioTitle: scenario.title,
     rhythm: scenario.rhythm,
     level,
+    sessionType,
     learnerName,
     learnerEmail,
     timeToShockSeconds: timeToShockSeconds != null ? Math.round(timeToShockSeconds) : null,
@@ -140,7 +152,7 @@ export function buildSignoffRecord({ scenario, level, learnerName, learnerEmail,
 }
 
 const SIGNOFF_CSV_COLUMNS = [
-  'scenarioTitle', 'level', 'learnerName', 'learnerEmail', 'timeToShockSeconds', 'shockEnergyJ',
+  'scenarioTitle', 'level', 'sessionType', 'learnerName', 'learnerEmail', 'timeToShockSeconds', 'shockEnergyJ',
   'evaluatorName', 'evaluatorEmail', 'evaluatorTitle', 'signedAt', 'autoSuggestedOutcome', 'finalOutcome',
   'criterionKey', 'criterionTitle', 'tone', 'detail',
 ]
@@ -150,7 +162,7 @@ export function signoffToCSV(record) {
   const rows = [SIGNOFF_CSV_COLUMNS.join(',')]
   for (const c of record.criteria) {
     const row = {
-      scenarioTitle: record.scenarioTitle, level: record.level, learnerName: record.learnerName, learnerEmail: record.learnerEmail,
+      scenarioTitle: record.scenarioTitle, level: record.level, sessionType: record.sessionType, learnerName: record.learnerName, learnerEmail: record.learnerEmail,
       timeToShockSeconds: record.timeToShockSeconds, shockEnergyJ: record.shockEnergyJ,
       evaluatorName: record.evaluatorName, evaluatorEmail: record.evaluatorEmail, evaluatorTitle: record.evaluatorTitle, signedAt: record.signedAt,
       autoSuggestedOutcome: record.autoSuggestedOutcome, finalOutcome: record.finalOutcome,

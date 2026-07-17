@@ -3,8 +3,13 @@ import { useState } from 'react'
 /**
  * DecisionStage — Phase 6a of the guided arrest module: the immediate post-shock
  * decision. The correct action is to resume compressions right away (no rhythm
- * or pulse check). Picking the correct action reveals the FIL-lead / EtCO₂
- * teaching points and unlocks the stage; wrong picks give corrective feedback.
+ * or pulse check).
+ *
+ * `feedback=true` (Practice/Guided): wrong picks give corrective text and stay
+ * open for retry; the correct pick reveals the FIL-lead / EtCO₂ teaching points
+ * and unlocks the stage. `feedback=false` (Validation): the first pick — right
+ * or wrong — is final, silent, and unlocks the stage immediately; correctness
+ * is only revealed at debrief.
  */
 const DECISIONS = [
   {
@@ -27,14 +32,15 @@ const DECISIONS = [
   },
 ]
 
-export default function DecisionStage({ done, onCorrect, onEvent }) {
+export default function DecisionStage({ answered, feedback = true, onAnswer, onEvent }) {
   const [flash, setFlash] = useState(null) // { tone, text }
 
   const pick = (d) => {
-    if (done) return
-    setFlash({ tone: d.correct ? 'ok' : 'bad', text: d.feedback })
+    if (answered) return
     onEvent?.({ type: d.correct ? 'decision_ok' : 'decision_wrong', id: d.id })
-    if (d.correct) onCorrect()
+    if (!feedback) { onAnswer(d.correct); return }
+    setFlash({ tone: d.correct ? 'ok' : 'bad', text: d.feedback })
+    if (d.correct) onAnswer(true)
   }
 
   return (
@@ -44,7 +50,7 @@ export default function DecisionStage({ done, onCorrect, onEvent }) {
         The shock is delivered. <strong>What is your immediate next action?</strong>
       </p>
 
-      {!done && (
+      {!answered && (
         <div style={{ display: 'grid', gap: 8, maxWidth: 560 }}>
           {DECISIONS.map((d) => (
             <button
@@ -59,9 +65,9 @@ export default function DecisionStage({ done, onCorrect, onEvent }) {
         </div>
       )}
 
-      {flash && <p role="status" className={`g-flash g-flash--${flash.tone}`}>{flash.text}</p>}
+      {feedback && flash && <p role="status" className={`g-flash g-flash--${flash.tone}`}>{flash.text}</p>}
 
-      {done && (
+      {answered && feedback && (
         <div className="g-flash g-flash--ok" role="status" style={{ marginTop: '1rem' }}>
           <strong>CPR resumed.</strong> Two adjuncts worth noting:
           <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2rem', lineHeight: 1.6 }}>
@@ -69,6 +75,12 @@ export default function DecisionStage({ done, onCorrect, onEvent }) {
             <li>Initiate <strong>EtCO₂ (capnography)</strong> — it gauges CPR quality (target &gt; 10–20 mmHg) and flags ROSC as a sudden sustained rise, again without pausing compressions.</li>
           </ul>
         </div>
+      )}
+
+      {answered && !feedback && (
+        <p role="status" className="g-flash g-flash--ok" style={{ marginTop: '1rem' }}>
+          Noted — continue when you’re ready.
+        </p>
       )}
     </>
   )
