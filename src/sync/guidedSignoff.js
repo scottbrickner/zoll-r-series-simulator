@@ -10,8 +10,8 @@
  *
  * `buildCriteria` is the single source of truth for the debrief's scored
  * checklist: GuidedScenario renders one ScoreRow per entry AND feeds the same
- * list into `suggestOutcome` for the sign-off's auto-suggested PASS/FAIL, so
- * the on-screen checklist and the pass/fail suggestion can never drift apart.
+ * list into `suggestOutcome` for the sign-off's auto-suggested Competent/NYDC
+ * outcome, so the on-screen checklist and the suggestion can never drift apart.
  */
 import { matchedPair } from './guidedScenarios'
 import { download, csvCell, iso } from './report'
@@ -163,10 +163,21 @@ export function signoffToCSV(record) {
 
 const slug = (s) => String(s || 'learner').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'learner'
 
+/** Filenames + contents for both export formats — shared by the download and Teams-folder-save paths. */
+export function signoffFiles(record) {
+  const base = `guided-signoff-${record.scenarioId}-${slug(record.learnerName)}-${Date.now()}`
+  return {
+    json: { name: `${base}.json`, contents: JSON.stringify(record, null, 2), mime: 'application/json' },
+    csv: { name: `${base}.csv`, contents: signoffToCSV(record), mime: 'text/csv' },
+  }
+}
+
 export function exportSignoffJSON(record) {
-  download(`guided-signoff-${record.scenarioId}-${slug(record.learnerName)}-${Date.now()}.json`, JSON.stringify(record, null, 2), 'application/json')
+  const { json } = signoffFiles(record)
+  download(json.name, json.contents, json.mime)
 }
 
 export function exportSignoffCSV(record) {
-  download(`guided-signoff-${record.scenarioId}-${slug(record.learnerName)}-${Date.now()}.csv`, signoffToCSV(record), 'text/csv')
+  const { csv } = signoffFiles(record)
+  download(csv.name, csv.contents, csv.mime)
 }

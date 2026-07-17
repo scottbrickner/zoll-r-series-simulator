@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { isKeckEmail } from '../../sync/guidedSignoff'
+import { useState, useEffect } from 'react'
+import { isKeckEmail, signoffFiles, exportSignoffJSON, exportSignoffCSV } from '../../sync/guidedSignoff'
+import { isFolderSaveSupported, getSavedFolder, pickTeamsFolder, writeFileToFolder } from '../../sync/teamsFolder'
 
 const inputStyle = {
   width: '100%', background: '#ffffff', color: '#1a1a1a', border: '1px solid #e7e2da',
@@ -16,14 +17,51 @@ const OUTCOME_LABEL = { COMPETENT: 'Competent', NYDC: 'NYDC (Not Yet Deemed Comp
  * override with their own clinical judgment. Requires a typed evaluator name
  * + Keck (@med.usc.edu) email — matching this app's existing client-side-
  * deterrence security model, no additional passcode. Once signed, the
- * attestation locks and the record can be exported.
+ * attestation locks and the record is saved directly into a local Teams-
+ * synced folder via the File System Access API (Chrome/Edge — the first
+ * sign-off on a given browser prompts for the folder once, then later ones
+ * save silently); browsers without that API fall back to a download.
  */
-export default function SignoffPanel({ autoSuggested, signed, onSign, onRevise, onExportJSON, onExportCSV }) {
+export default function SignoffPanel({ autoSuggested, signed, onSign, onRevise }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [title, setTitle] = useState('')
   const [outcome, setOutcome] = useState(autoSuggested)
   const emailOk = isKeckEmail(email)
+  const [folderState, setFolderState] = useState({ status: 'idle' })
+
+  useEffect(() => {
+    if (!signed || !isFolderSaveSupported()) return
+    let cancelled = false
+    ;(async () => {
+      setFolderState({ status: 'checking' })
+      const handle = await getSavedFolder().catch(() => null)
+      if (cancelled) return
+      if (!handle) { setFolderState({ status: 'need-picker' }); return }
+      try {
+        const files = signoffFiles(signed)
+        await writeFileToFolder(handle, files.json.name, files.json.contents)
+        await writeFileToFolder(handle, files.csv.name, files.csv.contents)
+        if (!cancelled) setFolderState({ status: 'saved', folderName: handle.name })
+      } catch {
+        if (!cancelled) setFolderState({ status: 'error' })
+      }
+    })()
+    return () => { cancelled = true }
+  }, [signed])
+
+  const chooseFolder = async () => {
+    setFolderState({ status: 'saving' })
+    try {
+      const handle = await pickTeamsFolder()
+      const files = signoffFiles(signed)
+      await writeFileToFolder(handle, files.json.name, files.json.contents)
+      await writeFileToFolder(handle, files.csv.name, files.csv.contents)
+      setFolderState({ status: 'saved', folderName: handle.name })
+    } catch (err) {
+      setFolderState({ status: err?.name === 'AbortError' ? 'need-picker' : 'error' })
+    }
+  }
 
   if (signed) {
     const competent = signed.finalOutcome === 'COMPETENT'
@@ -39,9 +77,38 @@ export default function SignoffPanel({ autoSuggested, signed, onSign, onRevise, 
         <p className="muted" style={{ margin: 0 }}>
           {signed.evaluatorName}{signed.evaluatorTitle ? `, ${signed.evaluatorTitle}` : ''} · {signed.evaluatorEmail} · {new Date(signed.signedAt).toLocaleString()}
         </p>
-        <div className="row" style={{ marginTop: '0.8rem' }}>
-          <button className="btn btn--primary" onClick={onExportJSON}>Download record (JSON)</button>
-          <button className="btn" onClick={onExportCSV}>Download record (CSV)</button>
+
+        {isFolderSaveSupported() ? (
+          <div style={{ marginTop: '0.8rem' }}>
+            {(folderState.status === 'checking' || folderState.status === 'saving') && (
+              <p className="muted" style={{ margin: 0 }}>Saving to the Teams folder…</p>
+            )}
+            {folderState.status === 'saved' && (
+              <p className="muted" style={{ margin: 0 }}>Saved to the “{folderState.folderName}” folder.</p>
+            )}
+            {(folderState.status === 'need-picker' || folderState.status === 'error') && (
+              <div className="row">
+                <button className="btn btn--primary" onClick={chooseFolder}>
+                  {folderState.status === 'error' ? 'Couldn’t save — retry ▸' : 'Save to Teams folder ▸'}
+                </button>
+              </div>
+            )}
+            <div className="row" style={{ marginTop: 6 }}>
+              {folderState.status === 'saved' && (
+                <button className="btn btn--ghost" onClick={chooseFolder}>Change folder</button>
+              )}
+              <button className="btn btn--ghost" onClick={() => exportSignoffJSON(signed)}>Download JSON instead</button>
+              <button className="btn btn--ghost" onClick={() => exportSignoffCSV(signed)}>Download CSV instead</button>
+            </div>
+          </div>
+        ) : (
+          <div className="row" style={{ marginTop: '0.8rem' }}>
+            <button className="btn btn--primary" onClick={() => exportSignoffJSON(signed)}>Download record (JSON)</button>
+            <button className="btn" onClick={() => exportSignoffCSV(signed)}>Download record (CSV)</button>
+          </div>
+        )}
+
+        <div className="row" style={{ marginTop: '0.6rem' }}>
           <button className="btn btn--ghost" onClick={onRevise}>Revise sign-off</button>
         </div>
       </section>

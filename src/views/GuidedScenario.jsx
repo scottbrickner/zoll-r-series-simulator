@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { GUIDED_STAGES, SHOCK_TARGET_S, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
-import { buildCriteria, suggestOutcome, buildSignoffRecord, exportSignoffJSON, exportSignoffCSV, isKeckEmail } from '../sync/guidedSignoff'
+import { buildCriteria, suggestOutcome, buildSignoffRecord, isKeckEmail } from '../sync/guidedSignoff'
 import GuidedShell from './guided/GuidedShell'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
@@ -213,8 +213,6 @@ export default function GuidedScenario() {
                     signed={signoff}
                     onSign={sign}
                     onRevise={() => setSignoff(null)}
-                    onExportJSON={() => exportSignoffJSON(signoff)}
-                    onExportCSV={() => exportSignoffCSV(signoff)}
                   />
                 </>
               )
