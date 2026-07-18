@@ -30,6 +30,12 @@ const DECISIONS = [
     feedback:
       'Not yet — a pulse check right after the shock wastes compression time. Resume CPR and reassess the pulse/rhythm at the next 2-minute cycle.',
   },
+  {
+    id: 'epi', correct: false,
+    label: 'Give epinephrine now',
+    feedback:
+      'Not yet — epinephrine isn’t the immediate next action here. For a shockable rhythm, it follows failed initial defibrillation attempts, not the first shock. Resume CPR now.',
+  },
 ]
 
 export default function DecisionStage({ answered, feedback = true, onAnswer, onEvent }) {

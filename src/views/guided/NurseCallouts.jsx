@@ -13,7 +13,7 @@ import { useState } from 'react'
 const PHRASES = [
   { id: 'rhythm', text: '“Let’s check a rhythm”' },
   { id: 'pulse', text: '“Is there a pulse?”' },
-  { id: 'clear', text: '“Clear! Clear! Everybody clear!”' },
+  { id: 'clear', text: '“I’m clear, you’re clear, oxygen clear, everybody clear!”' },
 ]
 
 export default function NurseCallouts({ onSay }) {
