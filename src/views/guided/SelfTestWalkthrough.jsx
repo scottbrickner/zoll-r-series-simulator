@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
- * SelfTestWalkthrough — the debrief's educational (non-scored) walkthrough of the
- * MANUAL defibrillator self-test on the crash cart. It's here because staff often
+ * SelfTestWalkthrough — the debrief's educational walkthrough of the MANUAL
+ * defibrillator self-test on the crash cart. It's here because staff often
  * rely only on the OneStep pad auto-self-test and never learn the manual check.
- * A simple reveal-stepper; not part of the validation score.
+ * A simple reveal-stepper. Not part of the validation SCORE, but for Validation
+ * sessions it gates the SME sign-off (see `onDone`) — the kinesthetic self-check
+ * must actually happen and get captured in the record, not just be skippable.
  */
 const STEPS = [
   'Plug the defibrillation test cable / connector into the side TEST port.',
@@ -15,9 +17,14 @@ const STEPS = [
   'Confirm the display reads “TEST OK” — the manual self-test has passed.',
 ]
 
-export default function SelfTestWalkthrough() {
+export default function SelfTestWalkthrough({ onDone }) {
   const [shown, setShown] = useState(1) // steps revealed so far
   const done = shown >= STEPS.length
+
+  useEffect(() => {
+    if (done) onDone?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done])
 
   return (
     <section style={{ marginTop: '1.25rem', border: '1px solid #e7e2da', borderRadius: 12, padding: '1rem 1.1rem', background: '#fffdf7' }}>

@@ -21,8 +21,12 @@ const OUTCOME_LABEL = { COMPETENT: 'Competent', NYDC: 'NYDC (Not Yet Deemed Comp
  * synced folder via the File System Access API (Chrome/Edge — the first
  * sign-off on a given browser prompts for the folder once, then later ones
  * save silently); browsers without that API fall back to a download.
+ *
+ * `selfTestDone` gates the sign-off form itself: the SME can't complete the
+ * attestation until the kinesthetic manual self-test walkthrough is done, so
+ * that step can't be silently skipped and is captured in the signed record.
  */
-export default function SignoffPanel({ sessionType, autoSuggested, signed, onSign, onRevise }) {
+export default function SignoffPanel({ sessionType, autoSuggested, signed, selfTestDone, onSign, onRevise }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [title, setTitle] = useState('')
@@ -117,6 +121,17 @@ export default function SignoffPanel({ sessionType, autoSuggested, signed, onSig
         <div className="row" style={{ marginTop: '0.6rem' }}>
           <button className="btn btn--ghost" onClick={onRevise}>Revise sign-off</button>
         </div>
+      </section>
+    )
+  }
+
+  if (!selfTestDone) {
+    return (
+      <section style={{ marginTop: '1rem', border: '1px solid #e7e2da', borderRadius: 12, padding: '1rem 1.1rem', background: '#fffdf7' }}>
+        <h3 style={{ margin: '0 0 4px' }}>SME sign-off</h3>
+        <p className="muted" style={{ margin: 0 }}>
+          Complete the manual defibrillator self-test walkthrough above before signing off — the kinesthetic self-check is part of this validation.
+        </p>
       </section>
     )
   }

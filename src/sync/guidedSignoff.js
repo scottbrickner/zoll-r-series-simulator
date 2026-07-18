@@ -129,7 +129,7 @@ export function suggestOutcome(criteria) {
 }
 
 /** Build the exportable sign-off record from the runner's state + SME attestation. */
-export function buildSignoffRecord({ scenario, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome, evaluatorName, evaluatorEmail, evaluatorTitle, signedAt, timeToShockSeconds, shockEnergy }) {
+export function buildSignoffRecord({ scenario, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome, evaluatorName, evaluatorEmail, evaluatorTitle, signedAt, timeToShockSeconds, shockEnergy, selfTestCompleted }) {
   return {
     recordType: 'guided-defib-signoff',
     scenarioId: scenario.id,
@@ -144,6 +144,7 @@ export function buildSignoffRecord({ scenario, level, sessionType, learnerName, 
     criteria: criteria.map(({ key, title, tone, detail }) => ({ key, title, tone, detail })),
     autoSuggestedOutcome: autoSuggested,
     finalOutcome,
+    selfTestCompleted: !!selfTestCompleted,
     evaluatorName,
     evaluatorEmail,
     evaluatorTitle,
@@ -153,7 +154,7 @@ export function buildSignoffRecord({ scenario, level, sessionType, learnerName, 
 
 const SIGNOFF_CSV_COLUMNS = [
   'scenarioTitle', 'level', 'sessionType', 'learnerName', 'learnerEmail', 'timeToShockSeconds', 'shockEnergyJ',
-  'evaluatorName', 'evaluatorEmail', 'evaluatorTitle', 'signedAt', 'autoSuggestedOutcome', 'finalOutcome',
+  'selfTestCompleted', 'evaluatorName', 'evaluatorEmail', 'evaluatorTitle', 'signedAt', 'autoSuggestedOutcome', 'finalOutcome',
   'criterionKey', 'criterionTitle', 'tone', 'detail',
 ]
 
@@ -163,7 +164,7 @@ export function signoffToCSV(record) {
   for (const c of record.criteria) {
     const row = {
       scenarioTitle: record.scenarioTitle, level: record.level, sessionType: record.sessionType, learnerName: record.learnerName, learnerEmail: record.learnerEmail,
-      timeToShockSeconds: record.timeToShockSeconds, shockEnergyJ: record.shockEnergyJ,
+      timeToShockSeconds: record.timeToShockSeconds, shockEnergyJ: record.shockEnergyJ, selfTestCompleted: record.selfTestCompleted,
       evaluatorName: record.evaluatorName, evaluatorEmail: record.evaluatorEmail, evaluatorTitle: record.evaluatorTitle, signedAt: record.signedAt,
       autoSuggestedOutcome: record.autoSuggestedOutcome, finalOutcome: record.finalOutcome,
       criterionKey: c.key, criterionTitle: c.title, tone: c.tone, detail: c.detail,

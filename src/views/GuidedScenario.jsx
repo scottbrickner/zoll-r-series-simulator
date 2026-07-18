@@ -9,6 +9,7 @@ import GuidedDeviceHiFi from './guided/GuidedDeviceHiFi'
 import NurseCallouts from './guided/NurseCallouts'
 import DecisionStage from './guided/DecisionStage'
 import SelfTestWalkthrough from './guided/SelfTestWalkthrough'
+import DebriefGuide from './guided/DebriefGuide'
 import ScoreRow from './guided/ScoreRow'
 import SignoffPanel from './guided/SignoffPanel'
 
@@ -46,6 +47,7 @@ export default function GuidedScenario() {
   const [decisionAnswered, setDecisionAnswered] = useState(false) // a post-shock pick was made (any outcome)
   const [decisionOk, setDecisionOk] = useState(false) // whether that pick was correct
   const [clearSaid, setClearSaid] = useState(false) // "Clear" callout announced — required before SHOCK works
+  const [selfTestDone, setSelfTestDone] = useState(false) // manual defib self-test walkthrough completed — gates sign-off
   const [events, setEvents] = useState([]) // attempt log, feeds the debrief
   const tick = useRef(null)
 
@@ -97,7 +99,7 @@ export default function GuidedScenario() {
     setStage(0); setLevel(null); setSessionType('practice'); setLearnerName(''); setLearnerEmail('')
     setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false)
     setCrashCartDelayApplied(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null)
-    setDecisionAnswered(false); setDecisionOk(false); setClearSaid(false); setSignoff(null); setEvents([])
+    setDecisionAnswered(false); setDecisionOk(false); setClearSaid(false); setSelfTestDone(false); setSignoff(null); setEvents([])
   }
 
   // The crash cart doesn't teleport in — add a one-time, randomized 15–25s to the
@@ -236,6 +238,7 @@ export default function GuidedScenario() {
                 const record = buildSignoffRecord({
                   scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome: outcome,
                   evaluatorName, evaluatorEmail, evaluatorTitle, signedAt: Date.now(), timeToShockSeconds: elapsed, shockEnergy,
+                  selfTestCompleted: selfTestDone,
                 })
                 setSignoff(record)
               }
@@ -246,11 +249,14 @@ export default function GuidedScenario() {
                       <ScoreRow key={c.key} tone={c.tone} title={c.title}>{c.detail}</ScoreRow>
                     ))}
                   </div>
+                  <DebriefGuide level={level} />
+                  <SelfTestWalkthrough onDone={() => setSelfTestDone(true)} />
                   {isValidation ? (
                     <SignoffPanel
                       sessionType={sessionType}
                       autoSuggested={autoSuggested}
                       signed={signoff}
+                      selfTestDone={selfTestDone}
                       onSign={sign}
                       onRevise={() => setSignoff(null)}
                     />
@@ -262,7 +268,6 @@ export default function GuidedScenario() {
                 </>
               )
             })()}
-            <SelfTestWalkthrough />
             <div className="row" style={{ marginTop: '1rem' }}>
               <button className="btn" onClick={restart}>Restart</button>
               <Link className="btn btn--ghost" to="/">Exit</Link>
