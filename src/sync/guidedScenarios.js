@@ -172,6 +172,9 @@ export const GUIDED_SCENARIOS = {
 
 export const GUIDED_SCENARIO_IDS = Object.keys(GUIDED_SCENARIOS)
 
+/** The two scenarios the streamlined CODE BLUE shell randomizes between. */
+export const CODE_BLUE_SCENARIO_IDS = ['vf-arrest', 'pulseless-vt']
+
 export function getGuided(id) {
   return GUIDED_SCENARIOS[id] || null
 }

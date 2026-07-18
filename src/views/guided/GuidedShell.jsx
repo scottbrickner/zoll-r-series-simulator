@@ -8,7 +8,7 @@ import './guided.css'
  * training-disclaimer footer) matching the Vasoactive Titration Simulator shell.
  * The scoped `.guided-shell` theme keeps this off the dark device UI.
  */
-export default function GuidedShell({ title, subtitle, clock, children }) {
+export default function GuidedShell({ title, subtitle, clock, hideExit, children }) {
   return (
     <div className="guided-shell">
       <header className="guided-header">
@@ -22,7 +22,7 @@ export default function GuidedShell({ title, subtitle, clock, children }) {
           </div>
           <div className="guided-header__actions">
             {clock}
-            <Link className="guided-exit" to="/">Exit</Link>
+            {!hideExit && <Link className="guided-exit" to="/">Exit</Link>}
           </div>
         </div>
       </header>

@@ -28,6 +28,7 @@ export default function App() {
         <Route path="/learner" element={<Learner />} />
         <Route path="/facilitator" element={<Facilitator />} />
         <Route path="/guided" element={<GuidedScenario />} />
+        <Route path="/code-blue" element={<GuidedScenario mode="code-blue" />} />
         <Route path="/report" element={<Report />} />
         <Route path="/art-preview" element={<ArtPreview />} />
         <Route path="/controls-review" element={<ControlsReview />} />

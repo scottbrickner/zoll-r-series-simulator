@@ -25,11 +25,16 @@ const OUTCOME_LABEL = { COMPETENT: 'Competent', NYDC: 'NYDC (Not Yet Deemed Comp
  * `selfTestDone` gates the sign-off form itself: the SME can't complete the
  * attestation until the kinesthetic manual self-test walkthrough is done, so
  * that step can't be silently skipped and is captured in the signed record.
+ *
+ * `lockedEvaluator` (optional {name, email, title}) — when the SME's identity
+ * was already captured up front (the CODE BLUE shell's SmeIntro screen), the
+ * evaluator fields pre-fill from it and become read-only instead of asking
+ * again, so the person who ran the session is the one who signs it.
  */
-export default function SignoffPanel({ sessionType, autoSuggested, signed, selfTestDone, onSign, onRevise }) {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [title, setTitle] = useState('')
+export default function SignoffPanel({ sessionType, autoSuggested, signed, selfTestDone, lockedEvaluator, onSign, onRevise }) {
+  const [name, setName] = useState(lockedEvaluator?.name || '')
+  const [email, setEmail] = useState(lockedEvaluator?.email || '')
+  const [title, setTitle] = useState(lockedEvaluator?.title || '')
   const [outcome, setOutcome] = useState(autoSuggested)
   const emailOk = isKeckEmail(email)
   const [folderState, setFolderState] = useState({ status: 'idle' })
@@ -144,28 +149,36 @@ export default function SignoffPanel({ sessionType, autoSuggested, signed, selfT
         <strong style={{ color: autoSuggested === 'COMPETENT' ? '#256b2a' : '#b23028' }}>{OUTCOME_LABEL[autoSuggested]}</strong>. Confirm or override, then sign.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) minmax(200px, 1fr) minmax(140px, 180px)', gap: 10, marginBottom: 4 }}>
-        <label>
-          <span style={labelStyle}>Evaluator (SME) name</span>
-          <input type="text" style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
-        </label>
-        <label>
-          <span style={labelStyle}>Evaluator email</span>
-          <input
-            type="email"
-            style={{ ...inputStyle, borderColor: email && !emailOk ? '#c62828' : inputStyle.border }}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@med.usc.edu"
-          />
-        </label>
-        <label>
-          <span style={labelStyle}>Credential / title</span>
-          <input type="text" style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. RN, CCRN" />
-        </label>
-      </div>
-      {email && !emailOk && (
-        <p style={{ margin: '4px 0 10px', fontSize: '0.78rem', color: '#c62828' }}>Must be a Keck email address (ends in @med.usc.edu).</p>
+      {lockedEvaluator ? (
+        <p className="muted" style={{ margin: '0 0 12px' }}>
+          Signing as <strong>{name}</strong>{title ? `, ${title}` : ''} · {email}
+        </p>
+      ) : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) minmax(200px, 1fr) minmax(140px, 180px)', gap: 10, marginBottom: 4 }}>
+            <label>
+              <span style={labelStyle}>Evaluator (SME) name</span>
+              <input type="text" style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
+            </label>
+            <label>
+              <span style={labelStyle}>Evaluator email</span>
+              <input
+                type="email"
+                style={{ ...inputStyle, borderColor: email && !emailOk ? '#c62828' : inputStyle.border }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@med.usc.edu"
+              />
+            </label>
+            <label>
+              <span style={labelStyle}>Credential / title</span>
+              <input type="text" style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. RN, CCRN" />
+            </label>
+          </div>
+          {email && !emailOk && (
+            <p style={{ margin: '4px 0 10px', fontSize: '0.78rem', color: '#c62828' }}>Must be a Keck email address (ends in @med.usc.edu).</p>
+          )}
+        </>
       )}
 
       <div className="row" style={{ margin: '12px 0' }}>

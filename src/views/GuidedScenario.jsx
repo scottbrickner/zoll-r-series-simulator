@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { GUIDED_STAGES, SHOCK_TARGET_S, CRASH_CART_DELAY_MS, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS } from '../sync/guidedScenarios'
+import { GUIDED_STAGES, SHOCK_TARGET_S, CRASH_CART_DELAY_MS, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS, CODE_BLUE_SCENARIO_IDS } from '../sync/guidedScenarios'
 import { buildCriteria, suggestOutcome, buildSignoffRecord, isKeckEmail } from '../sync/guidedSignoff'
 import GuidedShell from './guided/GuidedShell'
+import SmeIntro from './guided/SmeIntro'
 import BlsSurvey from './guided/BlsSurvey'
 import PadPlacement from './guided/PadPlacement'
 import GuidedDeviceHiFi from './guided/GuidedDeviceHiFi'
@@ -20,14 +21,27 @@ import SignoffPanel from './guided/SignoffPanel'
  * defibrillate → next action → debrief), with a level (BLS/ACLS) chosen up front and
  * a 2-minute time-to-shock clock that starts at rhythm identification. Stage bodies
  * are placeholders here; Phases 3–6 fill in the real interactive content.
+ *
+ * `mode="code-blue"` runs the streamlined CODE BLUE | Time to SHOCK shell: the
+ * facilitator/SME enters their own info FIRST (`SmeIntro`, pre-fills + locks the
+ * eventual sign-off), the scenario is always randomized between VF arrest and
+ * pulseless VT (no scenario picker), and there's no route out to the rest of the
+ * app — this exists so non-NPD SMEs get a single, hard-to-deviate-from path
+ * through the annual skill sign-off workflow rather than the full simulator.
  */
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+const randomCodeBlueId = () => CODE_BLUE_SCENARIO_IDS[Math.floor(Math.random() * CODE_BLUE_SCENARIO_IDS.length)]
 
-export default function GuidedScenario() {
+export default function GuidedScenario({ mode = 'full' }) {
+  const codeBlue = mode === 'code-blue'
   const [params] = useSearchParams()
-  const scenarioId = getGuided(params.get('scenario')) ? params.get('scenario') : GUIDED_SCENARIO_IDS[0]
+  const [codeBlueScenarioId, setCodeBlueScenarioId] = useState(randomCodeBlueId)
+  const scenarioId = codeBlue
+    ? codeBlueScenarioId
+    : (getGuided(params.get('scenario')) ? params.get('scenario') : GUIDED_SCENARIO_IDS[0])
   const sc = getGuided(scenarioId)
 
+  const [smeInfo, setSmeInfo] = useState(null) // { name, email, title } — CODE BLUE only, captured before the learner starts
   const [stage, setStage] = useState(0)
   const [level, setLevel] = useState(null) // 'BLS' | 'ACLS'
   const [sessionType, setSessionType] = useState('practice') // 'practice' (Guided) | 'validation' (SME-graded)
@@ -100,7 +114,10 @@ export default function GuidedScenario() {
     setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false)
     setCrashCartDelayApplied(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null)
     setDecisionAnswered(false); setDecisionOk(false); setClearSaid(false); setSelfTestDone(false); setSignoff(null); setEvents([])
+    if (codeBlue) setCodeBlueScenarioId(randomCodeBlueId()) // next learner gets a fresh random rhythm; same SME stays checked in
   }
+  // Ends the whole check-in — the next person to touch the device re-enters as a new facilitator.
+  const switchFacilitator = () => { restart(); setSmeInfo(null) }
 
   // The crash cart doesn't teleport in — add a one-time, randomized 15–25s to the
   // clock when leaving the BLS survey for pad placement, so the timer reflects
@@ -122,10 +139,17 @@ export default function GuidedScenario() {
 
   return (
     <GuidedShell
-      title={`${sc.title} — Guided Session`}
+      title={codeBlue ? 'CODE BLUE | Time to SHOCK' : `${sc.title} — Guided Session`}
       subtitle={`Annual Defibrillation Skill Validation${level ? ` · ${level}` : ''}${stage > 0 ? ` · ${isValidation ? 'Validation (graded)' : 'Practice'}` : ''}`}
-      clock={clockChip}
+      clock={codeBlue && !smeInfo ? null : clockChip}
+      hideExit={codeBlue}
     >
+      {codeBlue && !smeInfo ? (
+        <section className="panel">
+          <SmeIntro onSubmit={setSmeInfo} />
+        </section>
+      ) : (
+        <>
       {/* progress chips */}
       <ol className="guided-steps">
         {GUIDED_STAGES.map((st, i) => (
@@ -210,6 +234,7 @@ export default function GuidedScenario() {
               {isValidation
                 ? 'An SME reviews this attempt and signs off at the debrief — no in-task feedback. If you’re not yet ready, tell your SME and switch to Practice first.'
                 : 'Learn at your own pace — wrong steps are corrected as you go. When you’re ready for your SME-graded attempt, tell your SME and switch to Validation.'}
+              {codeBlue && isValidation && ' Only one graded attempt is allowed before a Practice session is required — if you’ve already attempted Validation, please complete a Practice session first.'}
             </p>
 
             <p className="muted">Choose your provider level for this session:</p>
@@ -257,6 +282,7 @@ export default function GuidedScenario() {
                       autoSuggested={autoSuggested}
                       signed={signoff}
                       selfTestDone={selfTestDone}
+                      lockedEvaluator={codeBlue ? smeInfo : undefined}
                       onSign={sign}
                       onRevise={() => setSignoff(null)}
                     />
@@ -269,8 +295,12 @@ export default function GuidedScenario() {
               )
             })()}
             <div className="row" style={{ marginTop: '1rem' }}>
-              <button className="btn" onClick={restart}>Restart</button>
-              <Link className="btn btn--ghost" to="/">Exit</Link>
+              <button className="btn" onClick={restart}>{codeBlue ? 'Next learner ▸' : 'Restart'}</button>
+              {codeBlue ? (
+                <button className="btn btn--ghost" onClick={switchFacilitator}>Switch facilitator</button>
+              ) : (
+                <Link className="btn btn--ghost" to="/">Exit</Link>
+              )}
             </div>
           </>
         ) : stageId === 'bls' ? (
@@ -343,6 +373,8 @@ export default function GuidedScenario() {
           </>
         ) : null}
       </section>
+        </>
+      )}
     </GuidedShell>
   )
 }
