@@ -35,8 +35,8 @@ ok('different ids → different channels', channelName('abc') !== channelName('x
 ok('newSessionId generates unique ids', new Set(Array.from({ length: 50 }, () => newSessionId())).size === 50)
 
 console.log('\n2. Scenario presets')
-const wantScenarios = ['vf-arrest', 'pulseless-vt', 'svt-cardioversion', 'brady-pacing', 'asystole-pea', 'rosc-monitoring', 'cpr-quality', 'monitor-unstable']
-ok('all 8 scenarios present', wantScenarios.every((id) => getScenario(id)))
+const wantScenarios = ['vf-arrest', 'pulseless-vt', 'svt-cardioversion', 'brady-pacing', 'asystole-pea', 'rosc-monitoring', 'cpr-quality', 'monitor-unstable', 'torsades', 'complete-heart-block', 'hyperkalemia-arrest', 'opioid-arrest', 'afib-rvr-cardioversion']
+ok('all 13 scenarios present', wantScenarios.every((id) => getScenario(id)))
 ok('scenarios carry initial + checklist + outcomes', SCENARIOS.every((s) => s.initial && Array.isArray(s.checklist) && Array.isArray(s.outcomes)))
 
 console.log('\n3. Waveform library')

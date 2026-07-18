@@ -244,6 +244,179 @@ export const SCENARIOS = [
     outcomes: ['Stabilized', 'Deteriorated', 'Arrested'],
     steps: [{ label: 'Unstable sinus tach' }, { label: 'Deteriorates to VT', apply: { rhythm: 'Ventricular Tachycardia', hr: 180 } }],
   },
+  {
+    id: 'torsades',
+    name: 'Torsades de Pointes',
+    level: 'ALS',
+    initial: {
+      mode: 'Defib', rhythm: 'Torsades de Pointes', hr: 0, spo2: 0,
+      nibp: { sys: 0, dia: 0, mean: 0 }, etco2: 14, rr: 0,
+      energy: 200, shockable: true, postShockRhythm: 'Normal Sinus',
+      autoConvert: true, shockOutcome: 'convert',
+      cprActive: true, cprRate: 110, cprDepth: 50, cprReleaseQuality: 'full',
+    },
+    expectedActions: [
+      'Recognize polymorphic VT (QRS twists around the baseline) — not monomorphic VT',
+      'Pulseless: high-quality CPR and defibrillate (unsynchronized)',
+      'Give IV magnesium sulfate 1–2 g',
+      'Correct the long-QT cause (offending drugs, low K⁺ / Mg²⁺)',
+    ],
+    educationNotes: [
+      'Torsades is polymorphic VT on a long QT; magnesium is the specific therapy even when the level is normal.',
+      'Pulseless torsades is defibrillated like VF (unsynchronized) — do not wait to synchronize.',
+    ],
+    protocolHints: ['Pulseless torsades → defibrillate; IV magnesium 1–2 g; fix QT/electrolytes'],
+    checklist: [
+      { id: 'recognize', label: 'Identified polymorphic VT / torsades' },
+      { id: 'unsync', label: 'Delivered UNSYNCHRONIZED shock' },
+      { id: 'magnesium', label: 'Gave IV magnesium 1–2 g' },
+      { id: 'cause', label: 'Addressed QT-prolonging cause / electrolytes' },
+    ],
+    outcomes: ['ROSC after magnesium + defibrillation', 'Refractory torsades', 'Degenerated to VF'],
+    steps: [
+      { label: 'Polymorphic VT (torsades)' },
+      { label: 'CPR + unsynchronized shock, give magnesium' },
+      { label: 'ROSC', apply: { rhythm: 'Normal Sinus', hr: 84, spo2: 95, nibp: { sys: 108, dia: 66, mean: 80 }, cprActive: false } },
+    ],
+  },
+  {
+    id: 'complete-heart-block',
+    name: 'Complete Heart Block — Pacing',
+    level: 'ALS',
+    initial: {
+      mode: 'Pacer', rhythm: 'Sinus Bradycardia', hr: 32, spo2: 88,
+      nibp: { sys: 74, dia: 40, mean: 51 }, etco2: 34, rr: 18,
+      underlyingRhythm: 'Sinus Bradycardia', captureMode: 'auto',
+      captureThreshold: 75, pacerRate: 70, pacerOutput: 0, intermittentCapture: false,
+    },
+    expectedActions: [
+      'Identify third-degree AV block — P waves and QRS march independently',
+      'Recognize atropine is often ineffective; do not delay pacing',
+      'Select PACER, set rate ~70 ppm, increase output (mA) to capture',
+      'Confirm electrical + mechanical capture (spike → wide QRS → pulse)',
+      'Plan definitive therapy (transvenous pacing / cardiology)',
+    ],
+    educationNotes: [
+      'In complete heart block the escape rhythm is slow and unreliable — transcutaneous pacing is first-line for the unstable patient.',
+      'Atropine may fail (block is below the AV node); have pacing and an epinephrine/dopamine infusion ready.',
+    ],
+    protocolHints: ['Complete heart block → transcutaneous pacing now (atropine often ineffective)'],
+    checklist: [
+      { id: 'recognize', label: 'Identified 3rd-degree AV block' },
+      { id: 'pace', label: 'Initiated transcutaneous pacing' },
+      { id: 'output', label: 'Titrated output to capture' },
+      { id: 'capture', label: 'Confirmed electrical + mechanical capture' },
+      { id: 'escalate', label: 'Planned transvenous pacing / escalation' },
+    ],
+    outcomes: ['Capture achieved, perfusing', 'Failure to capture', 'Deteriorated to arrest'],
+    steps: [
+      { label: 'Complete heart block, not paced' },
+      { label: 'Pacing with capture', apply: { captureMode: 'on', pacerOutput: 80, hr: 70, spo2: 96, nibp: { sys: 104, dia: 62, mean: 76 } } },
+    ],
+  },
+  {
+    id: 'hyperkalemia-arrest',
+    name: 'Hyperkalemic Cardiac Arrest',
+    level: 'ALS',
+    initial: {
+      mode: 'Defib', rhythm: 'Ventricular Tachycardia', hr: 0, spo2: 0,
+      nibp: { sys: 0, dia: 0, mean: 0 }, etco2: 14, rr: 0,
+      energy: 200, shockable: true, postShockRhythm: 'Normal Sinus',
+      autoConvert: false, shockOutcome: 'convert',
+      cprActive: true, cprRate: 110, cprDepth: 50, cprReleaseQuality: 'full',
+    },
+    expectedActions: [
+      'High-quality CPR; defibrillate the shockable wide-complex rhythm',
+      'Suspect hyperkalemia from history (dialysis / renal failure) and the wide, sine-wave QRS',
+      'Give IV calcium FIRST to stabilize the myocardium',
+      'Shift potassium: insulin + glucose, add sodium bicarbonate if acidotic',
+      'Treat as a reversible cause (Hs & Ts) alongside standard ACLS',
+    ],
+    educationNotes: [
+      'Severe hyperkalemia widens the QRS toward a sine wave and makes VF/VT refractory until the potassium is treated.',
+      'Calcium is given first (membrane stabilization); it does not lower potassium — follow with insulin/glucose ± bicarbonate.',
+    ],
+    protocolHints: ['Reversible cause: IV calcium first, then insulin/glucose ± bicarb; defibrillate shockable rhythm'],
+    checklist: [
+      { id: 'recognize', label: 'Suspected hyperkalemia as the cause' },
+      { id: 'calcium', label: 'Gave IV calcium (membrane stabilization)' },
+      { id: 'shift', label: 'Shifted K⁺ (insulin/glucose ± bicarbonate)' },
+      { id: 'defib', label: 'Defibrillated the shockable rhythm' },
+    ],
+    outcomes: ['ROSC after calcium + defibrillation', 'Refractory arrest', 'Deteriorated to PEA/asystole'],
+    steps: [
+      { label: 'Wide-complex arrest (suspect hyperkalemia)' },
+      { label: 'Give calcium, then shift potassium' },
+      { label: 'ROSC after treatment + shock', apply: { rhythm: 'Normal Sinus', hr: 84, spo2: 94, nibp: { sys: 106, dia: 64, mean: 78 }, cprActive: false } },
+    ],
+  },
+  {
+    id: 'opioid-arrest',
+    name: 'Opioid-Associated Arrest (PEA)',
+    level: 'BLS/ALS',
+    initial: {
+      mode: 'Monitor', rhythm: 'PEA', hr: 0, spo2: 0,
+      nibp: { sys: 0, dia: 0, mean: 0 }, etco2: 20, rr: 0,
+      shockable: false, cprActive: true, cprRate: 110, cprDepth: 50, cprReleaseQuality: 'full',
+    },
+    expectedActions: [
+      'Recognize the hypoxic mechanism — hypoventilation/apnea preceded the arrest',
+      'Prioritize ventilation and oxygenation (BVM with a good seal)',
+      'High-quality CPR for the pulseless patient',
+      'Administer naloxone',
+      'Recognize PEA is NON-shockable; treat hypoxia (Hs & Ts) and manage the airway',
+    ],
+    educationNotes: [
+      'Opioid arrest is a hypoxic arrest — effective ventilation/oxygenation is the priority alongside compressions.',
+      'Naloxone reverses the opioid but does not replace CPR or ventilation in a pulseless patient.',
+    ],
+    protocolHints: ['Opioid arrest: ventilate/oxygenate first; high-quality CPR; naloxone; correct hypoxia'],
+    checklist: [
+      { id: 'ventilate', label: 'Prioritized ventilation/oxygenation' },
+      { id: 'cpr', label: 'High-quality chest compressions' },
+      { id: 'naloxone', label: 'Administered naloxone' },
+      { id: 'noshock', label: 'Did NOT shock a non-shockable rhythm' },
+    ],
+    outcomes: ['ROSC with ventilation + naloxone', 'Remained in PEA', 'Progressed to asystole'],
+    steps: [
+      { label: 'PEA arrest — CPR + BVM ventilation' },
+      { label: 'Naloxone + effective ventilation' },
+      { label: 'ROSC', apply: { rhythm: 'Normal Sinus', hr: 92, spo2: 97, nibp: { sys: 110, dia: 70, mean: 83 }, rr: 12, cprActive: false } },
+    ],
+  },
+  {
+    id: 'afib-rvr-cardioversion',
+    name: 'Unstable Atrial Fibrillation with RVR — Cardioversion',
+    level: 'ALS',
+    initial: {
+      mode: 'Defib', rhythm: 'Atrial Fibrillation', hr: 168, spo2: 92,
+      nibp: { sys: 78, dia: 48, mean: 58 }, etco2: 34, rr: 24,
+      energy: 200, syncEnabled: false, shockable: true,
+      postShockRhythm: 'Normal Sinus', autoConvert: true, shockOutcome: 'convert',
+    },
+    expectedActions: [
+      'Recognize AF with RVR (irregularly irregular, no P waves) and instability',
+      'Enable SYNC for synchronized cardioversion',
+      'Select 120–200 J biphasic (higher than SVT/flutter) and deliver synchronized shock',
+      'Sedate if feasible; state "clear" before the shock',
+    ],
+    educationNotes: [
+      'Unstable AF with RVR → synchronized cardioversion; start higher (120–200 J) than for regular SVT/atrial flutter (50–100 J).',
+      'Confirm SYNC is on and markers fall on the R waves — an unsynchronized shock on a T wave can induce VF.',
+    ],
+    protocolHints: ['Unstable AF + RVR → synchronized cardioversion 120–200 J'],
+    checklist: [
+      { id: 'unstable', label: 'Identified AF w/ RVR and instability' },
+      { id: 'sync', label: 'Enabled SYNC before shock' },
+      { id: 'energy', label: 'Selected 120–200 J' },
+      { id: 'sync-shock', label: 'Delivered synchronized shock' },
+    ],
+    outcomes: ['Converted to sinus', 'Remained in AF with RVR', 'Degenerated to VF'],
+    steps: [
+      { label: 'Unstable AF with RVR' },
+      { label: 'Synchronized cardioversion', apply: { rhythm: 'Normal Sinus', hr: 88, nibp: { sys: 116, dia: 72, mean: 87 } } },
+    ],
+  },
 ]
 
 export function getScenario(id) {
@@ -254,5 +427,5 @@ export function getScenario(id) {
  * Curated "defib skill" scenarios — the shock / cardioversion / pacing / shock-vs-no-shock
  * cases the SME (basic) facilitator can run. Edit this list to change what bedside SMEs see.
  */
-export const DEFIB_SCENARIO_IDS = ['vf-arrest', 'pulseless-vt', 'svt-cardioversion', 'brady-pacing', 'asystole-pea']
+export const DEFIB_SCENARIO_IDS = ['vf-arrest', 'pulseless-vt', 'svt-cardioversion', 'brady-pacing', 'asystole-pea', 'torsades', 'complete-heart-block', 'afib-rvr-cardioversion']
 export const DEFIB_SCENARIOS = SCENARIOS.filter((s) => DEFIB_SCENARIO_IDS.includes(s.id))
