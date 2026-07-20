@@ -1,0 +1,54 @@
+name: Deploy to GitHub Pages
+
+# Builds the SPA and publishes it to GitHub Pages. Triggered on pushes to the
+# current working branch (industrial-design-pass-2) rather than main, since
+# that's where the actual app currently lives — point this at main instead
+# once/if that branch gets merged in.
+on:
+  push:
+    branches: [industrial-design-pass-2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      # Base path must match the repo name so assets resolve at
+      # https://<user>.github.io/<repo>/ — computed from the repo name at
+      # build time so this doesn't need to be hardcoded or kept in sync.
+      - run: npm run build -- --base=/${{ github.event.repository.name }}/
+      # SPA fallback: GitHub Pages has no server-side routing, so a direct
+      # link to e.g. /code-blue 404s unless 404.html also serves the app —
+      # the React Router BrowserRouter then reads the real URL client-side.
+      - run: cp dist/index.html dist/404.html
+      # Skip Jekyll processing (unnecessary for a prebuilt SPA, and can
+      # interfere with how some asset filenames get served).
+      - run: touch dist/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
