@@ -22,7 +22,7 @@ import SignoffPanel from './guided/SignoffPanel'
  * a 2-minute time-to-shock clock that starts at rhythm identification. Stage bodies
  * are placeholders here; Phases 3–6 fill in the real interactive content.
  *
- * `mode="code-blue"` runs the streamlined CODE BLUE | Time to SHOCK shell: the
+ * `mode="code-blue"` runs the streamlined CODE BLUE | Response Readiness shell: the
  * facilitator/SME enters their own info FIRST (`SmeIntro`, pre-fills + locks the
  * eventual sign-off), the scenario is always randomized between VF arrest and
  * pulseless VT (no scenario picker), and there's no route out to the rest of the
@@ -139,7 +139,7 @@ export default function GuidedScenario({ mode = 'full' }) {
 
   return (
     <GuidedShell
-      title={codeBlue ? 'CODE BLUE | Time to SHOCK' : `${sc.title} — Guided Session`}
+      title={codeBlue ? 'CODE BLUE | Response Readiness' : `${sc.title} — Guided Session`}
       subtitle={`Annual Defibrillation Skill Validation${level ? ` · ${level}` : ''}${stage > 0 ? ` · ${isValidation ? 'Validation (graded)' : 'Practice'}` : ''}`}
       clock={codeBlue && !smeInfo ? null : clockChip}
       hideExit={codeBlue}
