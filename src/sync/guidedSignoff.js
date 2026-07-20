@@ -152,6 +152,40 @@ export function buildSignoffRecord({ scenario, level, sessionType, learnerName, 
   }
 }
 
+/**
+ * Build the lightweight record sent to the Power Automate telemetry endpoint
+ * (see telemetry.js) for EVERY attempt — Practice and Validation alike, so
+ * usage can actually be counted. Practice attempts have no `signoff` (fires
+ * once the debrief renders); Validation attempts pass the SME's attestation
+ * once they sign (reusing the same fields buildSignoffRecord captures).
+ * Deliberately flatter than the full sign-off record — no per-criterion
+ * detail (that stays in the Teams-folder JSON/CSV export) — just enough for
+ * an aggregate practice-vs-validation / outcome dashboard.
+ */
+export function buildAttemptRecord({ scenario, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, timeToShockSeconds, shockEnergy, signoff }) {
+  return {
+    recordType: 'guided-defib-attempt',
+    scenarioId: scenario.id,
+    scenarioTitle: scenario.title,
+    rhythm: scenario.rhythm,
+    level,
+    sessionType,
+    learnerName,
+    learnerEmail,
+    timeToShockSeconds: timeToShockSeconds != null ? Math.round(timeToShockSeconds) : null,
+    shockEnergyJ: shockEnergy,
+    autoSuggestedOutcome: autoSuggested,
+    reviewCount: criteria.filter((c) => c.tone === 'bad').length,
+    coachCount: criteria.filter((c) => c.tone === 'coach').length,
+    finalOutcome: signoff?.finalOutcome ?? null,
+    selfTestCompleted: signoff ? !!signoff.selfTestCompleted : null,
+    evaluatorName: signoff?.evaluatorName ?? null,
+    evaluatorEmail: signoff?.evaluatorEmail ?? null,
+    evaluatorTitle: signoff?.evaluatorTitle ?? null,
+    recordedAt: iso(Date.now()),
+  }
+}
+
 const SIGNOFF_CSV_COLUMNS = [
   'scenarioTitle', 'level', 'sessionType', 'learnerName', 'learnerEmail', 'timeToShockSeconds', 'shockEnergyJ',
   'selfTestCompleted', 'evaluatorName', 'evaluatorEmail', 'evaluatorTitle', 'signedAt', 'autoSuggestedOutcome', 'finalOutcome',

@@ -30,7 +30,17 @@ jobs:
       # Base path must match the repo name so assets resolve at
       # https://<user>.github.io/<repo>/ — computed from the repo name at
       # build time so this doesn't need to be hardcoded or kept in sync.
+      #
+      # VITE_POWER_AUTOMATE_URL (optional): set this repo secret once the
+      # Power Automate HTTP-trigger flow exists, to enable usage telemetry
+      # (see src/sync/telemetry.js). Left unset, telemetry silently no-ops —
+      # safe to deploy either way. NOTE: this ends up baked into the public
+      # JS bundle regardless (no backend exists to keep it truly secret) —
+      # keeping it as a secret only keeps it out of the committed source/git
+      # history, not out of the deployed site's network traffic.
       - run: npm run build -- --base=/${{ github.event.repository.name }}/
+        env:
+          VITE_POWER_AUTOMATE_URL: ${{ secrets.POWER_AUTOMATE_URL }}
       # SPA fallback: GitHub Pages has no server-side routing, so a direct
       # link to e.g. /code-blue 404s unless 404.html also serves the app —
       # the React Router BrowserRouter then reads the real URL client-side.

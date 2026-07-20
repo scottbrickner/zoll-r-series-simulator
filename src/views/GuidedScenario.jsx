@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { GUIDED_STAGES, SHOCK_TARGET_S, CRASH_CART_DELAY_MS, BLS_SEQUENCE, getGuided, GUIDED_SCENARIO_IDS, CODE_BLUE_SCENARIO_IDS } from '../sync/guidedScenarios'
-import { buildCriteria, suggestOutcome, buildSignoffRecord, isKeckEmail } from '../sync/guidedSignoff'
+import { buildCriteria, suggestOutcome, buildSignoffRecord, buildAttemptRecord, isKeckEmail } from '../sync/guidedSignoff'
+import { reportAttempt } from '../sync/telemetry'
 import GuidedShell from './guided/GuidedShell'
 import SmeIntro from './guided/SmeIntro'
 import BlsSurvey from './guided/BlsSurvey'
@@ -22,21 +23,29 @@ import SignoffPanel from './guided/SignoffPanel'
  * a 2-minute time-to-shock clock that starts at rhythm identification. Stage bodies
  * are placeholders here; Phases 3–6 fill in the real interactive content.
  *
- * `mode="code-blue"` runs the streamlined CODE BLUE | Response Readiness shell: the
- * facilitator/SME enters their own info FIRST (`SmeIntro`, pre-fills + locks the
- * eventual sign-off), the scenario is always randomized between VF arrest and
- * pulseless VT (no scenario picker), and there's no route out to the rest of the
- * app — this exists so non-NPD SMEs get a single, hard-to-deviate-from path
- * through the annual skill sign-off workflow rather than the full simulator.
+ * `mode="code-blue"` runs the streamlined CODE BLUE | Response Readiness shell,
+ * Validation-only: the facilitator/SME enters their own info FIRST (`SmeIntro`,
+ * pre-fills + locks the eventual sign-off), the scenario is always randomized
+ * between VF arrest and pulseless VT (no scenario picker), and there's no route
+ * out to the rest of the app — this exists so non-NPD SMEs get a single,
+ * hard-to-deviate-from path through the annual skill sign-off workflow rather
+ * than the full simulator.
+ *
+ * `mode="practice-open"` is the companion Practice-only surface meant for the
+ * general Teams channel — no SME check-in, no Validation option, just an
+ * open-ended, randomized-scenario practice loop anyone can run on their own.
  */
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 const randomCodeBlueId = () => CODE_BLUE_SCENARIO_IDS[Math.floor(Math.random() * CODE_BLUE_SCENARIO_IDS.length)]
 
 export default function GuidedScenario({ mode = 'full' }) {
   const codeBlue = mode === 'code-blue'
+  const practiceOpen = mode === 'practice-open'
+  const restricted = codeBlue || practiceOpen // randomized scenario, no scenario picker, no exit
+  const showSessionToggle = mode === 'full' // only /guided lets the learner pick Practice vs Validation
   const [params] = useSearchParams()
   const [codeBlueScenarioId, setCodeBlueScenarioId] = useState(randomCodeBlueId)
-  const scenarioId = codeBlue
+  const scenarioId = restricted
     ? codeBlueScenarioId
     : (getGuided(params.get('scenario')) ? params.get('scenario') : GUIDED_SCENARIO_IDS[0])
   const sc = getGuided(scenarioId)
@@ -44,7 +53,8 @@ export default function GuidedScenario({ mode = 'full' }) {
   const [smeInfo, setSmeInfo] = useState(null) // { name, email, title } — CODE BLUE only, captured before the learner starts
   const [stage, setStage] = useState(0)
   const [level, setLevel] = useState(null) // 'BLS' | 'ACLS'
-  const [sessionType, setSessionType] = useState('practice') // 'practice' (Guided) | 'validation' (SME-graded)
+  const [sessionType, setSessionType] = useState(codeBlue ? 'validation' : 'practice') // 'practice' (Guided) | 'validation' (SME-graded)
+  const [attemptReported, setAttemptReported] = useState(false) // telemetry beacon fired once per attempt
   const [learnerName, setLearnerName] = useState('')
   const [learnerEmail, setLearnerEmail] = useState('')
   const [signoff, setSignoff] = useState(null) // signed record { evaluatorName, evaluatorTitle, finalOutcome, signedAt }
@@ -107,17 +117,55 @@ export default function GuidedScenario({ mode = 'full' }) {
   const elapsed = shockElapsed != null ? shockElapsed : liveElapsed // freeze at shock
   const overTarget = elapsed > SHOCK_TARGET_S
 
+  // Single source of truth for the debrief's scored checklist + suggestion —
+  // computed once here so both the on-screen ScoreRow list and the telemetry
+  // beacon below use the exact same values.
+  const criteria = useMemo(() => buildCriteria({
+    elapsedLabel: clock(elapsed), targetLabel: clock(SHOCK_TARGET_S), elapsedSeconds: elapsed,
+    blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk,
+  }), [elapsed, blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk])
+  const autoSuggested = useMemo(() => suggestOutcome(criteria), [criteria])
+
+  // Practice attempts have no sign-off to hang a telemetry trigger off of, so
+  // report as soon as the debrief is reached (once per attempt). Validation
+  // attempts report at sign-off time instead (see `sign` below) — an
+  // unsigned validation debrief isn't a completed record worth counting yet.
+  useEffect(() => {
+    if (stageId !== 'debrief' || isValidation || attemptReported) return
+    reportAttempt(buildAttemptRecord({
+      scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested,
+      timeToShockSeconds: elapsed, shockEnergy,
+    }))
+    setAttemptReported(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageId, isValidation, attemptReported])
+
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
   const restart = () => {
-    setStage(0); setLevel(null); setSessionType('practice'); setLearnerName(''); setLearnerEmail('')
+    setStage(0); setLevel(null); setSessionType(codeBlue ? 'validation' : 'practice'); setLearnerName(''); setLearnerEmail('')
     setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false)
     setCrashCartDelayApplied(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null)
     setDecisionAnswered(false); setDecisionOk(false); setClearSaid(false); setSelfTestDone(false); setSignoff(null); setEvents([])
-    if (codeBlue) setCodeBlueScenarioId(randomCodeBlueId()) // next learner gets a fresh random rhythm; same SME stays checked in
+    setAttemptReported(false)
+    if (restricted) setCodeBlueScenarioId(randomCodeBlueId()) // next attempt gets a fresh random rhythm; same SME (if any) stays checked in
   }
   // Ends the whole check-in — the next person to touch the device re-enters as a new facilitator.
   const switchFacilitator = () => { restart(); setSmeInfo(null) }
+
+  const sign = ({ evaluatorName, evaluatorEmail, evaluatorTitle, outcome }) => {
+    const signoffCtx = { finalOutcome: outcome, evaluatorName, evaluatorEmail, evaluatorTitle, selfTestCompleted: selfTestDone }
+    const record = buildSignoffRecord({
+      scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome: outcome,
+      evaluatorName, evaluatorEmail, evaluatorTitle, signedAt: Date.now(), timeToShockSeconds: elapsed, shockEnergy,
+      selfTestCompleted: selfTestDone,
+    })
+    setSignoff(record)
+    reportAttempt(buildAttemptRecord({
+      scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested,
+      timeToShockSeconds: elapsed, shockEnergy, signoff: signoffCtx,
+    }))
+  }
 
   // The crash cart doesn't teleport in — add a one-time, randomized 15–25s to the
   // clock when leaving the BLS survey for pad placement, so the timer reflects
@@ -139,10 +187,10 @@ export default function GuidedScenario({ mode = 'full' }) {
 
   return (
     <GuidedShell
-      title={codeBlue ? 'CODE BLUE | Response Readiness' : `${sc.title} — Guided Session`}
+      title={restricted ? 'CODE BLUE | Response Readiness' : `${sc.title} — Guided Session`}
       subtitle={`Annual Defibrillation Skill Validation${level ? ` · ${level}` : ''}${stage > 0 ? ` · ${isValidation ? 'Validation (graded)' : 'Practice'}` : ''}`}
       clock={codeBlue && !smeInfo ? null : clockChip}
-      hideExit={codeBlue}
+      hideExit={restricted}
     >
       {codeBlue && !smeInfo ? (
         <section className="panel">
@@ -225,16 +273,22 @@ export default function GuidedScenario({ mode = 'full' }) {
               <p style={{ margin: '-4px 0 10px', fontSize: '0.78rem', color: '#c62828' }}>Must be a Keck email address (ends in @med.usc.edu).</p>
             )}
 
-            <p className="muted">Choose how this session should run:</p>
-            <div className="row">
-              <button className={`btn ${!isValidation ? 'btn--primary' : ''}`} onClick={() => setSessionType('practice')}>Practice (Guided)</button>
-              <button className={`btn ${isValidation ? 'btn--primary' : ''}`} onClick={() => setSessionType('validation')}>Validation (Graded)</button>
-            </div>
+            {showSessionToggle && (
+              <>
+                <p className="muted">Choose how this session should run:</p>
+                <div className="row">
+                  <button className={`btn ${!isValidation ? 'btn--primary' : ''}`} onClick={() => setSessionType('practice')}>Practice (Guided)</button>
+                  <button className={`btn ${isValidation ? 'btn--primary' : ''}`} onClick={() => setSessionType('validation')}>Validation (Graded)</button>
+                </div>
+              </>
+            )}
             <p className="muted" style={{ fontSize: '0.82rem', marginTop: 4, marginBottom: '0.9rem' }}>
-              {isValidation
-                ? 'An SME reviews this attempt and signs off at the debrief — no in-task feedback. If you’re not yet ready, tell your SME and switch to Practice first.'
-                : 'Learn at your own pace — wrong steps are corrected as you go. When you’re ready for your SME-graded attempt, tell your SME and switch to Validation.'}
-              {codeBlue && isValidation && ' Only one graded attempt is allowed before a Practice session is required — if you’ve already attempted Validation, please complete a Practice session first.'}
+              {practiceOpen
+                ? 'Learn at your own pace — wrong steps are corrected as you go. Ready for your SME-graded attempt? Ask your SME to open the Validation link on their channel.'
+                : isValidation
+                  ? 'An SME reviews this attempt and signs off at the debrief — no in-task feedback. If you’re not yet ready, tell your SME and switch to Practice first.'
+                  : 'Learn at your own pace — wrong steps are corrected as you go. When you’re ready for your SME-graded attempt, tell your SME and switch to Validation.'}
+              {codeBlue && ' Only one graded attempt is allowed before a Practice session is required — if you’ve already attempted Validation, please complete a Practice session first.'}
             </p>
 
             <p className="muted">Choose your provider level for this session:</p>
@@ -253,54 +307,37 @@ export default function GuidedScenario({ mode = 'full' }) {
             <p className="muted" style={{ marginTop: 0 }}>
               {learnerName} · {learnerEmail} · {level} provider · {isValidation ? 'Validation session' : 'Practice session'}
             </p>
-            {(() => {
-              const criteria = buildCriteria({
-                elapsedLabel: clock(elapsed), targetLabel: clock(SHOCK_TARGET_S), elapsedSeconds: elapsed,
-                blsComplete, events, placement, deviceShocked, shockEnergy, shockUsedAnalyze, level, decisionOk,
-              })
-              const autoSuggested = suggestOutcome(criteria)
-              const sign = ({ evaluatorName, evaluatorEmail, evaluatorTitle, outcome }) => {
-                const record = buildSignoffRecord({
-                  scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, finalOutcome: outcome,
-                  evaluatorName, evaluatorEmail, evaluatorTitle, signedAt: Date.now(), timeToShockSeconds: elapsed, shockEnergy,
-                  selfTestCompleted: selfTestDone,
-                })
-                setSignoff(record)
-              }
-              return (
-                <>
-                  <div className="score-list">
-                    {criteria.map((c) => (
-                      <ScoreRow key={c.key} tone={c.tone} title={c.title}>{c.detail}</ScoreRow>
-                    ))}
-                  </div>
-                  <DebriefGuide level={level} />
-                  <SelfTestWalkthrough onDone={() => setSelfTestDone(true)} />
-                  {isValidation ? (
-                    <SignoffPanel
-                      sessionType={sessionType}
-                      autoSuggested={autoSuggested}
-                      signed={signoff}
-                      selfTestDone={selfTestDone}
-                      lockedEvaluator={codeBlue ? smeInfo : undefined}
-                      onSign={sign}
-                      onRevise={() => setSignoff(null)}
-                    />
-                  ) : (
-                    <p className="muted" style={{ marginTop: '0.8rem' }}>
-                      This was a practice session — no SME sign-off is recorded. When you’re ready, restart and choose Validation for your graded attempt.
-                    </p>
-                  )}
-                </>
-              )
-            })()}
+            <div className="score-list">
+              {criteria.map((c) => (
+                <ScoreRow key={c.key} tone={c.tone} title={c.title}>{c.detail}</ScoreRow>
+              ))}
+            </div>
+            <DebriefGuide level={level} />
+            <SelfTestWalkthrough onDone={() => setSelfTestDone(true)} />
+            {isValidation ? (
+              <SignoffPanel
+                sessionType={sessionType}
+                autoSuggested={autoSuggested}
+                signed={signoff}
+                selfTestDone={selfTestDone}
+                lockedEvaluator={codeBlue ? smeInfo : undefined}
+                onSign={sign}
+                onRevise={() => setSignoff(null)}
+              />
+            ) : (
+              <p className="muted" style={{ marginTop: '0.8rem' }}>
+                {practiceOpen
+                  ? 'This was a practice session — no SME sign-off is recorded here. Ready for a graded attempt? Ask your SME to open the Validation link.'
+                  : 'This was a practice session — no SME sign-off is recorded. When you’re ready, restart and choose Validation for your graded attempt.'}
+              </p>
+            )}
             <div className="row" style={{ marginTop: '1rem' }}>
-              <button className="btn" onClick={restart}>{codeBlue ? 'Next learner ▸' : 'Restart'}</button>
+              <button className="btn" onClick={restart}>{codeBlue ? 'Next learner ▸' : practiceOpen ? 'Practice again ▸' : 'Restart'}</button>
               {codeBlue ? (
                 <button className="btn btn--ghost" onClick={switchFacilitator}>Switch facilitator</button>
-              ) : (
+              ) : !practiceOpen ? (
                 <Link className="btn btn--ghost" to="/">Exit</Link>
-              )}
+              ) : null}
             </div>
           </>
         ) : stageId === 'bls' ? (

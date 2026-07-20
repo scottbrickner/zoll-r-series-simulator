@@ -31,6 +31,11 @@ const OUTCOME_LABEL = { COMPETENT: 'Competent', NYDC: 'NYDC (Not Yet Deemed Comp
  * evaluator fields pre-fill from it and become read-only instead of asking
  * again, so the person who ran the session is the one who signs it.
  */
+/** One-line pipe-delimited summary for manual paste into a Form/Excel/anywhere. */
+function summaryLine(r) {
+  return [r.learnerName, r.learnerEmail, OUTCOME_LABEL[r.finalOutcome], new Date(r.signedAt).toLocaleString(), r.scenarioTitle, r.level].join(' | ')
+}
+
 export default function SignoffPanel({ sessionType, autoSuggested, signed, selfTestDone, lockedEvaluator, onSign, onRevise }) {
   const [name, setName] = useState(lockedEvaluator?.name || '')
   const [email, setEmail] = useState(lockedEvaluator?.email || '')
@@ -38,6 +43,7 @@ export default function SignoffPanel({ sessionType, autoSuggested, signed, selfT
   const [outcome, setOutcome] = useState(autoSuggested)
   const emailOk = isKeckEmail(email)
   const [folderState, setFolderState] = useState({ status: 'idle' })
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!signed || !isFolderSaveSupported()) return
@@ -92,6 +98,25 @@ export default function SignoffPanel({ sessionType, autoSuggested, signed, selfT
             Recommend one or more Practice (Guided) sessions before the next Validation attempt.
           </p>
         )}
+
+        <div style={{ marginTop: '0.8rem', border: '1px solid #e7e2da', borderRadius: 8, padding: '0.6rem 0.7rem', background: 'rgba(255,255,255,0.6)' }}>
+          <p className="muted" style={{ margin: '0 0 6px', fontSize: '0.78rem', fontWeight: 600 }}>Quick copy — for pasting into a Form, Excel, or anywhere else</p>
+          <code style={{ display: 'block', fontSize: '0.82rem', wordBreak: 'break-word', marginBottom: 6 }}>{summaryLine(signed)}</code>
+          <button
+            className="btn btn--ghost"
+            onClick={() => {
+              const done = () => { setCopied('ok'); setTimeout(() => setCopied(false), 2000) }
+              const failed = () => { setCopied('failed'); setTimeout(() => setCopied(false), 4000) }
+              if (navigator.clipboard?.writeText) navigator.clipboard.writeText(summaryLine(signed)).then(done, failed)
+              else failed()
+            }}
+          >
+            {copied === 'ok' ? 'Copied ✓' : 'Copy summary'}
+          </button>
+          {copied === 'failed' && (
+            <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: '#8a2c26' }}>Couldn’t copy automatically — select the text above and copy it manually.</p>
+          )}
+        </div>
 
         {isFolderSaveSupported() ? (
           <div style={{ marginTop: '0.8rem' }}>
