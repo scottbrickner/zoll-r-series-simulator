@@ -55,6 +55,7 @@ export default function GuidedScenario({ mode = 'full' }) {
   const [level, setLevel] = useState(null) // 'BLS' | 'ACLS'
   const [sessionType, setSessionType] = useState(codeBlue ? 'validation' : 'practice') // 'practice' (Guided) | 'validation' (SME-graded)
   const [attemptReported, setAttemptReported] = useState(false) // telemetry beacon fired once per attempt
+  const [attemptId, setAttemptId] = useState(() => crypto.randomUUID()) // stable per attempt — survives a Validation revise+resign
   const [learnerName, setLearnerName] = useState('')
   const [learnerEmail, setLearnerEmail] = useState('')
   const [signoff, setSignoff] = useState(null) // signed record { evaluatorName, evaluatorTitle, finalOutcome, signedAt }
@@ -133,7 +134,7 @@ export default function GuidedScenario({ mode = 'full' }) {
   useEffect(() => {
     if (stageId !== 'debrief' || isValidation || attemptReported) return
     reportAttempt(buildAttemptRecord({
-      scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested,
+      attemptId, scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested,
       timeToShockSeconds: elapsed, shockEnergy,
     }))
     setAttemptReported(true)
@@ -147,7 +148,7 @@ export default function GuidedScenario({ mode = 'full' }) {
     setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false)
     setCrashCartDelayApplied(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null)
     setDecisionAnswered(false); setDecisionOk(false); setClearSaid(false); setSelfTestDone(false); setSignoff(null); setEvents([])
-    setAttemptReported(false)
+    setAttemptReported(false); setAttemptId(crypto.randomUUID())
     if (restricted) setCodeBlueScenarioId(randomCodeBlueId()) // next attempt gets a fresh random rhythm; same SME (if any) stays checked in
   }
   // Ends the whole check-in — the next person to touch the device re-enters as a new facilitator.
@@ -162,7 +163,7 @@ export default function GuidedScenario({ mode = 'full' }) {
     })
     setSignoff(record)
     reportAttempt(buildAttemptRecord({
-      scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested,
+      attemptId, scenario: sc, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested,
       timeToShockSeconds: elapsed, shockEnergy, signoff: signoffCtx,
     }))
   }

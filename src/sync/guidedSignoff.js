@@ -153,18 +153,31 @@ export function buildSignoffRecord({ scenario, level, sessionType, learnerName, 
 }
 
 /**
- * Build the lightweight record sent to the Power Automate telemetry endpoint
- * (see telemetry.js) for EVERY attempt — Practice and Validation alike, so
- * usage can actually be counted. Practice attempts have no `signoff` (fires
- * once the debrief renders); Validation attempts pass the SME's attestation
- * once they sign (reusing the same fields buildSignoffRecord captures).
- * Deliberately flatter than the full sign-off record — no per-criterion
- * detail (that stays in the Teams-folder JSON/CSV export) — just enough for
- * an aggregate practice-vs-validation / outcome dashboard.
+ * Build the record sent to the Power Automate telemetry endpoint (see
+ * telemetry.js) for EVERY attempt — Practice and Validation alike, so usage
+ * can actually be counted. Practice attempts have no `signoff` (fires once
+ * the debrief renders); Validation attempts pass the SME's attestation once
+ * they sign (reusing the same fields buildSignoffRecord captures).
+ *
+ * `attemptId` must be generated ONCE per attempt by the caller (a stable
+ * per-debrief id, not regenerated here) and passed in — GuidedScenario holds
+ * it in state so a Validation "Revise sign-off" re-send still ties back to
+ * the same attempt rather than minting a new one. `criteria` is the full
+ * per-criterion array (not just a summary) so a "which skill fails most"
+ * root-cause view is possible in Power BI — each entry fans out into its own
+ * row in a separate criteria table by the Power Automate flow.
+ *
+ * Deliberately carries no unit/department field — the learner only ever
+ * types name + email. Unit is resolved downstream, in the Power Automate
+ * flow, via a Graph lookup on `learnerEmail` (the same Office 365 Users
+ * "Send an HTTP request" pattern already used by the ROUNDS platform),
+ * not captured here — keeps the app dumb and the roster/department mapping
+ * in one place instead of two.
  */
-export function buildAttemptRecord({ scenario, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, timeToShockSeconds, shockEnergy, signoff }) {
+export function buildAttemptRecord({ attemptId, scenario, level, sessionType, learnerName, learnerEmail, criteria, autoSuggested, timeToShockSeconds, shockEnergy, signoff }) {
   return {
     recordType: 'guided-defib-attempt',
+    attemptId,
     scenarioId: scenario.id,
     scenarioTitle: scenario.title,
     rhythm: scenario.rhythm,
@@ -183,6 +196,7 @@ export function buildAttemptRecord({ scenario, level, sessionType, learnerName, 
     evaluatorEmail: signoff?.evaluatorEmail ?? null,
     evaluatorTitle: signoff?.evaluatorTitle ?? null,
     recordedAt: iso(Date.now()),
+    criteria: criteria.map(({ key, title, tone, detail }) => ({ key, title, tone, detail })),
   }
 }
 
