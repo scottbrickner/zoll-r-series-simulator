@@ -6,6 +6,17 @@
  * Everything is scoped under `.guided-shell` so it never touches the dark,
  * industrial device UI (the ZOLL faceplate/LCD keep their own look).
  */
+/*
+ * `html`'s own background is the dark industrial theme from index.css
+ * (`--bg: #0d1117`), and `body` is transparent, so without this override the
+ * dark color peeks through above the sticky header on scroll — `:has()` keeps
+ * the override scoped to only when a guided-shell screen is actually mounted,
+ * matching this stylesheet's "everything scoped under .guided-shell" intent.
+ */
+html:has(.guided-shell) {
+  background: #faf8f5;
+}
+
 .guided-shell {
   --cardinal: #990000;
   --cardinal-dark: #7a0000;

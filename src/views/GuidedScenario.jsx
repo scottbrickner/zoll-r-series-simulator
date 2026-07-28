@@ -144,6 +144,7 @@ export default function GuidedScenario({ mode = 'full' }) {
   const next = () => setStage((s) => Math.min(GUIDED_STAGES.length - 1, s + 1))
   const back = () => setStage((s) => Math.max(0, s - 1))
   const restart = () => {
+    window.scrollTo(0, 0) // debrief is a long scrolled page — land the next session at the top, not mid-page
     setStage(0); setLevel(null); setSessionType(codeBlue ? 'validation' : 'practice'); setLearnerName(''); setLearnerEmail('')
     setShockStart(null); setNow(Date.now()); setBlsDone([]); setPlacement({ triangle: null, rectangle: null }); setPadPassed(false)
     setCrashCartDelayApplied(false); setDeviceShocked(false); setShockEnergy(null); setShockUsedAnalyze(false); setShockElapsed(null)
@@ -380,7 +381,10 @@ export default function GuidedScenario({ mode = 'full' }) {
             <p className="muted" style={{ lineHeight: 1.6, marginTop: 0 }}>
               {sc.title} — the patient is pulseless. <strong>Turn on the monitor</strong>, identify the rhythm, and deliver the first shock on the ZOLL. Target: within <strong>{clock(SHOCK_TARGET_S)}</strong> of recognizing pulselessness.
             </p>
-            <NurseCallouts onSay={(id) => { logEvent({ type: 'callout', id }); if (id === 'clear') setClearSaid(true) }} />
+            <NurseCallouts
+              feedback={!isValidation}
+              onSay={(id) => { logEvent({ type: 'callout', id }); if (id === 'clear') setClearSaid(true) }}
+            />
             <GuidedDeviceHiFi
               scenario={sc}
               clearAnnounced={clearSaid}
