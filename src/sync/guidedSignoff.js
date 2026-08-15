@@ -5,8 +5,11 @@
  * The guided module runs entirely on local component state (it never touches
  * SimulatorContext), so this is a parallel, self-contained record — not the
  * older facilitator/SimulatorContext validation system in report.js. It DOES
- * reuse report.js's generic, state-agnostic export helpers (download/csvCell/iso)
- * rather than duplicating them.
+ * reuse report.js's generic, state-agnostic `iso` timestamp helper rather
+ * than duplicating it. Records are sent to Power Automate via telemetry.js
+ * (see reportAttempt) — this module no longer exports any file-download
+ * path; the master list + learner completion certificate are both handled
+ * downstream by the Power Automate flow, not by the app.
  *
  * `buildCriteria` is the single source of truth for the debrief's scored
  * checklist: GuidedScenario renders one ScoreRow per entry AND feeds the same
@@ -14,7 +17,7 @@
  * outcome, so the on-screen checklist and the suggestion can never drift apart.
  */
 import { matchedPair, SHOCK_TARGET_S, SHOCK_FAIL_CUSHION_S } from './guidedScenarios'
-import { download, csvCell, iso } from './report'
+import { iso } from './report'
 
 /** Institutional email check — Keck/USC med.usc.edu addresses only. */
 export function isKeckEmail(s) {
@@ -200,45 +203,3 @@ export function buildAttemptRecord({ attemptId, scenario, level, sessionType, le
   }
 }
 
-const SIGNOFF_CSV_COLUMNS = [
-  'scenarioTitle', 'level', 'sessionType', 'learnerName', 'learnerEmail', 'timeToShockSeconds', 'shockEnergyJ',
-  'selfTestCompleted', 'evaluatorName', 'evaluatorEmail', 'evaluatorTitle', 'signedAt', 'autoSuggestedOutcome', 'finalOutcome',
-  'criterionKey', 'criterionTitle', 'tone', 'detail',
-]
-
-/** One CSV row per criterion (session fields repeated) — easy to aggregate across many sign-offs. */
-export function signoffToCSV(record) {
-  const rows = [SIGNOFF_CSV_COLUMNS.join(',')]
-  for (const c of record.criteria) {
-    const row = {
-      scenarioTitle: record.scenarioTitle, level: record.level, sessionType: record.sessionType, learnerName: record.learnerName, learnerEmail: record.learnerEmail,
-      timeToShockSeconds: record.timeToShockSeconds, shockEnergyJ: record.shockEnergyJ, selfTestCompleted: record.selfTestCompleted,
-      evaluatorName: record.evaluatorName, evaluatorEmail: record.evaluatorEmail, evaluatorTitle: record.evaluatorTitle, signedAt: record.signedAt,
-      autoSuggestedOutcome: record.autoSuggestedOutcome, finalOutcome: record.finalOutcome,
-      criterionKey: c.key, criterionTitle: c.title, tone: c.tone, detail: c.detail,
-    }
-    rows.push(SIGNOFF_CSV_COLUMNS.map((k) => csvCell(row[k])).join(','))
-  }
-  return rows.join('\n')
-}
-
-const slug = (s) => String(s || 'learner').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'learner'
-
-/** Filenames + contents for both export formats — shared by the download and Teams-folder-save paths. */
-export function signoffFiles(record) {
-  const base = `guided-signoff-${record.scenarioId}-${slug(record.learnerName)}-${Date.now()}`
-  return {
-    json: { name: `${base}.json`, contents: JSON.stringify(record, null, 2), mime: 'application/json' },
-    csv: { name: `${base}.csv`, contents: signoffToCSV(record), mime: 'text/csv' },
-  }
-}
-
-export function exportSignoffJSON(record) {
-  const { json } = signoffFiles(record)
-  download(json.name, json.contents, json.mime)
-}
-
-export function exportSignoffCSV(record) {
-  const { csv } = signoffFiles(record)
-  download(csv.name, csv.contents, csv.mime)
-}

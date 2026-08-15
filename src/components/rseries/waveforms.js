@@ -210,21 +210,39 @@ const WAVEFORMS = {
   'Sinus Tachycardia': () => regular(8, { p: 4, q: 3, r: 28, s: 12, t: 6 }),
   SVT: () => regular(10, { hasP: false, p: 0, q: 2, r: 24, s: 9, t: 4 }),
   'Atrial Fibrillation': () => afib(),
-  // Monomorphic VT — a smooth, continuous, regular wide-complex undulation
-  // (beats run together, no isoelectric baseline between them, unlike a
-  // narrow-complex rhythm). A small second harmonic keeps it from reading as
-  // a perfect sine wave (that's the classic hyperkalemic "sine wave" look);
-  // still fully periodic/monomorphic (single dominant rate, no beat-to-beat
-  // chaos — that's what distinguishes it from VF/torsades below).
-  'Ventricular Tachycardia': () =>
-    sampled((x) => BASE + 24 * Math.sin(cyc(6) * x) - 6 * Math.sin(cyc(12) * x + 1.0), 1),
-  // Coarse VF — chaotic but periodic over W (integer cycles → seamless scroll).
+  // Monomorphic VT — asymmetric "shark-fin": a fast rise to a narrow peak,
+  // then a wide, deep, smoothly rounded trough back to the next beat. Built
+  // via time-warped raised-cosine easing (not harmonic summing) so every
+  // cycle has exactly one peak + one trough with no spurious secondary
+  // bumps — matches reference monomorphic VT strips (narrow pointed
+  // upstroke, broad rounded downstroke taking up most of the cycle). Still
+  // fully periodic/monomorphic — that's what distinguishes it from VF/
+  // torsades below, which are irregular beat-to-beat.
+  'Ventricular Tachycardia': () => {
+    const n = 6, peakFrac = 0.3, ampUp = 26, ampDown = 32
+    const w = W / n
+    return sampled((x) => {
+      const t = (((x % w) + w) % w) / w // 0..1 progress from trough to trough
+      const trough = BASE + ampDown
+      const peak = BASE - ampUp
+      if (t < peakFrac) {
+        const p = t / peakFrac
+        return trough - ((trough - peak) * (1 - Math.cos(p * Math.PI))) / 2
+      }
+      const p = (t - peakFrac) / (1 - peakFrac)
+      return peak + ((trough - peak) * (1 - Math.cos(p * Math.PI))) / 2
+    }, 1)
+  },
+  // Coarse VF — quasi-regular, fast, chaotic-but-not-busy undulation (fairly
+  // uniform peak-to-peak spacing/height with mild irregularity, matching
+  // reference coarse-VF strips, rather than a dense multi-frequency
+  // scribble). Periodic over W (integer cycles → seamless scroll).
   'Ventricular Fibrillation': () =>
     sampled(
       (x) =>
         BASE +
-        (0.8 + 0.2 * Math.sin(cyc(3) * x)) * // slow amplitude wander for a chaotic look
-          (20 * Math.sin(cyc(21) * x) + 12 * Math.sin(cyc(34) * x + 1.3) + 7 * Math.sin(cyc(55) * x + 0.5) + 4 * Math.sin(cyc(13) * x + 2.1)),
+        (0.85 + 0.15 * Math.sin(cyc(2) * x + 0.4)) * // mild amplitude wander so it isn't a perfect sine
+          (18 * Math.sin(cyc(17) * x) + 6 * Math.sin(cyc(34) * x + 0.9) + 3 * Math.sin(cyc(11) * x + 2.4)),
       1,
     ),
   // Torsades — twisting spindle: an integer-cycle envelope modulating the carrier.
@@ -276,7 +294,7 @@ const MARKERS = {
   'Sinus Tachycardia': beats(8, 0.34),
   SVT: beats(10, 0.34),
   'Atrial Fibrillation': [24, 70, 132, 176, 208, 262],
-  'Ventricular Tachycardia': beats(6, 0.25),
+  'Ventricular Tachycardia': beats(6, 0.3), // matches peakFrac in the shark-fin generator above
   PEA: beats(4, 0.42),
   'Paced (Capture)': beats(5, 0.36),
 }
