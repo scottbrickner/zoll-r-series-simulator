@@ -36,6 +36,41 @@ Working toward the **Release Candidate** milestone ([`ROADMAP.md`](ROADMAP.md)
 
 ---
 
+## [0.1.37] — 2026-08-28 — "Pull from Clinical Patient Simulator"
+
+Direct request from a companion project ("Clinical Patient Simulator," a
+separate CT-surgery-focused training bundle) to let this device be started
+from whatever rhythm/rate that companion sim currently has running, as a
+setup convenience for TCP/sync-cardioversion/defib practice - not a
+standing integration, one press per session.
+
+- New "Pull from Clinical Patient Simulator" field in the Facilitator's
+  Rhythm & Vitals panel (`src/views/Facilitator.jsx`): paste text, hit
+  Apply, it sets `rhythm`/`hr` via the same `update()` call the Rhythm
+  dropdown already uses.
+- **Deliberately clipboard-mediated, not a live network fetch** - reconciled
+  against `docs/DECISIONS.md` D1 ("no server, database, account, or network
+  dependency") and D9 (cross-device live sync explicitly deferred/out of
+  scope) before building anything: a Supabase-backed live pull was the
+  obvious naive approach and was rejected specifically because it would
+  have violated both. This instead treats the companion app's own "Copy for
+  ZOLL" button + a paste here as one facilitator manually relaying two
+  numbers between two open tabs - zero new dependencies, zero network
+  calls, D1/D9 stay fully intact.
+- `RHYTHM_FROM_CLINICAL_SIM` translates 10 of the companion app's 17
+  rhythms onto this device's own 14-entry `RHYTHMS` list (the two don't
+  overlap 1:1 - this device has no AV-block/junctional granularity,
+  appropriate for a defib/pacer/monitor device rather than a full
+  telemetry teaching tool). Unmapped rhythms report "no close equivalent"
+  rather than guessing.
+- Accepts either the companion app's own "Rhythm, NNN bpm" text or a raw
+  `{rhythm,hr}` JSON blob.
+- `npm test` (build + `scripts/smoke.mjs`, 23 checks) still passes
+  unchanged - this is page-level UI/parsing logic with no smoke-test
+  coverage of its own, verified live instead (both a successful-mapping
+  pull and the no-equivalent fallback, via real state inspection after a
+  real button click).
+
 ## [0.1.36] — 2026-07-13 — Facilitator role gate (SME lockout)
 
 Add a role gate so bedside-nurse SMEs get a locked "basic" facilitator — a picker

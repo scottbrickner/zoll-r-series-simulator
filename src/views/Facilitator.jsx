@@ -14,6 +14,53 @@ import FacilitatorBasic from './FacilitatorBasic'
 import SafetyLabel from '../components/SafetyLabel'
 
 /**
+ * "Pull from Clinical Patient Simulator" - direct user request to let this
+ * device be started from whatever a companion sim (the "Clinical Patient
+ * Simulator" bundle, a separate deployment) currently has running, for
+ * realistic threshold/cardioversion/defib practice setup.
+ *
+ * Deliberately clipboard-mediated, NOT a live network fetch: this project's
+ * own docs/DECISIONS.md D1 ("no server, database, account, or network
+ * dependency") and D9 (cross-device live sync explicitly deferred/out of
+ * scope) rule out adding a Supabase/backend client here - reconciled by
+ * treating the OTHER app's "Copy for ZOLL" button + a paste here as one
+ * facilitator manually relaying two numbers between two open tabs, no
+ * different in kind from reading a value off one screen and typing it into
+ * another. Zero new dependencies, zero network calls.
+ *
+ * Translates the companion app's own 17-rhythm vocabulary onto this app's
+ * 14-entry RHYTHMS list - the two don't overlap 1:1 (this device has no AV-
+ * block/junctional granularity, appropriate for a defib/pacer/monitor
+ * device rather than a full telemetry teaching tool), so unmapped rhythms
+ * report "no close equivalent" rather than guessing.
+ */
+const RHYTHM_FROM_CLINICAL_SIM = {
+  'Sinus Rhythm': 'Normal Sinus',
+  'Sinus Tachycardia': 'Sinus Tachycardia',
+  'Sinus Bradycardia': 'Sinus Bradycardia',
+  'Atrial Fibrillation': 'Atrial Fibrillation',
+  'Supraventricular Tachycardia': 'SVT',
+  'PEA': 'PEA',
+  'Ventricular Tachycardia': 'Ventricular Tachycardia',
+  'Torsades de Pointes': 'Torsades de Pointes',
+  'Ventricular Fibrillation': 'Ventricular Fibrillation',
+  'Asystole': 'Asystole',
+}
+
+/** Accepts either the Console's own "Rhythm, NNN bpm" copy format or a raw {rhythm,hr} JSON blob (for anyone scripting this) - returns {rhythm, hr} or null if neither shape parses. */
+function parsePulledSnapshot(text) {
+  const trimmed = (text || '').trim()
+  if (!trimmed) return null
+  try {
+    const obj = JSON.parse(trimmed)
+    if (obj && typeof obj.rhythm === 'string' && Number.isFinite(obj.hr)) return { rhythm: obj.rhythm, hr: obj.hr }
+  } catch { /* not JSON - fall through to the plain-text format */ }
+  const m = trimmed.match(/^(.+?),\s*(\d+(?:\.\d+)?)\s*bpm?\s*$/i)
+  if (m) return { rhythm: m[1].trim(), hr: Math.round(parseFloat(m[2])) }
+  return null
+}
+
+/**
  * Facilitator view — controls that drive the learner's device in real time,
  * including DEFIB / synchronized cardioversion behavior and a validation log.
  */
@@ -23,12 +70,28 @@ export default function Facilitator() {
   const [role, setRole] = useState(getFacilitatorRole())
   const [pick, setPick] = useState(state.scenarioId || SCENARIOS[0].id)
   const [note, setNote] = useState('')
+  const [pullText, setPullText] = useState('')
+  const [pullStatus, setPullStatus] = useState('')
   const [logFilter, setLogFilter] = useState('all')
   const [smeIds, setSmeIds] = useState(() => getSmeScenarioIds() || DEFIB_SCENARIO_IDS)
   const toggleSme = (id) => {
     const next = smeIds.includes(id) ? smeIds.filter((x) => x !== id) : [...smeIds, id]
     setSmeIds(next)
     setSmeScenarioIds(next)
+  }
+  const applyPull = () => {
+    const parsed = parsePulledSnapshot(pullText)
+    if (!parsed) {
+      setPullStatus('Could not read that - paste the Console\'s own "Copy for ZOLL" text, or a rhythm name and rate like "Sinus Bradycardia, 45 bpm".')
+      return
+    }
+    const mapped = RHYTHM_FROM_CLINICAL_SIM[parsed.rhythm]
+    if (!mapped) {
+      setPullStatus(`"${parsed.rhythm}" has no close equivalent in this device's rhythm list - nothing changed. Pick one from Rhythm above instead.`)
+      return
+    }
+    update({ rhythm: mapped, hr: parsed.hr })
+    setPullStatus(`Applied ${mapped} at ${parsed.hr} bpm from the Clinical Patient Simulator. Continue independently from here.`)
   }
 
   // Bedside SMEs get the locked basic view; NPD/NE unlock the full console.
@@ -264,6 +327,16 @@ export default function Facilitator() {
                 </option>
               ))}
             </select>
+          </Field>
+
+          <Field label="Pull from Clinical Patient Simulator">
+            <div className="row">
+              <input type="text" value={pullText} placeholder='paste "Copy for ZOLL" text from the Console…'
+                onChange={(e) => setPullText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') applyPull() }} />
+              <button className="btn" onClick={applyPull}>Apply</button>
+            </div>
+            {pullStatus && <p className="muted">{pullStatus}</p>}
           </Field>
 
           <Slider
